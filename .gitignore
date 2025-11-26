@@ -1,0 +1,47 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+.vs/
+.vscode/
+*.swp
+*~
+**/logs/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+
+# Any env specific appsettings.json
+appsettings.*.json
+**/appsettings.*.json
+
+# Secrets
+secrets/
+*.pfx
+*.key
+
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+**/dist/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Aspire
+.aspire/

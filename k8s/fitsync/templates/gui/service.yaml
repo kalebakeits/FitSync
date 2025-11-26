@@ -1,0 +1,15 @@
+{{- if .Values.gui.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: gui
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector:
+    app: gui
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+{{- end }}

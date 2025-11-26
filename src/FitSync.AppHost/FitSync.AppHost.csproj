@@ -1,0 +1,25 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>4aefb7ae-c638-430b-9c25-361b2aad2d6f</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.Kafka" Version="13.0.0" />
+    <PackageReference Include="Aspire.Hosting.NodeJs" Version="*-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FitSync.MockFetcher/FitSync.MockFetcher.csproj" />
+    <ProjectReference Include="../FitSync.Uploader/FitSync.Uploader.csproj" />
+    <ProjectReference Include="../FitSync.ZwiftFetcher/FitSync.ZwiftFetcher.csproj" />
+    <ProjectReference Include="../FitSync.Api/FitSync.Api.csproj" />
+  </ItemGroup>
+
+</Project>

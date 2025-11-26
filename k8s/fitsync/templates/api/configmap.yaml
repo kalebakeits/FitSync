@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  appsettings.Production.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "{{ .Values.logging.level.default }}",
+          "Microsoft.Hosting.Lifetime": "{{ .Values.logging.level.microsoft }}",
+          "Microsoft.EntityFrameworkCore": "{{ .Values.logging.level.entityFramework }}"
+        }
+      },
+      "AllowedHosts": "*",
+      "Cors": {
+        "AllowedOrigins": ["{{ .Values.shared.appUrl }}"]
+      },
+      "AppConfiguration": {
+        "MaxSequentialCredentialFailures": {{ .Values.shared.maxSequentialCredentialFailures }}
+      },
+      "EmailConfiguration": {
+        "SmtpHost": "{{ .Values.shared.email.smtpHost }}",
+        "SmtpPort": {{ .Values.shared.email.smtpPort }},
+        "SmtpUsername": "{{ .Values.shared.email.smtpUsername }}",
+        "SmtpEnableSsl": {{ .Values.shared.email.smtpEnableSsl }},
+        "FromEmail": "{{ .Values.shared.email.fromEmail }}",
+        "FromName": "{{ .Values.shared.email.fromName }}",
+        "AppUrl": "{{ .Values.shared.appUrl }}"
+      }
+    }

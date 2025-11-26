@@ -1,0 +1,13 @@
+apiVersion: v2
+name: fitsync
+description: A Helm chart for FitSync - Multi-tenant fitness activity sync system
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - fitness
+  - zwift
+  - garmin
+  - sync
+maintainers:
+  - name: kaleba

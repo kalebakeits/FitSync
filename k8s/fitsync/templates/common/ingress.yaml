@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fitsync-ingress
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+  - http:
+      paths:
+      # API routes - must come before GUI to match /fitsync/api/* first
+      - path: /fitsync/api
+        pathType: Prefix
+        backend:
+          service:
+            name: api
+            port:
+              number: 8080
+      # GUI routes - everything under /fitsync
+      - path: /fitsync
+        pathType: Prefix
+        backend:
+          service:
+            name: gui
+            port:
+              number: 80
