@@ -43,12 +43,12 @@ public class OrphanedActivityReclaimer(
 
         if (orphanedActivityIds.Count == 0)
         {
-            this.logger.LogDebug("No orphaned activities found");
+            this.logger.LogDebug("There are no orphans to adopt. Back you go!");
             return;
         }
 
         this.logger.LogWarning(
-            "Reclaiming {Count} orphaned activities. Ids: {@ActivityIds}",
+            "Adopting {Count} orphans. Ids: {@ActivityIds}",
             orphanedActivityIds.Count,
             orphanedActivityIds
         );

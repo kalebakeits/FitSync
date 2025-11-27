@@ -1,5 +1,6 @@
 namespace FitSync.MockFetcher.Configuration;
 
+using FitSync.Database.Enums;
 using FitSync.Shared.Configuration;
 
 public class MockFetcherOptions : FetcherOptions

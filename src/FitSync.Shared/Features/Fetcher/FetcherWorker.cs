@@ -13,13 +13,11 @@ public class FetcherWorker(IServiceProvider serviceProvider, ILogger<FetcherWork
 {
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly ILogger<FetcherWorker> logger = logger;
-    private const int sleepTimeMinutes = 1; // All fetchers sleep 1 min but per-user processing uses a configurable backoff.
+    private const int sleepTimeMinutes = 1; // All fetchers sleep 1 min but per-user processing uses a configurable linear backoff.
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         this.logger.LogInformation("Fetcher Worker starting...");
-
-        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {

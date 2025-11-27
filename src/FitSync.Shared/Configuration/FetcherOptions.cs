@@ -1,5 +1,6 @@
 namespace FitSync.Shared.Configuration;
 
+using FitSync.Database.Enums;
 using FitSync.Shared.Features.Fetcher;
 
 /// <summary>
@@ -43,7 +44,7 @@ public class FetcherOptions
     /// </summary>
     public required int MaxParallelUsers { get; set; }
 
-    /// <summary>
+    /// <summary>s
     /// Gets or sets the maximum number of activities to process in parallel per user.
     /// </summary>
     public required int MaxParallelActivities { get; set; }

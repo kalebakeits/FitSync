@@ -28,7 +28,7 @@ public class ActivityConsumer(
                 processorScope.ServiceProvider.GetRequiredService<IActivityProcessor>();
 
             this.logger.LogInformation(
-                "Received Kafka message for activity {ActivityId}",
+                "Kafka message for activity {ActivityId} being consumed. Nom nom",
                 message.ActivityId
             );
             await processor.ClaimAndProcessActivityAsync(

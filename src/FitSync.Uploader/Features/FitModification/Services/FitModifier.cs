@@ -19,7 +19,7 @@ public class FitModifier(
         try
         {
             this.logger.LogDebug(
-                "Modifying FIT file device info - {Bytes} bytes",
+                "Modifying FIT file device info - {Bytes} bytes. Garmin is gonna love this one",
                 fitFileData.Length
             );
 
@@ -30,7 +30,7 @@ public class FitModifier(
             byte[] modifiedData = this.encoder.EncodeMessages(messages);
 
             this.logger.LogInformation(
-                "Modified FIT file: {Modifications} messages changed, output: {Bytes} bytes",
+                "Modified FIT file: {Modifications} messages changed, output: {Bytes} bytes. You are now a Garmin",
                 modificationsCount,
                 modifiedData.Length
             );
@@ -39,7 +39,10 @@ public class FitModifier(
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to modify FIT file, returning unchanged");
+            this.logger.LogError(
+                ex,
+                "Failed to modify FIT file, returning unchanged. I tried my best"
+            );
             return fitFileData;
         }
     }

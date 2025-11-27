@@ -27,7 +27,10 @@ public class UploadResultHandler(
         {
             activity.Status = ActivityStatus.Uploaded;
             activity.ProcessingCompletedAt = DateTime.UtcNow;
-            this.logger.LogInformation("Successfully uploaded activity {ActivityId}", activity.Id);
+            this.logger.LogInformation(
+                "Successfully uploaded activity {ActivityId}. Let's goooooooo",
+                activity.Id
+            );
 
             // Reset credential failure count on success
             await this.fitSyncDbContext.UserCredentials.Where(
@@ -46,7 +49,7 @@ public class UploadResultHandler(
         activity.RetryCount++;
 
         this.logger.LogWarning(
-            "Upload failed for activity {ActivityId} with status {Status}",
+            "Upload failed for activity {ActivityId} with status {Status}. Womp womp",
             activity.Id,
             activity.Status
         );
@@ -65,7 +68,7 @@ public class UploadResultHandler(
                 );
 
             this.logger.LogWarning(
-                "Incremented credential failure count for user {UserId} due to auth failure",
+                "Incremented credential failure count for user {UserId} due to auth failure. Skill issue",
                 activity.UserId
             );
         }
@@ -73,7 +76,7 @@ public class UploadResultHandler(
         if (ShouldRetry(activity, maxRetries))
         {
             this.logger.LogInformation(
-                "Will retry activity {ActivityId} (attempt {Retry}/{Max})",
+                "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
                 activity.Id,
                 activity.RetryCount,
                 maxRetries
@@ -86,7 +89,7 @@ public class UploadResultHandler(
 
     private static bool ShouldRetry(Activity activity, int maxRetries)
     {
-        return activity.Status == ActivityStatus.ServiceUnavailable
-            && activity.RetryCount < maxRetries;
+        HashSet<ActivityStatus> statuses = [ActivityStatus.Failed, ActivityStatus.Conflict];
+        return !statuses.Contains(activity.Status) && activity.RetryCount < maxRetries;
     }
 }

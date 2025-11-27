@@ -4,6 +4,8 @@ Automatically syncs Zwift activities to Garmin Connect so they actually count to
 
 **Live**: [fitsync.kaleba.app](https://fitsync.kaleba.app/) 🌐
 
+![Markdown Logo](./demo.gif)
+
 ## Running Locally 💻
 
 **Prerequisites**: .NET 10.0 SDK

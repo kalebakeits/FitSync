@@ -35,7 +35,6 @@ public class FetchOrchestrator(
         using IServiceScope scope = this.serviceProvider.CreateScope();
         IFetcherService fetcherService =
             scope.ServiceProvider.GetRequiredService<IFetcherService>();
-
         List<FetchedActivity> activities = await fetcherService.GetActivitiesAsync(
             user,
             cancellationToken

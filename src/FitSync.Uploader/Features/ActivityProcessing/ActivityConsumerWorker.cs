@@ -14,7 +14,7 @@ public class ActivityConsumerWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        this.logger.LogInformation("Activity Consumer Worker starting...");
+        this.logger.LogInformation("Activity Consumer Worker starting... let's eat");
 
         await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
 
@@ -34,11 +34,14 @@ public class ActivityConsumerWorker(
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error in activity consumer");
+                this.logger.LogError(
+                    ex,
+                    "Error in activity consumer. Just doesn't have that hunger anymore"
+                );
                 await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }
 
-        this.logger.LogInformation("Activity Consumer Worker stopped");
+        this.logger.LogInformation("Activity Consumer Worker stopped. Bye bye");
     }
 }

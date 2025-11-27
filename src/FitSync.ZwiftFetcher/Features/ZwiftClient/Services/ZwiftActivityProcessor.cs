@@ -1,13 +1,22 @@
 namespace FitSync.ZwiftFetcher.Features.ZwiftClient.Services;
 
+using FitSync.Database.Enums;
 using FitSync.Shared.Features.Fetcher.DTOs;
+using FitSync.Shared.Features.RateLimiting;
+using FitSync.ZwiftFetcher.Configuration;
 using FitSync.ZwiftFetcher.Features.ZwiftClient.DTOs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-public class ZwiftActivityProcessor(ILogger<ZwiftActivityProcessor> logger)
-    : IZwiftActivityProcessor
+public class ZwiftActivityProcessor(
+    ILogger<ZwiftActivityProcessor> logger,
+    IOptions<ZwiftFetcherOptions> options,
+    IRateLimiter rateLimiter
+) : IZwiftActivityProcessor
 {
     private readonly ILogger<ZwiftActivityProcessor> logger = logger;
+    private readonly IOptions<ZwiftFetcherOptions> options = options;
+    private readonly IRateLimiter rateLimiter = rateLimiter;
 
     public async Task<List<FetchedActivity>> ProcessActivitiesAsync(
         ZwiftActivityDto[] activities,
@@ -23,30 +32,34 @@ public class ZwiftActivityProcessor(ILogger<ZwiftActivityProcessor> logger)
             lookbackDays
         );
 
-        foreach (var activity in activities)
-        {
-            DateTime activityStartDate = activity.GetStartDateTime();
-
-            if (activityStartDate < cutoff)
+        Parallel.ForEach(
+            activities,
+            async (activity) =>
             {
+                DateTime activityStartDate = activity.GetStartDateTime();
+                bool witihCutoff = activityStartDate > cutoff;
+                if (witihCutoff)
+                {
+                    byte[] fitFileData = await this.DownloadFitFileAsync(
+                        activity,
+                        cancellationToken
+                    );
+
+                    fetchedActivities.Add(
+                        new FetchedActivity(
+                            ExternalActivityId: activity.Id.ToString(),
+                            Source: "Zwift",
+                            ActivityDate: activityStartDate,
+                            FileName: $"zwift_{activityStartDate:yyyyMMdd_HHmmss}_{activity.Id}.fit",
+                            FitFileData: fitFileData,
+                            Metadata: null,
+                            ActivityName: activity.Name
+                        )
+                    );
+                }
                 this.logger.LogDebug("Skipping activity {Id} due to date cutoff", activity.Id);
-                continue;
             }
-
-            byte[] fitFileData = await this.DownloadFitFileAsync(activity, cancellationToken);
-
-            fetchedActivities.Add(
-                new FetchedActivity(
-                    ExternalActivityId: activity.Id.ToString(),
-                    Source: "Zwift",
-                    ActivityDate: activityStartDate,
-                    FileName: $"zwift_{activityStartDate:yyyyMMdd_HHmmss}_{activity.Id}.fit",
-                    FitFileData: fitFileData,
-                    Metadata: null,
-                    ActivityName: activity.Name
-                )
-            );
-        }
+        );
 
         return fetchedActivities;
     }
@@ -56,10 +69,16 @@ public class ZwiftActivityProcessor(ILogger<ZwiftActivityProcessor> logger)
         CancellationToken cancellationToken
     )
     {
-        if (
+        ServiceType type = ServiceType.AmazonS3;
+        int limit = this.options.Value.AmazonS3RateLimit;
+        if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
+            return [];
+
+        bool missingFileDetails =
             string.IsNullOrEmpty(activity.FitFileBucket)
-            || string.IsNullOrEmpty(activity.FitFileKey)
-        )
+            || string.IsNullOrEmpty(activity.FitFileKey);
+
+        if (missingFileDetails)
         {
             throw new InvalidOperationException(
                 $"Activity {activity.Id} is missing FIT file details."

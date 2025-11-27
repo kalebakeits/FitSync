@@ -21,12 +21,15 @@ public class FitFileDecoder(ILogger<FitFileDecoder> logger) : IFitFileDecoder
         bool isValid = decoder.IsFIT(inputStream);
         if (!isValid)
         {
-            this.logger.LogWarning("Invalid FIT file");
+            this.logger.LogWarning("Invalid FIT file. Don't lie about your training data again!");
             throw new InvalidOperationException("Invalid FIT file");
         }
         decoder.Read(inputStream);
 
-        this.logger.LogDebug("Decoded {Count} messages from FIT file", messages.Count);
+        this.logger.LogDebug(
+            "Decoded {Count} messages from FIT file. Great workout!",
+            messages.Count
+        );
         return messages;
     }
 }

@@ -1,6 +1,7 @@
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
+using FitSync.Shared.Features.RateLimiting;
 using FitSync.Uploader.Configuration;
 using FitSync.Uploader.Features.FitModification.Services;
 using FitSync.Uploader.Features.GarminUpload;
@@ -16,6 +17,7 @@ public class ActivityProcessor(
     IGarminUploader garminUploader,
     IUploadResultHandler resultHandler,
     ILogger<ActivityProcessor> logger,
+    IRateLimiter rateLimiter,
     IOptions<GarminUploaderOptions> options
 ) : IActivityProcessor
 {
@@ -24,6 +26,7 @@ public class ActivityProcessor(
     private readonly IGarminUploader garminUploader = garminUploader;
     private readonly IUploadResultHandler resultHandler = resultHandler;
     private readonly ILogger<ActivityProcessor> logger = logger;
+    private readonly IRateLimiter rateLimiter = rateLimiter;
     private readonly IOptions<GarminUploaderOptions> options = options;
 
     public async Task ClaimAndProcessActivityAsync(
@@ -32,6 +35,11 @@ public class ActivityProcessor(
         CancellationToken cancellationToken
     )
     {
+        ServiceType type = ServiceType.GarminUploader;
+        int limit = this.options.Value.GarminApiRateLimit;
+        if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
+            return;
+
         int affected = await this.fitSyncDbContext.Activities.Where(
             a => a.Id == activityId && a.ClaimedBy == null
         )
@@ -46,13 +54,16 @@ public class ActivityProcessor(
         if (affected == 0)
         {
             this.logger.LogInformation(
-                "Activity {ActivityId} was already claimed by another instance",
+                "Activity {ActivityId} was already claimed by another instance. We'll get em next time.",
                 activityId
             );
             return;
         }
 
-        this.logger.LogInformation("Successfully claimed activity {ActivityId}", activityId);
+        this.logger.LogInformation(
+            "Successfully claimed activity {ActivityId}. Take your L boys.",
+            activityId
+        );
 
         await this.ProcessActivityAsync(activityId, cancellationToken);
     }
@@ -64,7 +75,10 @@ public class ActivityProcessor(
 
         if (activity == null)
         {
-            this.logger.LogWarning("Activity {ActivityId} not found", activityId);
+            this.logger.LogWarning(
+                "Activity {ActivityId} not found. This really should not have happend",
+                activityId
+            );
             return;
         }
 
@@ -75,7 +89,7 @@ public class ActivityProcessor(
             await this.fitSyncDbContext.SaveChangesAsync(cancellationToken);
 
             this.logger.LogInformation(
-                "Processing activity {ActivityId} for user {UserId}",
+                "Processing activity {ActivityId} for user {UserId}. Outta my way!!!",
                 activityId,
                 activity.UserId
             );
@@ -99,7 +113,11 @@ public class ActivityProcessor(
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to process activity {ActivityId}", activityId);
+            this.logger.LogError(
+                ex,
+                "Failed to process activity {ActivityId}. Sorry chat",
+                activityId
+            );
 
             activity.Status = ActivityStatus.Failed;
             activity.LastError = ex.Message;
@@ -110,7 +128,7 @@ public class ActivityProcessor(
             if (activity.RetryCount < this.options.Value.MaxRetries)
             {
                 this.logger.LogInformation(
-                    "Will retry activity {ActivityId} (attempt {Retry}/{Max})",
+                    "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
                     activityId,
                     activity.RetryCount,
                     this.options.Value.MaxRetries

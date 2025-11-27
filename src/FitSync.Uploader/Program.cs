@@ -6,6 +6,7 @@ using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.RateLimiting;
 using FitSync.Uploader.Configuration;
 using FitSync.Uploader.Features.ActivityProcessing;
 using FitSync.Uploader.Features.FitModification;
@@ -13,6 +14,7 @@ using FitSync.Uploader.Features.GarminUpload;
 using FitSync.Uploader.Features.Kafka;
 using FitSync.Uploader.Features.OrphanedWork;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -38,6 +40,14 @@ builder.Services.AddDbContext<FitSyncDbContext>(
             builder.Configuration.GetSection("ConnectionStrings").GetValue<string>("FitSync")
         )
 );
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = ConfigurationOptions.Parse(
+        builder.Configuration.GetConnectionString("Redis") ?? string.Empty
+    );
+    configuration.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(configuration);
+});
 
 // Global variables
 builder.Services.AddGlobalVariables(
@@ -62,6 +72,7 @@ builder.AddKafkaConsumer<string, string>(
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
     .AddHeartbeat()
+    .AddRateLimiting()
     .AddKafkaConsumer()
     .AddFitModification()
     .AddGarminUpload()

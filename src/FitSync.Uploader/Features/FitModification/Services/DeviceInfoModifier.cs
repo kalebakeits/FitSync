@@ -10,7 +10,7 @@ public class DeviceInfoModifier(ILogger<DeviceInfoModifier> logger) : IDeviceInf
 
     public int ModifyDeviceInfo(List<Mesg> messages)
     {
-        this.logger.LogDebug("Modifying file data");
+        this.logger.LogDebug("Modifying file data. (Spoofing really)");
         int modificationsCount = 0;
 
         for (int i = 0; i < messages.Count; i++)
@@ -38,7 +38,7 @@ public class DeviceInfoModifier(ILogger<DeviceInfoModifier> logger) : IDeviceInf
                 modificationsCount++;
             }
         }
-        this.logger.LogDebug("Sucessfully edited file data");
+        this.logger.LogDebug("Sucessfully edited (spoofed) file data");
         return modificationsCount;
     }
 }

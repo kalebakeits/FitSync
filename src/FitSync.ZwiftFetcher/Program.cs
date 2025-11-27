@@ -4,10 +4,12 @@ using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.RateLimiting;
 using FitSync.ZwiftFetcher.Configuration;
 using FitSync.ZwiftFetcher.Features.ZwiftClient;
 using FitSync.ZwiftFetcher.Features.ZwiftFetcher;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,14 @@ builder.Services.AddDbContext<FitSyncDbContext>(
             builder.Configuration.GetSection("ConnectionStrings").GetValue<string>("FitSync")
         )
 );
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = ConfigurationOptions.Parse(
+        builder.Configuration.GetConnectionString("Redis") ?? string.Empty
+    );
+    configuration.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(configuration);
+});
 
 // Global variables
 var fetcherConfig =
@@ -49,7 +59,8 @@ builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
     .AddZwiftFetcher(() => builder.Configuration.GetSection("ZwiftFetcherOptions"))
     .AddZwiftClient()
-    .AddHeartbeat();
+    .AddHeartbeat()
+    .AddRateLimiting();
 
 var app = builder.Build();
 

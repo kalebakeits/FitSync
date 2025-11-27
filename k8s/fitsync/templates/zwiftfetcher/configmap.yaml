@@ -14,7 +14,8 @@ data:
         }
       },
       "ConnectionStrings": {
-        "kafka": "{{ .Values.kafka.bootstrapServers }}"
+        "kafka": "{{ .Values.kafka.bootstrapServers }}",
+        "redis": "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
       },
       "ZwiftFetcherOptions": {
         "InstanceId": "{{ .Values.zwiftFetcher.config.instanceId }}",
@@ -29,7 +30,9 @@ data:
         "AuthUrl": "{{ .Values.zwiftFetcher.config.zwift.authUrl }}",
         "BaseUrl": "{{ .Values.zwiftFetcher.config.zwift.baseUrl }}",
         "ClientId": "{{ .Values.zwiftFetcher.config.zwift.clientId }}",
-        "ClientSecret": "{{ .Values.zwiftFetcher.config.zwift.clientSecret }}"
-      }
+        "ClientSecret": "{{ .Values.zwiftFetcher.config.zwift.clientSecret }}",
+        "AmazonS3RateLimit": {{ .Values.zwiftFetcher.config.zwift.amazonS3RateLimit }},
+        "ZwfitApiRateLimit": {{ .Values.zwiftFetcher.config.zwift.zwfitApiRateLimit }}
+      },
       "AllowedHosts": "*"
     }

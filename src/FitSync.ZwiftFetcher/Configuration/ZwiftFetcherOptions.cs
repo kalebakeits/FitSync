@@ -1,5 +1,6 @@
 namespace FitSync.ZwiftFetcher.Configuration;
 
+using FitSync.Database.Enums;
 using FitSync.Shared.Configuration;
 
 public class ZwiftFetcherOptions : FetcherOptions
@@ -11,4 +12,6 @@ public class ZwiftFetcherOptions : FetcherOptions
     // OAuth Client Details (matching the Python implementation)
     public required string ClientId { get; set; }
     public required string ClientSecret { get; set; }
+    public required int AmazonS3RateLimit { get; set; }
+    public required int ZwfitApiRateLimit { get; set; }
 }

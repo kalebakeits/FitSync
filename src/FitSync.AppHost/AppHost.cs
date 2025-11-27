@@ -48,6 +48,9 @@ IResourceBuilder<KafkaServerResource> kafka = builder
     .WithHealthCheck("kafka-health")
     .WithKafkaUI();
 
+// Redis
+IResourceBuilder<RedisResource> redis = builder.AddRedis("redis");
+
 // Mock fetcher handles DB initialization and optionally runs the fetcher
 // Other services wait for it to ensure DB is ready
 IResourceBuilder<ProjectResource> mockFetcher = builder
@@ -65,6 +68,7 @@ builder
     .AddProject<FitSync_ZwiftFetcher>("zwift-fetcher")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
+    .WithReference(redis)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
     .WithEnvironment("DataProtectionOptions__DataProtectionKey", dataProtectionKey)
     .WaitFor(mockFetcher);
@@ -73,6 +77,7 @@ builder
     .AddProject<FitSync_Uploader>("uploader")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
+    .WithReference(redis)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
     .WithEnvironment("DataProtectionOptions__DataProtectionKey", dataProtectionKey)
     .WithReplicas(2)

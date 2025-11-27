@@ -14,12 +14,14 @@ data:
         }
       },
       "ConnectionStrings": {
-        "kafka": "{{ .Values.kafka.bootstrapServers }}"
+        "kafka": "{{ .Values.kafka.bootstrapServers }}",
+        "redis": "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
       },
       "GarminUploaderOptions": {
         "InstanceId": "{{ .Values.uploader.config.instanceId }}",
         "HeartbeatIntervalMinutes": {{ .Values.uploader.config.heartbeatIntervalMinutes }},
         "MaxRetries": {{ .Values.uploader.config.maxRetries }},
-        "OrphanThresholdMinutes": {{ .Values.uploader.config.orphanThresholdMinutes }}
+        "OrphanThresholdMinutes": {{ .Values.uploader.config.orphanThresholdMinutes }},
+        "GarminApiRateLimit": {{ .Values.uploader.config.garminApiRateLimit }}
       }
     }
