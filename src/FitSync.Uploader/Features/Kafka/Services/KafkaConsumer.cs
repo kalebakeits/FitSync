@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Confluent.Kafka;
 using FitSync.Shared.Constants;
-using FitSync.Shared.Messages;
 
 namespace FitSync.Uploader.Features.Kafka.Services;
 
@@ -23,14 +22,14 @@ public class KafkaConsumer : IKafkaConsumer, IDisposable
         );
     }
 
-    public async IAsyncEnumerable<ActivityFetchedEvent> ConsumeAsync(
+    public async IAsyncEnumerable<string> ConsumeAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
         while (!cancellationToken.IsCancellationRequested)
         {
             ConsumeResult<string, string>? result = null;
-            ActivityFetchedEvent? message = null;
+            string? message = null;
 
             try
             {
@@ -39,7 +38,7 @@ public class KafkaConsumer : IKafkaConsumer, IDisposable
                 if (result == null)
                     continue;
 
-                message = JsonSerializer.Deserialize<ActivityFetchedEvent>(result.Message.Value);
+                message = result.Message.Value;
                 if (message == null)
                 {
                     this.logger.LogWarning(

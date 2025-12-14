@@ -32,32 +32,35 @@ public class ZwiftActivityProcessor(
             lookbackDays
         );
 
-        Parallel.ForEach(
+        await Parallel.ForEachAsync(
             activities,
-            async (activity) =>
+            async (activity, cancellationToken) =>
             {
                 DateTime activityStartDate = activity.GetStartDateTime();
-                bool witihCutoff = activityStartDate > cutoff;
-                if (witihCutoff)
+                bool withinCutoff = activityStartDate > cutoff;
+                if (!withinCutoff)
                 {
-                    byte[] fitFileData = await this.DownloadFitFileAsync(
-                        activity,
-                        cancellationToken
+                    this.logger.LogDebug(
+                        "Skipping activity {Id} due to date cutoff {Cutoff} vs activity start date {ActivityStartDate}",
+                        activity.Id,
+                        cutoff,
+                        activityStartDate
                     );
-
-                    fetchedActivities.Add(
-                        new FetchedActivity(
-                            ExternalActivityId: activity.Id.ToString(),
-                            Source: "Zwift",
-                            ActivityDate: activityStartDate,
-                            FileName: $"zwift_{activityStartDate:yyyyMMdd_HHmmss}_{activity.Id}.fit",
-                            FitFileData: fitFileData,
-                            Metadata: null,
-                            ActivityName: activity.Name
-                        )
-                    );
+                    return;
                 }
-                this.logger.LogDebug("Skipping activity {Id} due to date cutoff", activity.Id);
+                byte[] fitFileData = await this.DownloadFitFileAsync(activity, cancellationToken);
+
+                fetchedActivities.Add(
+                    new FetchedActivity(
+                        ExternalActivityId: activity.Id.ToString(),
+                        Source: "Zwift",
+                        ActivityDate: activityStartDate,
+                        FileName: $"zwift_{activityStartDate:yyyyMMdd_HHmmss}_{activity.Id}.fit",
+                        FitFileData: fitFileData,
+                        Metadata: null,
+                        ActivityName: activity.Name
+                    )
+                );
             }
         );
 

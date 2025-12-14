@@ -1,7 +1,6 @@
 namespace FitSync.Uploader.Features.ActivityProcessing.Services;
 
 using FitSync.Shared.Features.GlobalVariables.DTOs;
-using FitSync.Shared.Messages;
 using FitSync.Uploader.Features.Kafka.Services;
 using Microsoft.Extensions.Logging;
 
@@ -19,9 +18,7 @@ public class ActivityConsumer(
 
     public async Task ConsumeActivitiesAsync(CancellationToken cancellationToken)
     {
-        await foreach (
-            ActivityFetchedEvent message in this.kafkaConsumer.ConsumeAsync(cancellationToken)
-        )
+        await foreach (string message in this.kafkaConsumer.ConsumeAsync(cancellationToken))
         {
             using IServiceScope processorScope = this.serviceProvider.CreateScope();
             IActivityProcessor processor =
@@ -29,10 +26,10 @@ public class ActivityConsumer(
 
             this.logger.LogInformation(
                 "Kafka message for activity {ActivityId} being consumed. Nom nom",
-                message.ActivityId
+                message
             );
             await processor.ClaimAndProcessActivityAsync(
-                message.ActivityId,
+                new Guid(message),
                 this.globalVariables.Instance,
                 cancellationToken
             );

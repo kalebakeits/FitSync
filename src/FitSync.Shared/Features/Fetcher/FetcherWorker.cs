@@ -21,44 +21,55 @@ public class FetcherWorker(IServiceProvider serviceProvider, ILogger<FetcherWork
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            using IServiceScope scope = this.serviceProvider.CreateScope();
-            IUserQueuerService userQueuerService =
-                scope.ServiceProvider.GetRequiredService<IUserQueuerService>();
-            IBackpressureMonitor backpressureMonitor =
-                scope.ServiceProvider.GetRequiredService<IBackpressureMonitor>();
-            IFetchOrchestrator fetchOrchestrator =
-                scope.ServiceProvider.GetRequiredService<IFetchOrchestrator>();
-
-            bool shouldFetch = await backpressureMonitor.ShouldFetchAsync(stoppingToken);
-            if (!shouldFetch)
+            try
             {
-                this.logger.LogWarning(
-                    "Backpressure detected - skipping fetch cycle. Waiting {Minutes} minutes...",
+                using IServiceScope scope = this.serviceProvider.CreateScope();
+                IUserQueuerService userQueuerService =
+                    scope.ServiceProvider.GetRequiredService<IUserQueuerService>();
+                IBackpressureMonitor backpressureMonitor =
+                    scope.ServiceProvider.GetRequiredService<IBackpressureMonitor>();
+                IFetchOrchestrator fetchOrchestrator =
+                    scope.ServiceProvider.GetRequiredService<IFetchOrchestrator>();
+
+                bool shouldFetch = await backpressureMonitor.ShouldFetchAsync(stoppingToken);
+                if (!shouldFetch)
+                {
+                    this.logger.LogWarning(
+                        "Backpressure detected - skipping fetch cycle. Waiting {Minutes} minutes...",
+                        sleepTimeMinutes
+                    );
+                    await Task.Delay(TimeSpan.FromMinutes(sleepTimeMinutes), stoppingToken);
+                    continue;
+                }
+
+                while (true)
+                {
+                    User[] users = await userQueuerService.GetDueUsersAsync();
+                    if (users.Length == 0)
+                    {
+                        this.logger.LogInformation("No more due users to process");
+                        break;
+                    }
+
+                    this.logger.LogInformation("Found {Count} users to process", users.Length);
+                    await fetchOrchestrator.ProcessUsersAsync(users, stoppingToken);
+                    await userQueuerService.ReleaseUsersAsync(users);
+                }
+
+                this.logger.LogInformation(
+                    "Waiting {Minutes} minutes until next fetch cycle...",
                     sleepTimeMinutes
                 );
                 await Task.Delay(TimeSpan.FromMinutes(sleepTimeMinutes), stoppingToken);
-                continue;
             }
-
-            while (true)
+            catch (OperationCanceledException)
             {
-                User[] users = await userQueuerService.GetDueUsersAsync();
-                if (users.Length == 0)
-                {
-                    this.logger.LogInformation("No more due users to process");
-                    break;
-                }
-
-                this.logger.LogInformation("Found {Count} users to process", users.Length);
-                await fetchOrchestrator.ProcessUsersAsync(users, stoppingToken);
-                await userQueuerService.ReleaseUsersAsync(users);
+                break;
             }
-
-            this.logger.LogInformation(
-                "Waiting {Minutes} minutes until next fetch cycle...",
-                sleepTimeMinutes
-            );
-            await Task.Delay(TimeSpan.FromMinutes(sleepTimeMinutes), stoppingToken);
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error occurred during fetch cycle");
+            }
         }
 
         this.logger.LogInformation("Fetcher Worker stopped");
