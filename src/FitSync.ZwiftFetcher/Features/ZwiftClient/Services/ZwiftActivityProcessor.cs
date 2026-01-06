@@ -48,6 +48,17 @@ public class ZwiftActivityProcessor(
                     );
                     return;
                 }
+
+                if (!activity.IsCompleted())
+                {
+                    this.logger.LogInformation(
+                        "Skipping activity {Id} ({Name}) - activity is still in progress (no endDate)",
+                        activity.Id,
+                        activity.Name
+                    );
+                    return;
+                }
+
                 byte[] fitFileData = await this.DownloadFitFileAsync(activity, cancellationToken);
 
                 fetchedActivities.Add(

@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { NavigateBefore, NavigateNext } from "@mui/icons-material";
-import { useGetApiActivities } from "../../api/generated/activities/activities";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useGetApiActivities,
+  useDeleteApiActivitiesId,
+  getGetApiActivitiesQueryKey,
+} from "../../api/generated/activities/activities";
 import EmptyActivityList from "./EmptyActivities";
 import DashboardColumnLoading from "../dashboard/DashboardColumnLoading";
 import DashboardColumnError from "../dashboard/DashboardColumnError";
@@ -11,6 +16,7 @@ const PAGE_SIZE = 3;
 
 export default function ActivitiesPanelContent() {
   const [page, setPage] = useState(1);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useGetApiActivities(
     {
@@ -21,6 +27,20 @@ export default function ActivitiesPanelContent() {
       query: { refetchInterval: 60000 },
     },
   );
+
+  const deleteMutation = useDeleteApiActivitiesId({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: getGetApiActivitiesQueryKey(),
+        });
+      },
+    },
+  });
+
+  const handleDelete = (activityId: string) => {
+    deleteMutation.mutate({ id: activityId });
+  };
 
   if (isLoading) {
     return <DashboardColumnLoading />;
@@ -43,7 +63,7 @@ export default function ActivitiesPanelContent() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-        <ActivityList activities={activities} />
+        <ActivityList activities={activities} onDelete={handleDelete} />
       </Box>
       <Box
         sx={{

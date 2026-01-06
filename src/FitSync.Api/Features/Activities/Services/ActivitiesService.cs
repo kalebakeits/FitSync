@@ -126,4 +126,55 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             UpdatedAt = activity.UpdatedAt
         };
     }
+
+    public async Task DeleteActivityAsync(Guid userId, Guid activityId)
+    {
+        this.logger.LogInformation(
+            "Deleting activity for user: {UserId}, activity: {ActivityId}",
+            userId,
+            activityId
+        );
+
+        Activity? activity = await this.context.Activities.FirstOrDefaultAsync(
+            a => a.Id == activityId && a.UserId == userId
+        );
+
+        if (activity == null)
+        {
+            this.logger.LogWarning(
+                "Activity not found for deletion - user: {UserId}, activity: {ActivityId}",
+                userId,
+                activityId
+            );
+            throw new NotFoundException("Activity not found.");
+        }
+
+        // Delete the activity
+        this.context.Activities.Remove(activity);
+
+        // Also delete the ProcessedActivity record so it can be re-fetched
+        ProcessedActivity? processedActivity = await this.context.ProcessedActivities.FirstOrDefaultAsync(
+            p =>
+                p.UserId == userId
+                && p.ExternalActivityId == activity.ExternalActivityId
+                && p.Source == activity.Source
+        );
+
+        if (processedActivity != null)
+        {
+            this.context.ProcessedActivities.Remove(processedActivity);
+            this.logger.LogInformation(
+                "Removed ProcessedActivity record for {ExternalActivityId} - activity will be re-fetched",
+                activity.ExternalActivityId
+            );
+        }
+
+        await this.context.SaveChangesAsync();
+
+        this.logger.LogInformation(
+            "Activity deleted successfully - user: {UserId}, activity: {ActivityId}",
+            userId,
+            activityId
+        );
+    }
 }

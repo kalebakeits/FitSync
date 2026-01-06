@@ -6,8 +6,9 @@ public record ZwiftActivityDto(
     [property: JsonProperty("id")] long Id,
     [property: JsonProperty("name")] string Name,
     [property: JsonProperty("startDate")] string StartDate,
-    [property: JsonProperty("fitFileBucket")] string FitFileBucket,
-    [property: JsonProperty("fitFileKey")] string FitFileKey
+    [property: JsonProperty("fitFileBucket")] string? FitFileBucket,
+    [property: JsonProperty("fitFileKey")] string? FitFileKey,
+    [property: JsonProperty("endDate")] string? EndDate
 )
 {
     public DateTime GetStartDateTime() =>
@@ -15,4 +16,6 @@ public record ZwiftActivityDto(
             DateTime.Parse(this.StartDate, System.Globalization.CultureInfo.InvariantCulture),
             DateTimeKind.Utc
         );
+
+    public bool IsCompleted() => !string.IsNullOrEmpty(this.EndDate);
 };

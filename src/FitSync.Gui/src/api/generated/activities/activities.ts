@@ -4,331 +4,260 @@
  * FitSync.Api
  * OpenAPI spec version: 1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
-  UseQueryResult,
-} from "@tanstack/react-query";
+  UseQueryResult
+} from '@tanstack/react-query';
 
 import type {
   ActivityResponse,
   GetApiActivitiesParams,
-  PaginatedActivitiesResponse,
-} from "../fitSyncApi.schemas";
+  PaginatedActivitiesResponse
+} from '../fitSyncApi.schemas';
 
-import { customAxiosInstance } from "../../axios-instance";
+import { customAxiosInstance } from '../../axios-instance';
+
+
+
 
 export const getApiActivities = (
-  params?: GetApiActivitiesParams,
-  signal?: AbortSignal,
+    params?: GetApiActivitiesParams,
+ signal?: AbortSignal
 ) => {
-  return customAxiosInstance<PaginatedActivitiesResponse>({
-    url: `/api/Activities`,
-    method: "GET",
-    params,
-    signal,
-  });
-};
+      
+      
+      return customAxiosInstance<PaginatedActivitiesResponse>(
+      {url: `/api/Activities`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
 
-export const getGetApiActivitiesQueryKey = (
-  params?: GetApiActivitiesParams,
+
+
+export const getGetApiActivitiesQueryKey = (params?: GetApiActivitiesParams,) => {
+    return [
+    `/api/Activities`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetApiActivitiesQueryOptions = <TData = Awaited<ReturnType<typeof getApiActivities>>, TError = unknown>(params?: GetApiActivitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData>>, }
 ) => {
-  return [`/api/Activities`, ...(params ? [params] : [])] as const;
-};
 
-export const getGetApiActivitiesQueryOptions = <
-  TData = Awaited<ReturnType<typeof getApiActivities>>,
-  TError = unknown,
->(
-  params?: GetApiActivitiesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivities>>,
-        TError,
-        TData
-      >
-    >;
-  },
-) => {
-  const { query: queryOptions } = options ?? {};
+const {query: queryOptions} = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getGetApiActivitiesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetApiActivitiesQueryKey(params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getApiActivities>>
-  > = ({ signal }) => getApiActivities(params, signal);
+  
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getApiActivities>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiActivities>>> = ({ signal }) => getApiActivities(params, signal);
 
-export type GetApiActivitiesQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getApiActivities>>
->;
-export type GetApiActivitiesQueryError = unknown;
+      
 
-export function useGetApiActivities<
-  TData = Awaited<ReturnType<typeof getApiActivities>>,
-  TError = unknown,
->(
-  params: undefined | GetApiActivitiesParams,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivities>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiActivitiesQueryResult = NonNullable<Awaited<ReturnType<typeof getApiActivities>>>
+export type GetApiActivitiesQueryError = unknown
+
+
+export function useGetApiActivities<TData = Awaited<ReturnType<typeof getApiActivities>>, TError = unknown>(
+ params: undefined |  GetApiActivitiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiActivities>>,
           TError,
           Awaited<ReturnType<typeof getApiActivities>>
-        >,
-        "initialData"
-      >;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiActivities<
-  TData = Awaited<ReturnType<typeof getApiActivities>>,
-  TError = unknown,
->(
-  params?: GetApiActivitiesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivities>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiActivities<TData = Awaited<ReturnType<typeof getApiActivities>>, TError = unknown>(
+ params?: GetApiActivitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiActivities>>,
           TError,
           Awaited<ReturnType<typeof getApiActivities>>
-        >,
-        "initialData"
-      >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiActivities<
-  TData = Awaited<ReturnType<typeof getApiActivities>>,
-  TError = unknown,
->(
-  params?: GetApiActivitiesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivities>>,
-        TError,
-        TData
-      >
-    >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiActivities<TData = Awaited<ReturnType<typeof getApiActivities>>, TError = unknown>(
+ params?: GetApiActivitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetApiActivities<
-  TData = Awaited<ReturnType<typeof getApiActivities>>,
-  TError = unknown,
->(
-  params?: GetApiActivitiesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivities>>,
-        TError,
-        TData
-      >
-    >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetApiActivitiesQueryOptions(params, options);
+export function useGetApiActivities<TData = Awaited<ReturnType<typeof getApiActivities>>, TError = unknown>(
+ params?: GetApiActivitiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivities>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+  const queryOptions = getGetApiActivitiesQueryOptions(params,options)
 
-  query.queryKey = queryOptions.queryKey;
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
 
   return query;
 }
 
-export const getApiActivitiesId = (id: string, signal?: AbortSignal) => {
-  return customAxiosInstance<ActivityResponse>({
-    url: `/api/Activities/${id}`,
-    method: "GET",
-    signal,
-  });
-};
 
-export const getGetApiActivitiesIdQueryKey = (id?: string) => {
-  return [`/api/Activities/${id}`] as const;
-};
 
-export const getGetApiActivitiesIdQueryOptions = <
-  TData = Awaited<ReturnType<typeof getApiActivitiesId>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivitiesId>>,
-        TError,
-        TData
-      >
-    >;
-  },
+export const getApiActivitiesId = (
+    id: string,
+ signal?: AbortSignal
 ) => {
-  const { query: queryOptions } = options ?? {};
+      
+      
+      return customAxiosInstance<ActivityResponse>(
+      {url: `/api/Activities/${id}`, method: 'GET', signal
+    },
+      );
+    }
+  
 
-  const queryKey = queryOptions?.queryKey ?? getGetApiActivitiesIdQueryKey(id);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getApiActivitiesId>>
-  > = ({ signal }) => getApiActivitiesId(id, signal);
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!id,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getApiActivitiesId>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+export const getGetApiActivitiesIdQueryKey = (id?: string,) => {
+    return [
+    `/api/Activities/${id}`
+    ] as const;
+    }
 
-export type GetApiActivitiesIdQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getApiActivitiesId>>
->;
-export type GetApiActivitiesIdQueryError = unknown;
+    
+export const getGetApiActivitiesIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiActivitiesId>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData>>, }
+) => {
 
-export function useGetApiActivitiesId<
-  TData = Awaited<ReturnType<typeof getApiActivitiesId>>,
-  TError = unknown,
->(
-  id: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivitiesId>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiActivitiesIdQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiActivitiesId>>> = ({ signal }) => getApiActivitiesId(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiActivitiesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiActivitiesId>>>
+export type GetApiActivitiesIdQueryError = unknown
+
+
+export function useGetApiActivitiesId<TData = Awaited<ReturnType<typeof getApiActivitiesId>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiActivitiesId>>,
           TError,
           Awaited<ReturnType<typeof getApiActivitiesId>>
-        >,
-        "initialData"
-      >;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiActivitiesId<
-  TData = Awaited<ReturnType<typeof getApiActivitiesId>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivitiesId>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiActivitiesId<TData = Awaited<ReturnType<typeof getApiActivitiesId>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getApiActivitiesId>>,
           TError,
           Awaited<ReturnType<typeof getApiActivitiesId>>
-        >,
-        "initialData"
-      >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiActivitiesId<
-  TData = Awaited<ReturnType<typeof getApiActivitiesId>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivitiesId>>,
-        TError,
-        TData
-      >
-    >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiActivitiesId<TData = Awaited<ReturnType<typeof getApiActivitiesId>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetApiActivitiesId<
-  TData = Awaited<ReturnType<typeof getApiActivitiesId>>,
-  TError = unknown,
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getApiActivitiesId>>,
-        TError,
-        TData
-      >
-    >;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetApiActivitiesIdQueryOptions(id, options);
+export function useGetApiActivitiesId<TData = Awaited<ReturnType<typeof getApiActivitiesId>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiActivitiesId>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+  const queryOptions = getGetApiActivitiesIdQueryOptions(id,options)
 
-  query.queryKey = queryOptions.queryKey;
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
 
   return query;
 }
+
+
+
+export const deleteApiActivitiesId = (
+    id: string,
+ ) => {
+      
+      
+      return customAxiosInstance<void>(
+      {url: `/api/Activities/${id}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteApiActivitiesIdMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiActivitiesId>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteApiActivitiesId>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteApiActivitiesId'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiActivitiesId>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteApiActivitiesId(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteApiActivitiesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiActivitiesId>>>
+    
+    export type DeleteApiActivitiesIdMutationError = unknown
+
+    export const useDeleteApiActivitiesId = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiActivitiesId>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteApiActivitiesId>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteApiActivitiesIdMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

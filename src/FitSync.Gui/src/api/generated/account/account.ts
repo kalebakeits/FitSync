@@ -4,81 +4,74 @@
  * FitSync.Api
  * OpenAPI spec version: 1.0
  */
-import { useMutation } from "@tanstack/react-query";
+import {
+  useMutation
+} from '@tanstack/react-query';
 import type {
   MutationFunction,
   QueryClient,
   UseMutationOptions,
-  UseMutationResult,
-} from "@tanstack/react-query";
+  UseMutationResult
+} from '@tanstack/react-query';
 
-import { customAxiosInstance } from "../../axios-instance";
+import { customAxiosInstance } from '../../axios-instance';
 
-export const deleteApiAccount = () => {
-  return customAxiosInstance<void>({
-    url: `/api/Account`,
-    method: "DELETE",
-  });
-};
 
-export const getDeleteApiAccountMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteApiAccount>>,
-    TError,
-    void,
-    TContext
-  >;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteApiAccount>>,
-  TError,
-  void,
-  TContext
-> => {
-  const mutationKey = ["deleteApiAccount"];
-  const { mutation: mutationOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteApiAccount>>,
-    void
-  > = () => {
-    return deleteApiAccount();
-  };
 
-  return { mutationFn, ...mutationOptions };
-};
+export const deleteApiAccount = (
+    
+ ) => {
+      
+      
+      return customAxiosInstance<void>(
+      {url: `/api/Account`, method: 'DELETE'
+    },
+      );
+    }
+  
 
-export type DeleteApiAccountMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteApiAccount>>
->;
 
-export type DeleteApiAccountMutationError = unknown;
+export const getDeleteApiAccountMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAccount>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteApiAccount>>, TError,void, TContext> => {
 
-export const useDeleteApiAccount = <TError = unknown, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteApiAccount>>,
-      TError,
-      void,
-      TContext
-    >;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof deleteApiAccount>>,
-  TError,
-  void,
-  TContext
-> => {
-  const mutationOptions = getDeleteApiAccountMutationOptions(options);
+const mutationKey = ['deleteApiAccount'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
 
-  return useMutation(mutationOptions, queryClient);
-};
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiAccount>>, void> = () => {
+          
+
+          return  deleteApiAccount()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteApiAccountMutationResult = NonNullable<Awaited<ReturnType<typeof deleteApiAccount>>>
+    
+    export type DeleteApiAccountMutationError = unknown
+
+    export const useDeleteApiAccount = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiAccount>>, TError,void, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteApiAccount>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteApiAccountMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

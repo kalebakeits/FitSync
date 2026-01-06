@@ -66,4 +66,20 @@ public class ActivitiesController(
         );
         return Ok(activity);
     }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteActivity(Guid id)
+    {
+        this.logger.LogInformation("DeleteActivity called for activity: {ActivityId}", id);
+
+        Guid userId = this.currentUserService.GetUserId();
+        await this.activitiesService.DeleteActivityAsync(userId, id);
+
+        this.logger.LogInformation(
+            "Activity deleted successfully: {ActivityId} for user: {UserId}",
+            id,
+            userId
+        );
+        return NoContent();
+    }
 }

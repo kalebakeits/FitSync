@@ -3,6 +3,7 @@ using FitSync.Api.Features.Account;
 using FitSync.Api.Features.Activities;
 using FitSync.Api.Features.Auth;
 using FitSync.Api.Features.Credentials;
+using FitSync.Api.Features.Fetchers;
 using FitSync.Api.Features.Profile;
 using FitSync.Api.Middleware;
 using FitSync.Api.Services;
@@ -55,6 +56,7 @@ builder
     .AddProfileFeature()
     .AddCredentialsFeature()
     .AddActivitiesFeature()
+    .AddFetchersFeature()
     .AddEndpointsApiExplorer()
     .AddAuthorization()
     .AddControllers();

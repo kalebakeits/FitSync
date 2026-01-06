@@ -4,13 +4,23 @@ import ActivityListItem from "./ActivityListItem";
 
 interface ActivityListProps {
   activities: ActivityResponse[];
+  onDelete?: (activityId: string) => void;
 }
 
-export default function ActivityList({ activities }: ActivityListProps) {
+export default function ActivityList({
+  activities,
+  onDelete,
+}: ActivityListProps) {
   return (
     <List sx={{ width: "auto", height: "100%", overflowY: "scroll" }}>
       {activities.map((activity) => {
-        return <ActivityListItem activity={activity} />;
+        return (
+          <ActivityListItem
+            key={activity.id}
+            activity={activity}
+            onDelete={onDelete}
+          />
+        );
       })}
     </List>
   );

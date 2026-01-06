@@ -1,9 +1,11 @@
-import { Box, Typography, ListItem, ListItemText, Chip } from "@mui/material";
+import { Box, Typography, ListItem, ListItemText, Chip, IconButton } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import type { ActivityResponse } from "../../api/generated/fitSyncApi.schemas";
 import { getStatusInfo } from "./ActivityStatusInfo";
 
 interface ActivityListItemProps {
   activity: ActivityResponse;
+  onDelete?: (activityId: string) => void;
 }
 
 function getUserFriendlyError(error: string): string {
@@ -17,8 +19,22 @@ function getUserFriendlyError(error: string): string {
   return "Application Error";
 }
 
-export default function ActivityListItem({ activity }: ActivityListItemProps) {
+export default function ActivityListItem({
+  activity,
+  onDelete,
+}: ActivityListItemProps) {
   const statusInfo = getStatusInfo(activity.status);
+
+  const handleDelete = () => {
+    if (
+      onDelete &&
+      confirm(
+        `Are you sure you want to delete this activity? It will be re-fetched on the next sync.`
+      )
+    ) {
+      onDelete(activity.id);
+    }
+  };
 
   return (
     <ListItem
@@ -30,6 +46,19 @@ export default function ActivityListItem({ activity }: ActivityListItemProps) {
         my: 0.5,
         width: "auto",
       }}
+      secondaryAction={
+        onDelete && (
+          <IconButton
+            edge="end"
+            aria-label="delete"
+            onClick={handleDelete}
+            color="error"
+            size="small"
+          >
+            <Delete />
+          </IconButton>
+        )
+      }
     >
       <ListItemText
         primary={

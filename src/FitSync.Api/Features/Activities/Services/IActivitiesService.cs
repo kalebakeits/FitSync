@@ -12,4 +12,5 @@ public interface IActivitiesService
         int offset
     );
     Task<ActivityResponse> GetActivityByIdAsync(Guid userId, Guid activityId);
+    Task DeleteActivityAsync(Guid userId, Guid activityId);
 }

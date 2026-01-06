@@ -27,8 +27,8 @@ export interface ActivityResponse {
   updatedAt: string;
 }
 
-export type ActivityStatus =
-  (typeof ActivityStatus)[keyof typeof ActivityStatus];
+export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ActivityStatus = {
@@ -155,7 +155,8 @@ export interface VerifyAccountRequest {
 }
 
 export type GetApiActivitiesParams = {
-  status?: ActivityStatus;
-  limit?: number;
-  offset?: number;
+status?: ActivityStatus;
+limit?: number;
+offset?: number;
 };
+
