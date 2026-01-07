@@ -38,23 +38,16 @@ public class ZwiftActivityProcessor(
             {
                 DateTime activityStartDate = activity.GetStartDateTime();
                 bool withinCutoff = activityStartDate > cutoff;
-                if (!withinCutoff)
-                {
-                    this.logger.LogDebug(
-                        "Skipping activity {Id} due to date cutoff {Cutoff} vs activity start date {ActivityStartDate}",
-                        activity.Id,
-                        cutoff,
-                        activityStartDate
-                    );
-                    return;
-                }
+                bool riding = activity.Profile?.Riding == true;
 
-                if (!activity.IsCompleted())
+                if (!withinCutoff || riding)
                 {
                     this.logger.LogInformation(
-                        "Skipping activity {Id} ({Name}) - activity is still in progress (no endDate)",
+                        "Skipping activity {Id} due to cutoff date: {Cutoff}, within cutoff: {WithinCutoff}, riding: {Riding}",
                         activity.Id,
-                        activity.Name
+                        cutoff,
+                        withinCutoff,
+                        riding
                     );
                     return;
                 }

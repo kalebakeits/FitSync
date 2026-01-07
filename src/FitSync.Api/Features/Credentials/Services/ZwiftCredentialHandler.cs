@@ -36,7 +36,7 @@ public class ZwiftCredentialHandler(
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
-                FetchIntervalMinutes = 60,
+                FetchIntervalMinutes = 10,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

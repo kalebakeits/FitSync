@@ -40,7 +40,7 @@ public class ZwiftFetcherConfig
 
     [Required]
     [Column("fetch_interval_minutes")]
-    public int FetchIntervalMinutes { get; set; } = 60;
+    public int FetchIntervalMinutes { get; set; } = 10;
 
     [Required]
     [Column("created_at")]
