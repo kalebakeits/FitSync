@@ -5,7 +5,12 @@ WORKDIR /src
 COPY src/FitSync.Api/FitSync.Api.csproj FitSync.Api/
 COPY src/FitSync.Shared/FitSync.Shared.csproj FitSync.Shared/
 COPY src/FitSync.Database/FitSync.Database.csproj FitSync.Database/
-COPY src/FitSync.ServiceDefaults/FitSync.ServiceDefaults.csproj FitSync.ServiceDefaults/
+COPY src/FitSync.Garmin/Shared/FitSync.Garmin.Shared.csproj FitSync.Garmin/Shared/
+COPY src/FitSync.Wahoo/Shared/FitSync.Wahoo.Shared.csproj FitSync.Wahoo/Shared/
+COPY src/FitSync.Zwift/Shared/FitSync.Zwift.Shared.csproj FitSync.Zwift/Shared/
+COPY src/FitSync.Garmin/Shared/FitSync.Garmin.Shared.csproj FitSync.Garmin/Shared/
+COPY src/FitSync.Wahoo/Shared/FitSync.Wahoo.Shared.csproj FitSync.Wahoo/Shared/
+COPY src/FitSync.Zwift/Shared/FitSync.Zwift.Shared.csproj FitSync.Zwift/Shared/
 
 RUN dotnet restore FitSync.Api/FitSync.Api.csproj
 
@@ -13,7 +18,12 @@ RUN dotnet restore FitSync.Api/FitSync.Api.csproj
 COPY src/FitSync.Api/ FitSync.Api/
 COPY src/FitSync.Shared/ FitSync.Shared/
 COPY src/FitSync.Database/ FitSync.Database/
-COPY src/FitSync.ServiceDefaults/ FitSync.ServiceDefaults/
+COPY src/FitSync.Garmin/Shared/ FitSync.Garmin/Shared/
+COPY src/FitSync.Wahoo/Shared/ FitSync.Wahoo/Shared/
+COPY src/FitSync.Zwift/Shared/ FitSync.Zwift/Shared/
+COPY src/FitSync.Garmin/Shared/ FitSync.Garmin/Shared/
+COPY src/FitSync.Wahoo/Shared/ FitSync.Wahoo/Shared/
+COPY src/FitSync.Zwift/Shared/ FitSync.Zwift/Shared/
 
 # Build
 WORKDIR /src/FitSync.Api

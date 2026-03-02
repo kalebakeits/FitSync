@@ -9,12 +9,20 @@ public class ServiceCredentialHandlerFactory(
         handlers.ToDictionary(h => h.ServiceType, h => h);
     private readonly ILogger<ServiceCredentialHandlerFactory> logger = logger;
 
-    public IServiceCredentialHandler? GetHandler(string serviceType)
+    public List<string> ServiceTypes => [.. this.handlerMap.Keys];
+
+    public IServiceCredentialHandler Require(string serviceType)
     {
         if (this.handlerMap.TryGetValue(serviceType, out IServiceCredentialHandler? handler))
-        {
             return handler;
-        }
+
+        throw new InvalidOperationException($"No credential handler registered for service type: {serviceType}");
+    }
+
+    public IServiceCredentialHandler? Get(string serviceType)
+    {
+        if (this.handlerMap.TryGetValue(serviceType, out IServiceCredentialHandler? handler))
+            return handler;
 
         this.logger.LogWarning("No handler found for service type: {ServiceType}", serviceType);
         return null;

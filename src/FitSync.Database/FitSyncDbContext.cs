@@ -10,8 +10,8 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
     public DbSet<Activity> Activities { get; set; } = null!;
     public DbSet<ServiceHeartbeat> ServiceHeartbeats { get; set; } = null!;
     public DbSet<ProcessedActivity> ProcessedActivities { get; set; } = null!;
-    public DbSet<ZwiftFetcherConfig> ZwiftFetcherConfigs { get; set; } = null!;
-    public DbSet<UserCredential> UserCredentials { get; set; } = null!;
+    public DbSet<Integration> Integrations { get; set; } = null!;
+    public DbSet<FetcherConfig> FetcherConfigs { get; set; } = null!;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -51,17 +51,17 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
                     heartbeat.CreatedAt = DateTime.UtcNow;
                 heartbeat.UpdatedAt = DateTime.UtcNow;
             }
-            else if (entry.Entity is ZwiftFetcherConfig zwiftFetcherConfig)
+            else if (entry.Entity is Integration integration)
             {
                 if (entry.State == EntityState.Added)
-                    zwiftFetcherConfig.CreatedAt = DateTime.UtcNow;
-                zwiftFetcherConfig.UpdatedAt = DateTime.UtcNow;
+                    integration.CreatedAt = DateTime.UtcNow;
+                integration.UpdatedAt = DateTime.UtcNow;
             }
-            else if (entry.Entity is UserCredential userCredential)
+            else if (entry.Entity is FetcherConfig fetcherConfig)
             {
                 if (entry.State == EntityState.Added)
-                    userCredential.CreatedAt = DateTime.UtcNow;
-                userCredential.UpdatedAt = DateTime.UtcNow;
+                    fetcherConfig.CreatedAt = DateTime.UtcNow;
+                fetcherConfig.UpdatedAt = DateTime.UtcNow;
             }
             else if (entry.Entity is Session session)
             {

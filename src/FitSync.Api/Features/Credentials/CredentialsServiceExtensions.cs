@@ -12,6 +12,8 @@ public static class CredentialsServiceExtensions
         services.AddScoped<IServiceCredentialHandler, GarminCredentialHandler>();
         services.AddScoped<ServiceCredentialHandlerFactory>();
 
+        services.AddScoped<IOAuthServiceHandler, WahooOAuthHandler>();
+
         return services;
     }
 }

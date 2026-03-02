@@ -5,22 +5,22 @@ import StatusIndicator from "./StatusIndicator";
 
 interface CredentialCardProps {
   serviceType: string;
-  username: string;
+  displayName?: string | null;
   updatedAt: string;
   enabled: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  isDeleting: boolean;
+  onEdit?: () => void;
+  onDisconnect: () => void;
+  isProcessing: boolean;
 }
 
 export default function CredentialCard({
   serviceType,
-  username,
+  displayName,
   updatedAt,
   enabled,
   onEdit,
-  onDelete,
-  isDeleting,
+  onDisconnect,
+  isProcessing,
 }: CredentialCardProps) {
   return (
     <ListItem
@@ -39,7 +39,6 @@ export default function CredentialCard({
         px: 2,
       }}
     >
-      {/* Top Row: Service Name and Action Buttons */}
       <Box
         sx={{
           display: "flex",
@@ -55,33 +54,26 @@ export default function CredentialCard({
           <StatusIndicator enabled={enabled} />
         </Box>
         <Box sx={{ display: "flex", gap: 0.5 }}>
-          <Tooltip title="Edit credentials">
-            <Fab
-              color="primary"
-              onClick={onEdit}
-              disabled={isDeleting}
-              size="small"
-              sx={{
-                width: 25,
-                height: 25,
-                minHeight: 25,
-              }}
-            >
-              <Edit fontSize="small" />
-            </Fab>
-          </Tooltip>
-          <Tooltip title="Delete credentials">
+          {onEdit && (
+            <Tooltip title="Edit credentials">
+              <Fab
+                color="primary"
+                onClick={onEdit}
+                disabled={isProcessing}
+                size="small"
+                sx={{ width: 25, height: 25, minHeight: 25 }}
+              >
+                <Edit fontSize="small" />
+              </Fab>
+            </Tooltip>
+          )}
+          <Tooltip title="Disconnect">
             <Fab
               color="error"
-              onClick={onDelete}
-              disabled={isDeleting}
+              onClick={onDisconnect}
+              disabled={isProcessing}
               size="small"
-              sx={{
-                width: 25,
-                height: 25,
-                minHeight: 25,
-                mx: 0.5,
-              }}
+              sx={{ width: 25, height: 25, minHeight: 25, mx: 0.5 }}
             >
               <Delete fontSize="small" />
             </Fab>
@@ -89,7 +81,6 @@ export default function CredentialCard({
         </Box>
       </Box>
 
-      {/* Bottom Row: Icon and Details */}
       <Box
         sx={{
           display: "grid",
@@ -100,18 +91,20 @@ export default function CredentialCard({
       >
         <ServiceIcon serviceType={serviceType} />
         <Box sx={{ minWidth: 0 }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              mb: 0.25,
-            }}
-          >
-            Username: {username}
-          </Typography>
+          {displayName && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                mb: 0.25,
+              }}
+            >
+              Username: {displayName}
+            </Typography>
+          )}
           <Typography variant="caption" color="text.secondary">
             Last updated: {new Date(updatedAt).toLocaleDateString()}
           </Typography>

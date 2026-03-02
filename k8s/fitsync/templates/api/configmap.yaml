@@ -28,5 +28,10 @@ data:
         "FromEmail": "{{ .Values.shared.email.fromEmail }}",
         "FromName": "{{ .Values.shared.email.fromName }}",
         "AppUrl": "{{ .Values.shared.appUrl }}"
+      },
+      "WahooOptions": {
+        "BaseUrl": "{{ .Values.api.wahoo.baseUrl }}",
+        "RedirectUri": "{{ .Values.api.wahoo.redirectUri }}",
+        "FrontendUrl": "{{ .Values.api.wahoo.frontendUrl }}"
       }
     }

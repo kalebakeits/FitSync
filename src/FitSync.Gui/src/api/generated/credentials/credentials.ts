@@ -24,6 +24,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AvailableServiceResponse,
   CreateCredentialRequest,
   CredentialResponse
 } from '../fitSyncApi.schemas';
@@ -237,7 +238,7 @@ const {mutation: mutationOptions} = options ?
 ) => {
       
       
-      return customAxiosInstance<string[]>(
+      return customAxiosInstance<AvailableServiceResponse[]>(
       {url: `/api/Credentials/available`, method: 'GET', signal
     },
       );

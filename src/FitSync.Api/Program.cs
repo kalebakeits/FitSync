@@ -2,11 +2,14 @@ using FitSync.Api.Configurations;
 using FitSync.Api.Features.Account;
 using FitSync.Api.Features.Activities;
 using FitSync.Api.Features.Auth;
+using FitSync.Api.Features.Connections;
 using FitSync.Api.Features.Credentials;
 using FitSync.Api.Features.Fetchers;
 using FitSync.Api.Features.Profile;
+using FitSync.Api.Features.Wahoo;
 using FitSync.Api.Middleware;
 using FitSync.Api.Services;
+using Confluent.Kafka;
 using FitSync.Database;
 using FitSync.Shared.Features.Email;
 using FitSync.Shared.Features.Email.Services;
@@ -29,6 +32,12 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder
+    .Services.AddOptions<WahooOptions>()
+    .BindConfiguration("WahooOptions")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Configure Serilog
 builder.Host.UseSerilog(
     (context, services, configuration) =>
@@ -38,6 +47,13 @@ builder.Host.UseSerilog(
             .Enrich.FromLogContext()
 );
 
+builder.Services.AddSingleton<IProducer<string, string>>(_ =>
+{
+    ProducerConfig config =
+        new() { BootstrapServers = builder.Configuration.GetConnectionString("kafka") };
+    return new ProducerBuilder<string, string>(config).Build();
+});
+
 // Add DbContext
 builder.Services.AddDbContext<FitSyncDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("FitSync"))
@@ -45,7 +61,7 @@ builder.Services.AddDbContext<FitSyncDbContext>(
 
 // Add features
 builder
-    .Services.AddSwaggerGen()
+    .Services.AddSwaggerGen(o => o.SupportNonNullableReferenceTypes())
     .AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
     .AddEmailService()
     .AddHttpContextAccessor()
@@ -55,8 +71,10 @@ builder
     .AddAuthFeature()
     .AddProfileFeature()
     .AddCredentialsFeature()
+    .AddConnectionsFeature()
     .AddActivitiesFeature()
     .AddFetchersFeature()
+    .AddWahooFeature()
     .AddEndpointsApiExplorer()
     .AddAuthorization()
     .AddControllers();

@@ -6,10 +6,8 @@
  */
 export interface ActivityResponse {
   id: string;
-  /** @nullable */
-  externalActivityId: string | null;
-  /** @nullable */
-  source: string | null;
+  externalActivityId: string;
+  source: string;
   status: ActivityStatus;
   /** @nullable */
   originalFileName?: string | null;
@@ -43,8 +41,14 @@ export const ActivityStatus = {
 
 export interface AuthSuccessResponse {
   userId: string;
+  username: string;
+}
+
+export interface AvailableServiceResponse {
+  serviceType: string;
+  authType: string;
   /** @nullable */
-  username: string | null;
+  connectUrl?: string | null;
 }
 
 export interface ConfirmPasswordResetRequest {
@@ -57,6 +61,16 @@ export interface ConfirmPasswordResetRequest {
   newPassword: string;
 }
 
+export interface ConnectionResponse {
+  serviceType: string;
+  authType: string;
+  connected: boolean;
+  enabled: boolean;
+  /** @nullable */
+  displayName?: string | null;
+  updatedAt: string;
+}
+
 export interface CreateCredentialRequest {
   /** @minLength 1 */
   serviceType: string;
@@ -67,10 +81,8 @@ export interface CreateCredentialRequest {
 }
 
 export interface CredentialResponse {
-  /** @nullable */
-  serviceType: string | null;
-  /** @nullable */
-  username: string | null;
+  serviceType: string;
+  username: string;
   createdAt: string;
   updatedAt: string;
   enabled: boolean;
@@ -78,10 +90,8 @@ export interface CredentialResponse {
 
 export interface CurrentUserResponse {
   userId: string;
-  /** @nullable */
-  username: string | null;
-  /** @nullable */
-  email: string | null;
+  username: string;
+  email: string;
   isVerified: boolean;
   isEmailVerified: boolean;
 }
@@ -94,8 +104,7 @@ export interface LoginRequest {
 }
 
 export interface PaginatedActivitiesResponse {
-  /** @nullable */
-  items: ActivityResponse[] | null;
+  items: ActivityResponse[];
   total: number;
   limit: number;
   offset: number;

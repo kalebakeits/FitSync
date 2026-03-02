@@ -1,78 +1,78 @@
+namespace FitSync.Api.Features.Credentials.Services;
+
+using FitSync.Api.Features.Credentials.DTOs;
 using FitSync.Database;
 using FitSync.Database.Models;
+using FitSync.Shared.Features.Encryption.Extensions;
+using FitSync.Shared.Features.Encryption.Services;
+using FitSync.Zwift.Shared.AuthData;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Api.Features.Credentials.Services;
 
 public class ZwiftCredentialHandler(
     FitSyncDbContext context,
+    IEncryptionService encryptionService,
     ILogger<ZwiftCredentialHandler> logger
 ) : IServiceCredentialHandler
 {
     private readonly FitSyncDbContext context = context;
+    private readonly IEncryptionService encryptionService = encryptionService;
     private readonly ILogger<ZwiftCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Zwift;
+    public string AuthType => "credentials";
+    public string? ConnectUrl => null;
 
-    public async Task OnCredentialCreatedAsync(Guid userId)
+    public object BuildAuthData(CreateCredentialRequest request) =>
+        new ZwiftAuthData { Username = request.Username, Password = request.Password };
+
+    public string GetDisplayName(Integration integration) =>
+        integration.GetAuthData<ZwiftAuthData>(this.encryptionService).Username;
+
+    public async Task OnCredentialCreatedAsync(
+        Integration integration,
+        CancellationToken cancellationToken = default
+    )
     {
-        this.logger.LogInformation("Creating ZwiftFetcherConfig for user: {UserId}", userId);
-
-        ZwiftFetcherConfig? existing = await this.context.ZwiftFetcherConfigs.FirstOrDefaultAsync(
-            c => c.UserId == userId
+        bool exists = await this.context.FetcherConfigs.AnyAsync(
+            f => f.IntegrationId == integration.Id,
+            cancellationToken
         );
 
-        if (existing != null)
+        if (exists)
         {
-            this.logger.LogInformation(
-                "ZwiftFetcherConfig already exists for user: {UserId}",
-                userId
-            );
             return;
         }
 
-        ZwiftFetcherConfig config =
-            new()
+        this.context.FetcherConfigs.Add(
+            new FetcherConfig
             {
                 Id = Guid.NewGuid(),
-                UserId = userId,
+                IntegrationId = integration.Id,
                 FetchIntervalMinutes = 10,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-        this.context.ZwiftFetcherConfigs.Add(config);
-        await this.context.SaveChangesAsync();
-
-        this.logger.LogInformation(
-            "ZwiftFetcherConfig created successfully for user: {UserId}",
-            userId
+            }
         );
+
+        await this.context.SaveChangesAsync(cancellationToken);
+        this.logger.LogInformation("Created FetcherConfig for Zwift integration {Id}.", integration.Id);
     }
 
-    public async Task OnCredentialDeletedAsync(Guid userId)
+    public async Task OnCredentialDeletedAsync(
+        Integration integration,
+        CancellationToken cancellationToken = default
+    )
     {
-        this.logger.LogInformation("Deleting ZwiftFetcherConfig for user: {UserId}", userId);
-
-        ZwiftFetcherConfig? config = await this.context.ZwiftFetcherConfigs.FirstOrDefaultAsync(
-            c => c.UserId == userId
+        FetcherConfig? config = await this.context.FetcherConfigs.FirstOrDefaultAsync(
+            f => f.IntegrationId == integration.Id,
+            cancellationToken
         );
 
         if (config == null)
         {
-            this.logger.LogWarning(
-                "ZwiftFetcherConfig not found for deletion - user: {UserId}",
-                userId
-            );
             return;
         }
 
-        this.context.ZwiftFetcherConfigs.Remove(config);
-        await this.context.SaveChangesAsync();
-
-        this.logger.LogInformation(
-            "ZwiftFetcherConfig deleted successfully for user: {UserId}",
-            userId
-        );
+        this.context.FetcherConfigs.Remove(config);
+        await this.context.SaveChangesAsync(cancellationToken);
+        this.logger.LogInformation("Deleted FetcherConfig for Zwift integration {Id}.", integration.Id);
     }
 }

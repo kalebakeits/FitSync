@@ -54,7 +54,7 @@ IResourceBuilder<RedisResource> redis = builder.AddRedis("redis");
 // Mock fetcher handles DB initialization and optionally runs the fetcher
 // Other services wait for it to ensure DB is ready
 IResourceBuilder<ProjectResource> mockFetcher = builder
-    .AddProject<FitSync_MockFetcher>("mock-fetcher")
+    .AddProject<FitSync_Mock_Fetcher>("mock-fetcher")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
@@ -65,7 +65,7 @@ IResourceBuilder<ProjectResource> mockFetcher = builder
     .WaitFor(kafka);
 
 builder
-    .AddProject<FitSync_ZwiftFetcher>("zwift-fetcher")
+    .AddProject<FitSync_Zwift_Fetcher>("zwift-fetcher")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithReference(redis)
@@ -74,7 +74,7 @@ builder
     .WaitFor(mockFetcher);
 
 builder
-    .AddProject<FitSync_Uploader>("uploader")
+    .AddProject<FitSync_Garmin_Uploader>("garmin-uploader")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithReference(redis)
@@ -83,10 +83,20 @@ builder
     .WithReplicas(2)
     .WaitFor(mockFetcher);
 
+builder
+    .AddProject<FitSync_Wahoo_Fetcher>("wahoo-fetcher")
+    .WithReference(fitsyncDb)
+    .WithReference(kafka)
+    .WithReference(redis)
+    .WithEnvironment("ConnectionStrings__FitSync", connectionString)
+    .WithEnvironment("DataProtectionOptions__DataProtectionKey", dataProtectionKey)
+    .WaitFor(mockFetcher);
+
 // API
 IResourceBuilder<ProjectResource> api = builder
     .AddProject<FitSync_Api>("api")
     .WithReference(fitsyncDb)
+    .WithReference(kafka)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
     .WithEnvironment("DataProtectionOptions__DataProtectionKey", dataProtectionKey)
     .WithEnvironment("EmailConfiguration__SmtpPassword", smtpPassword)

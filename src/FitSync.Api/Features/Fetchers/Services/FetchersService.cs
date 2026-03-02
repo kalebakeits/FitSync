@@ -12,35 +12,29 @@ public class FetchersService(FitSyncDbContext context, ILogger<FetchersService> 
 
     public async Task TriggerFetchAsync(Guid userId)
     {
-        this.logger.LogInformation(
-            "Triggering manual fetch for user: {UserId}",
-            userId
-        );
+        List<FetcherConfig> configs = await this.context.FetcherConfigs
+            .Include(f => f.Integration)
+            .Where(f => f.Integration.UserId == userId)
+            .ToListAsync();
 
-        ZwiftFetcherConfig? config = await this.context.ZwiftFetcherConfigs.FirstOrDefaultAsync(
-            c => c.UserId == userId
-        );
-
-        if (config == null)
+        if (configs.Count == 0)
         {
-            this.logger.LogWarning(
-                "ZwiftFetcherConfig not found for user: {UserId} - user may not have Zwift credentials",
-                userId
-            );
+            this.logger.LogWarning("No FetcherConfigs found for user {UserId}.", userId);
             return;
         }
 
         DateTime now = DateTime.UtcNow;
-        config.NextFetchTime = now;
-        config.UpdatedAt = now;
+        foreach (FetcherConfig config in configs)
+        {
+            config.NextFetchTime = now;
+            config.UpdatedAt = now;
+        }
 
         await this.context.SaveChangesAsync();
-
         this.logger.LogInformation(
-            "Manual fetch triggered successfully for user: {UserId} - NextFetchTime set to {NextFetchTime}",
+            "Manual fetch triggered for user {UserId} across {Count} fetcher(s).",
             userId,
-            now
+            configs.Count
         );
     }
 }
-

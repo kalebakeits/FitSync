@@ -383,6 +383,68 @@
         }
       }
     },
+    "/api/connections": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "GetApiConnections",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConnectionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/connections/{serviceType}": {
+      "delete": {
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "DeleteApiConnectionsServiceType",
+        "parameters": [
+          {
+            "name": "serviceType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Credentials": {
       "post": {
         "tags": [
@@ -502,7 +564,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
                   }
                 }
               },
@@ -510,7 +572,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
                   }
                 }
               },
@@ -518,7 +580,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
                   }
                 }
               }
@@ -652,12 +714,10 @@
             "format": "uuid"
           },
           "externalActivityId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "source": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/ActivityStatus"
@@ -728,6 +788,25 @@
             "format": "uuid"
           },
           "username": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AvailableServiceResponse": {
+        "required": [
+          "authType",
+          "serviceType"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "authType": {
+            "type": "string"
+          },
+          "connectUrl": {
             "type": "string",
             "nullable": true
           }
@@ -749,6 +828,39 @@
             "maxLength": 100,
             "minLength": 8,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConnectionResponse": {
+        "required": [
+          "authType",
+          "connected",
+          "enabled",
+          "serviceType",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "authType": {
+            "type": "string"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -787,12 +899,10 @@
         "type": "object",
         "properties": {
           "serviceType": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "username": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -823,12 +933,10 @@
             "format": "uuid"
           },
           "username": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "isVerified": {
             "type": "boolean"
@@ -870,8 +978,7 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ActivityResponse"
-            },
-            "nullable": true
+            }
           },
           "total": {
             "type": "integer",
@@ -1013,6 +1120,9 @@
     },
     {
       "name": "Auth"
+    },
+    {
+      "name": "Connections"
     },
     {
       "name": "Credentials"

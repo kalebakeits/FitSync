@@ -13,13 +13,16 @@ import {
   Alert,
   Box,
 } from "@mui/material";
-import type { CreateCredentialRequest } from "../../api/generated/fitSyncApi.schemas";
+import type {
+  AvailableServiceResponse,
+  CreateCredentialRequest,
+} from "../../api/generated/fitSyncApi.schemas";
 
 interface CredentialModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateCredentialRequest) => void;
-  availableServices: string[];
+  availableServices: AvailableServiceResponse[];
   isSubmitting: boolean;
   error?: string;
   editingCredential?: {
@@ -65,12 +68,20 @@ export default function CredentialModal({
     onClose();
   };
 
-  const servicesToShow = editingCredential
-    ? [editingCredential.serviceType]
-    : availableServices;
+  const selectedService = availableServices.find(
+    (s) => s.serviceType === serviceType
+  );
+  const isOAuth = selectedService?.authType === "oauth";
 
-  const showNoServicesMessage =
-    !editingCredential && availableServices.length === 0;
+  const servicesToShow = editingCredential
+    ? [
+        {
+          serviceType: editingCredential.serviceType,
+          authType: "credentials",
+          connectUrl: null,
+        } as AvailableServiceResponse,
+      ]
+    : availableServices;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -86,54 +97,59 @@ export default function CredentialModal({
             </Alert>
           )}
 
-          {showNoServicesMessage ? (
-            <Alert severity="info">
-              No available services. You have already added all supported
-              services.
-            </Alert>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Service</InputLabel>
+            <Select
+              value={serviceType}
+              label="Service"
+              onChange={(e) => setServiceType(e.target.value)}
+              required
+              disabled={!!editingCredential}
+            >
+              {servicesToShow.map((service) => (
+                <MenuItem key={service.serviceType} value={service.serviceType}>
+                  {service.serviceType}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {serviceType && isOAuth ? (
+            <Button
+              variant="contained"
+              fullWidth
+              href={`${import.meta.env.VITE_API_URL ?? ""}${selectedService?.connectUrl ?? "#"}`}
+            >
+              Connect
+            </Button>
           ) : (
-            <>
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Service</InputLabel>
-                <Select
-                  value={serviceType}
-                  label="Service"
-                  onChange={(e) => setServiceType(e.target.value)}
+            serviceType && (
+              <>
+                <TextField
+                  fullWidth
+                  label="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  disabled={!!editingCredential}
-                >
-                  {servicesToShow.map((service) => (
-                    <MenuItem key={service} value={service}>
-                      {service}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  sx={{ mb: 2 }}
+                />
 
-              <TextField
-                fullWidth
-                label="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                sx={{ mb: 2 }}
-              />
-
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                sx={{ mb: 2 }}
-                helperText={
-                  editingCredential
-                    ? "Enter your password to update credentials"
-                    : ""
-                }
-              />
-            </>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  sx={{ mb: 2 }}
+                  helperText={
+                    editingCredential
+                      ? "Enter your password to update credentials"
+                      : ""
+                  }
+                />
+              </>
+            )
           )}
         </DialogContent>
 
@@ -141,7 +157,7 @@ export default function CredentialModal({
           <Button onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          {!showNoServicesMessage && (
+          {!isOAuth && serviceType && (
             <Button
               type="submit"
               variant="contained"

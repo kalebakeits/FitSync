@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>fitsync-uploader</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Garmin.FIT.Sdk" Version="21.171.0" />
+    <PackageReference Include="GarminConnectClientNet" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-rc.2.25502.107" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25502.107">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-rc.2" />
+    <PackageReference Include="Confluent.Kafka" Version="2.12.0" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.5.2" />
+    <PackageReference Include="Aspire.Confluent.Kafka" Version="13.0.0" />
+    <PackageReference Include="Unofficial.Garmin.Connect" Version="0.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FitSync.Shared\FitSync.Shared.csproj" />
+    <ProjectReference Include="..\..\FitSync.Database\FitSync.Database.csproj" />
+    <ProjectReference Include="..\Shared\FitSync.Garmin.Shared.csproj" />
+  </ItemGroup>
+</Project>

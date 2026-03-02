@@ -17,9 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../FitSync.MockFetcher/FitSync.MockFetcher.csproj" />
-    <ProjectReference Include="../FitSync.Uploader/FitSync.Uploader.csproj" />
-    <ProjectReference Include="../FitSync.ZwiftFetcher/FitSync.ZwiftFetcher.csproj" />
+    <ProjectReference Include="../FitSync.Mock/Fetcher/FitSync.Mock.Fetcher.csproj" />
+    <ProjectReference Include="../FitSync.Garmin/Uploader/FitSync.Garmin.Uploader.csproj" />
+    <ProjectReference Include="../FitSync.Zwift/Fetcher/FitSync.Zwift.Fetcher.csproj" />
+    <ProjectReference Include="../FitSync.Wahoo/Fetcher/FitSync.Wahoo.Fetcher.csproj" />
     <ProjectReference Include="../FitSync.Api/FitSync.Api.csproj" />
   </ItemGroup>
 
