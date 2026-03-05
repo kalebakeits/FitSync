@@ -1,6 +1,6 @@
-using FitSync.Api.Features.Auth.Services;
-
 namespace FitSync.Api.Features.Auth;
+
+using FitSync.Api.Features.Auth.Services;
 
 public static class AuthServiceExtensions
 {

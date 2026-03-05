@@ -1,6 +1,6 @@
-using FitSync.Garmin.Uploader.Features.Kafka.Services;
-
 namespace FitSync.Garmin.Uploader.Features.Kafka;
+
+using FitSync.Garmin.Uploader.Features.Kafka.Services;
 
 public static class KafkaFeatureExtensions
 {

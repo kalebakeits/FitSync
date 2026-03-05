@@ -19,7 +19,7 @@ public class ActivityPurgerWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         this.logger.LogInformation(
-            "ActivityPurgerWorker started. Interval: {IntervalMinutes} minutes",
+            "The Purger is online. Next Purge in {IntervalMinutes} minutes. Stand by.",
             this.options.Value.PurgeIntervalMinutes
         );
 
@@ -29,13 +29,13 @@ public class ActivityPurgerWorker(
 
             TimeSpan delay = TimeSpan.FromMinutes(this.options.Value.PurgeIntervalMinutes);
             this.logger.LogInformation(
-                "Next purge in {DelayMinutes} minutes",
+                "The Purge has ended. Next Purge commences in {DelayMinutes} minutes.",
                 delay.TotalMinutes
             );
             await Task.Delay(delay, stoppingToken);
         }
 
-        this.logger.LogInformation("ActivityPurgerWorker stopping");
+        this.logger.LogInformation("The Purger stands down. Await next year's Purge.");
     }
 
     private async Task RunPurgeAsync(CancellationToken stoppingToken)
@@ -50,11 +50,11 @@ public class ActivityPurgerWorker(
         }
         catch (OperationCanceledException)
         {
-            this.logger.LogInformation("Purge cycle cancelled during shutdown");
+            this.logger.LogInformation("The Purge was interrupted. The survivors go free — this time.");
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Unhandled error during purge cycle. Will retry next interval.");
+            this.logger.LogError(ex, "The Purge encountered an error. Order will be restored next interval.");
         }
     }
 }

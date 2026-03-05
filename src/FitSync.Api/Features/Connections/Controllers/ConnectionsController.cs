@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/connections")]
+[Route("[controller]")]
 [Authorize]
 public class ConnectionsController(
     IConnectionsService connectionsService,
@@ -29,6 +29,7 @@ public class ConnectionsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting connections for user {UserId}.", userId);
         return this.Ok(await this.connectionsService.GetConnectionsAsync(userId, cancellationToken));
     }
 
@@ -50,6 +51,7 @@ public class ConnectionsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting destination mappings for user {UserId}.", userId);
         return this.Ok(await this.destinationMappingService.GetMappingsAsync(userId, cancellationToken));
     }
 
@@ -61,6 +63,7 @@ public class ConnectionsController(
     {
         Guid userId = this.currentUserService.GetUserId();
         await this.destinationMappingService.UpsertMappingsAsync(userId, request, cancellationToken);
+        this.logger.LogInformation("Upserted destination mappings for user {UserId}.", userId);
         return this.Ok();
     }
 
@@ -70,6 +73,7 @@ public class ConnectionsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting fetcher status for user {UserId}.", userId);
         return this.Ok(await this.fetcherStatusService.GetStatusAsync(userId, cancellationToken));
     }
 }

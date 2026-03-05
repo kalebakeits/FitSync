@@ -74,8 +74,8 @@ public class GarminAuthService(
             ct
         );
 
-        authData.OAuth2AccessToken = oauth2Token.Access_Token;
-        authData.OAuth2ExpiresAt = DateTime.UtcNow.AddSeconds(oauth2Token.Expires_In);
+        authData.OAuth2AccessToken = oauth2Token.AccessToken;
+        authData.OAuth2ExpiresAt = DateTime.UtcNow.AddSeconds(oauth2Token.ExpiresIn);
         integration.SetAuthData(authData, this.encryptionService);
         await this.dbContext.SaveChangesAsync(ct);
 
@@ -103,8 +103,8 @@ public class GarminAuthService(
 
         authData.OAuth1Token = oauth1Token;
         authData.OAuth1TokenSecret = oauth1Secret;
-        authData.OAuth2AccessToken = oauth2Token.Access_Token;
-        authData.OAuth2ExpiresAt = DateTime.UtcNow.AddSeconds(oauth2Token.Expires_In);
+        authData.OAuth2AccessToken = oauth2Token.AccessToken;
+        authData.OAuth2ExpiresAt = DateTime.UtcNow.AddSeconds(oauth2Token.ExpiresIn);
 
         integration.SetAuthData(authData, this.encryptionService);
         await this.dbContext.SaveChangesAsync(ct);

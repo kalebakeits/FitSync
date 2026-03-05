@@ -1,6 +1,6 @@
-using FitSync.Api.Features.Profile.Services;
-
 namespace FitSync.Api.Features.Profile;
+
+using FitSync.Api.Features.Profile.Services;
 
 public static class ProfileServiceExtensions
 {

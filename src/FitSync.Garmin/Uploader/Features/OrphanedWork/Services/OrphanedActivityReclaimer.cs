@@ -36,13 +36,9 @@ public class OrphanedActivityReclaimer(
         List<Guid> orphanedActivityIds = await this.fitSyncDbContext.ActivityUploadStatuses
             .Where(u => u.DestinationServiceType == ServiceTypes.Garmin)
             .Where(u => incompleteStatuses.Contains(u.Status))
-            .Where(u =>
-                (u.ClaimedBy != null && u.ClaimedAt < cutoff) ||
-                (u.Status == ActivityStatus.Pending && u.ClaimedBy == null && u.Activity.UpdatedAt < cutoff)
-            )
+            .Where(u => u.ClaimedBy != null && u.ClaimedAt < cutoff)
             .Take(orphanProcessingBatchSize)
             .Select(u => u.ActivityId)
-            .Distinct()
             .ToListAsync(cancellationToken);
 
         if (orphanedActivityIds.Count == 0)
@@ -68,7 +64,10 @@ public class OrphanedActivityReclaimer(
                     .SetProperty(x => x.ClaimedBy, (string?)null)
             );
 
-        foreach (Guid id in orphanedActivityIds)
-            await this.activityProcessor.ClaimAndProcessActivityAsync(id, this.options.Value.InstanceId, cancellationToken);
+        await Parallel.ForEachAsync(
+            orphanedActivityIds,
+            async (id, ct) =>
+                await this.activityProcessor.ClaimAndProcessActivityAsync(id, this.options.Value.InstanceId, ct)
+        );
     }
 }

@@ -1,9 +1,9 @@
+namespace FitSync.Api.Services;
+
 using System.Security.Cryptography;
 using FitSync.Database;
 using FitSync.Database.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Api.Services;
 
 public interface ISessionService
 {

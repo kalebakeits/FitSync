@@ -77,7 +77,7 @@ builder
     .AddWahooFeature()
     .AddEndpointsApiExplorer()
     .AddAuthorization()
-    .AddControllers();
+    .AddControllers(o => o.Conventions.Add(new RoutePrefixConvention("api")));
 
 // Configure cookie authentication
 builder

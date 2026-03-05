@@ -1,6 +1,6 @@
-using FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
-
 namespace FitSync.Garmin.Uploader.Features.ActivityProcessing;
+
+using FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 
 public static class ActivityProcessingFeatureExtensions
 {

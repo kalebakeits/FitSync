@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class ProfileController(
     IProfileService profileService,
     ICurrentUserService currentUserService,

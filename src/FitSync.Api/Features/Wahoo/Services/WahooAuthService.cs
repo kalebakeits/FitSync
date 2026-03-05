@@ -3,6 +3,7 @@ namespace FitSync.Api.Features.Wahoo.Services;
 using System.Net.Http.Headers;
 using FitSync.Api.Configurations;
 using FitSync.Api.Features.Wahoo.DTOs;
+using FitSync.Wahoo.Shared.WahooClient.DTOs;
 using Microsoft.Extensions.Options;
 
 public class WahooAuthService(
@@ -37,8 +38,8 @@ public class WahooAuthService(
             cancellationToken
         );
         response.EnsureSuccessStatusCode();
-        WahooTokenResponse token =
-            await response.Content.ReadFromJsonAsync<WahooTokenResponse>(cancellationToken)
+        WahooTokenRefreshResponse token =
+            await response.Content.ReadFromJsonAsync<WahooTokenRefreshResponse>(cancellationToken)
             ?? throw new InvalidOperationException("Wahoo token response could not be parsed.");
         this.logger.LogInformation("Wahoo OAuth code exchange completed.");
         return new WahooTokenResult
@@ -70,8 +71,8 @@ public class WahooAuthService(
             cancellationToken
         );
         response.EnsureSuccessStatusCode();
-        WahooTokenResponse token =
-            await response.Content.ReadFromJsonAsync<WahooTokenResponse>(cancellationToken)
+        WahooTokenRefreshResponse token =
+            await response.Content.ReadFromJsonAsync<WahooTokenRefreshResponse>(cancellationToken)
             ?? throw new InvalidOperationException("Wahoo refresh response could not be parsed.");
         this.logger.LogInformation("Wahoo token refresh completed.");
         return new WahooTokenResult

@@ -1,6 +1,6 @@
-using FitSync.Database.Models;
-
 namespace FitSync.Garmin.Uploader.Features.GarminUpload.Services;
+
+using FitSync.Database.Models;
 
 public interface IGarminAuthService
 {

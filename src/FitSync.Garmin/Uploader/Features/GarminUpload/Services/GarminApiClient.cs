@@ -7,7 +7,7 @@ using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using Flurl.Http;
 using OAuth;
 
-public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
+public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
 {
     private readonly ILogger<GarminApiClient> logger = logger;
 
@@ -58,7 +58,7 @@ public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
             .GetAsync(cancellationToken: ct)
             .ReceiveString();
 
-        Regex tokenRegex = new(@"name=""_csrf""\s+value=""(?<csrf>.+?)""");
+        Regex tokenRegex = CsrfTokenRegex();
         Match match = tokenRegex.Match(rawBody);
         if (!match.Success)
             throw new InvalidOperationException($"Failed to find CSRF token in Garmin SSO response. Body length: {rawBody.Length}");
@@ -120,7 +120,7 @@ public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
     {
         this.logger.LogInformation("Fetching OAuth1 token.");
 
-        OAuthRequest oauthClient = OAuthRequest.ForRequestToken(credentials.Consumer_Key, credentials.Consumer_Secret);
+        OAuthRequest oauthClient = OAuthRequest.ForRequestToken(credentials.ConsumerKey, credentials.ConsumerSecret);
         oauthClient.RequestUrl = $"{OAuth1TokenUrl}?ticket={ticket}&login-url={OAuth1LoginUrlParam}";
 
         string response = await oauthClient.RequestUrl
@@ -149,8 +149,8 @@ public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
 
         OAuthRequest oauthClient = OAuthRequest.ForProtectedResource(
             "POST",
-            credentials.Consumer_Key,
-            credentials.Consumer_Secret,
+            credentials.ConsumerKey,
+            credentials.ConsumerSecret,
             oauth1Token,
             oauth1Secret
         );
@@ -163,7 +163,7 @@ public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
             .PostUrlEncodedAsync(new object(), cancellationToken: ct) // empty body — Content-Type header must be preserved
             .ReceiveJson<GarminOAuth2Token>();
 
-        this.logger.LogInformation("OAuth2 token obtained. Expires in {ExpiresIn}s.", token.Expires_In);
+        this.logger.LogInformation("OAuth2 token obtained. Expires in {ExpiresIn}s.", token.ExpiresIn);
         return token;
     }
 
@@ -219,4 +219,6 @@ public class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminApiClient
         }
     }
 
+    [GeneratedRegex(@"name=""_csrf""\s+value=""(?<csrf>.+?)""")]
+    private static partial Regex CsrfTokenRegex();
 }

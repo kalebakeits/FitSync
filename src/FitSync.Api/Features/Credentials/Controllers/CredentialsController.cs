@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class CredentialsController(
     ICredentialsService credentialsService,
@@ -41,6 +41,7 @@ public class CredentialsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting credentials for user {UserId}.", userId);
         List<CredentialResponse> credentials = await this.credentialsService.GetCredentialsAsync(
             userId,
             cancellationToken
@@ -56,6 +57,7 @@ public class CredentialsController(
     {
         Guid userId = this.currentUserService.GetUserId();
         await this.credentialsService.DeleteCredentialAsync(userId, serviceType, cancellationToken);
+        this.logger.LogInformation("Deleted credential for {ServiceType} user {UserId}.", serviceType, userId);
         return this.NoContent();
     }
 
@@ -65,6 +67,7 @@ public class CredentialsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting available services for user {UserId}.", userId);
         List<AvailableServiceResponse> available = await this.credentialsService.GetAvailableServicesAsync(
             userId,
             cancellationToken

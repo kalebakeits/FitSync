@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 [ApiController]
-[Route("api/wahoo")]
+[Route("wahoo")]
 [Authorize]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class WahooController(

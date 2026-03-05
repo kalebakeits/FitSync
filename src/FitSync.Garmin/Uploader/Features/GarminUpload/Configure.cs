@@ -1,6 +1,6 @@
-using FitSync.Garmin.Uploader.Features.GarminUpload.Services;
-
 namespace FitSync.Garmin.Uploader.Features.GarminUpload;
+
+using FitSync.Garmin.Uploader.Features.GarminUpload.Services;
 
 public static class GarminUploadFeatureExtensions
 {

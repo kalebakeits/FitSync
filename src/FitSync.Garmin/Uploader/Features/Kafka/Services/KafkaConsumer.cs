@@ -1,8 +1,8 @@
+namespace FitSync.Garmin.Uploader.Features.Kafka.Services;
+
 using System.Text.Json;
 using Confluent.Kafka;
 using FitSync.Shared.Constants;
-
-namespace FitSync.Garmin.Uploader.Features.Kafka.Services;
 
 public class KafkaConsumer : IKafkaConsumer, IDisposable
 {

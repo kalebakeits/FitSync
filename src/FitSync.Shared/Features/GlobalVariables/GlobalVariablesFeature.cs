@@ -1,7 +1,7 @@
+namespace FitSync.Shared.Features.GlobalVariables;
+
 using FitSync.Database.Enums;
 using Microsoft.Extensions.DependencyInjection;
-
-namespace FitSync.Shared.Features.GlobalVariables;
 
 using FitSync.Shared.Features.GlobalVariables.DTOs;
 

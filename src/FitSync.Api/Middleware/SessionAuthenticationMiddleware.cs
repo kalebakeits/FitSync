@@ -1,7 +1,7 @@
+namespace FitSync.Api.Middleware;
+
 using System.Security.Claims;
 using FitSync.Api.Services;
-
-namespace FitSync.Api.Middleware;
 
 public class SessionAuthenticationMiddleware(
     RequestDelegate next,

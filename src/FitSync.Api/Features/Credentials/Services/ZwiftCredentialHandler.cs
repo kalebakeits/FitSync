@@ -41,9 +41,7 @@ public class ZwiftCredentialHandler(
         );
 
         if (exists)
-        {
             return;
-        }
 
         this.context.FetcherConfigs.Add(
             new FetcherConfig
@@ -69,9 +67,7 @@ public class ZwiftCredentialHandler(
         );
 
         if (config == null)
-        {
             return;
-        }
 
         this.context.FetcherConfigs.Remove(config);
         await this.context.SaveChangesAsync(cancellationToken);

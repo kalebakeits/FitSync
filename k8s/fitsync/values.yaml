@@ -186,6 +186,8 @@ purger:
     sourceLookbackDays:
       zwift: 28
       wahoo: 180
+    enableDataRetentionPurge: false
+    dataRetentionDays: 365
 
   resources:
     requests:

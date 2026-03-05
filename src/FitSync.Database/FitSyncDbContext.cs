@@ -1,7 +1,7 @@
+namespace FitSync.Database;
+
 using FitSync.Database.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Database;
 
 public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbContext(options)
 {

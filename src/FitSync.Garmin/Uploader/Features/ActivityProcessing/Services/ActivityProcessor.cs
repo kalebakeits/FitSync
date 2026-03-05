@@ -1,3 +1,5 @@
+namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
+
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
@@ -8,8 +10,6 @@ using FitSync.Garmin.Uploader.Features.GarminUpload;
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-
-namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 
 public class ActivityProcessor(
     FitSyncDbContext dbContext,

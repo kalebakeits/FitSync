@@ -1,6 +1,6 @@
-using FitSync.Api.Features.Credentials.Services;
-
 namespace FitSync.Api.Features.Credentials;
+
+using FitSync.Api.Features.Credentials.Services;
 
 public static class CredentialsServiceExtensions
 {

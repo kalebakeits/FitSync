@@ -18,6 +18,8 @@ data:
         "SourceLookbackDays": {
           "Zwift": {{ .Values.purger.config.sourceLookbackDays.zwift }},
           "Wahoo": {{ .Values.purger.config.sourceLookbackDays.wahoo }}
-        }
+        },
+        "EnableDataRetentionPurge": {{ .Values.purger.config.enableDataRetentionPurge }},
+        "DataRetentionDays": {{ .Values.purger.config.dataRetentionDays }}
       }
     }

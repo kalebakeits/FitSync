@@ -1,7 +1,7 @@
+namespace FitSync.Mock.Fetcher.Services;
+
 using FitSync.Database;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Mock.Fetcher.Services;
 
 public class UserVerificationWorker(
     IServiceProvider serviceProvider,

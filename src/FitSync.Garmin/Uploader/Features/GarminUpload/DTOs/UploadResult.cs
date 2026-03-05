@@ -1,6 +1,6 @@
-using System.Net;
-
 namespace FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
+
+using System.Net;
 
 public class UploadResult
 {

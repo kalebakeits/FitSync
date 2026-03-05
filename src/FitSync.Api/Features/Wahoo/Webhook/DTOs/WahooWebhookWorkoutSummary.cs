@@ -1,6 +1,7 @@
 namespace FitSync.Api.Features.Wahoo.Webhook.DTOs;
 
 using System.Text.Json.Serialization;
+using FitSync.Wahoo.Shared.WahooClient.DTOs;
 
 public sealed class WahooWebhookWorkoutSummary
 {
@@ -11,7 +12,7 @@ public sealed class WahooWebhookWorkoutSummary
     public DateTime CreatedAt { get; set; }
 
     [JsonPropertyName("file")]
-    public WahooWebhookFile? File { get; set; }
+    public WahooFileDto? File { get; set; }
 
     [JsonPropertyName("workout")]
     public WahooWebhookWorkout? Workout { get; set; }

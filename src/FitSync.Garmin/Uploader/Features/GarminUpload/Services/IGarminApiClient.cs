@@ -1,7 +1,7 @@
+namespace FitSync.Garmin.Uploader.Features.GarminUpload.Services;
+
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using Flurl.Http;
-
-namespace FitSync.Garmin.Uploader.Features.GarminUpload.Services;
 
 public interface IGarminApiClient
 {

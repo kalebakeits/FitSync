@@ -3,6 +3,8 @@ import type { FetcherStatusResponse } from "../../api/generated/fitSyncApi.schem
 import ServiceIcon from "../credentials/ServiceIcon";
 import TrafficLight from "./TrafficLight";
 
+type FetcherStatus = "green" | "amber" | "red";
+
 interface FetcherRowProps {
   fetcher: FetcherStatusResponse;
 }
@@ -23,7 +25,7 @@ export default function FetcherRow({ fetcher }: FetcherRowProps) {
           {fetcher.serviceType}
         </Typography>
       </Box>
-      <TrafficLight status={(fetcher.status ?? "red") as "green" | "amber" | "red"} />
+      <TrafficLight status={(fetcher.status ?? "red") as FetcherStatus} />
     </Box>
   );
 }
