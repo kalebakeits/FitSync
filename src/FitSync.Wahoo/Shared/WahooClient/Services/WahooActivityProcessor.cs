@@ -1,17 +1,15 @@
 namespace FitSync.Wahoo.Shared.WahooClient.Services;
 
+using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.DTOs;
 using FitSync.Wahoo.Shared.WahooClient.DTOs;
 using Microsoft.Extensions.Logging;
 
-public class WahooActivityProcessor(
-    HttpClient httpClient,
-    ILogger<WahooActivityProcessor> logger
-) : IWahooActivityProcessor
+public class WahooActivityProcessor(HttpClient httpClient, ILogger<WahooActivityProcessor> logger)
+    : IWahooActivityProcessor
 {
     private readonly HttpClient httpClient = httpClient;
     private readonly ILogger<WahooActivityProcessor> logger = logger;
-    private const string SourceName = "Wahoo";
 
     public async Task<List<FetchedActivity>> ProcessActivitiesAsync(
         List<WahooWorkoutDto> workouts,
@@ -38,7 +36,7 @@ public class WahooActivityProcessor(
             results.Add(
                 new FetchedActivity(
                     ExternalActivityId: workout.Id.ToString(),
-                    Source: SourceName,
+                    Source: ServiceTypes.Wahoo,
                     ActivityDate: workout.Starts,
                     FileName: $"wahoo_{workout.Id}.fit",
                     FitFileData: fitData,

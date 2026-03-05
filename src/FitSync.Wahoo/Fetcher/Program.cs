@@ -1,12 +1,14 @@
 using FitSync.Database;
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
+using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
 using FitSync.Shared.Features.RateLimiting;
 using FitSync.Wahoo.Fetcher.Configuration;
-using FitSync.Wahoo.Fetcher.Features.WahooFetcher;
+using FitSync.Wahoo.Shared.WahooClient;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -21,10 +23,7 @@ builder
     .ValidateOnStart();
 
 builder.Services.AddDbContext<FitSyncDbContext>(
-    options =>
-        options.UseNpgsql(
-            builder.Configuration.GetConnectionString("FitSync")
-        )
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("FitSync"))
 );
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -44,14 +43,16 @@ builder.Services.AddGlobalVariables(
     fetcherConfig.InstanceId,
     Environment.MachineName,
     fetcherConfig.HeartbeatIntervalMinutes,
-    ServiceType.WahooFetcher
+    ServiceType.WahooFetcher,
+    ServiceTypes.Wahoo
 );
 
 builder.AddKafkaProducer<string, string>("kafka");
 
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
-    .AddWahooFetcher(() => builder.Configuration.GetSection("WahooFetcherOptions"))
+    .AddWahooClient(() => builder.Configuration.GetSection("WahooFetcherOptions:Client"))
+    .AddFetcher<WahooClient>(() => builder.Configuration.GetSection("WahooFetcherOptions"))
     .AddHeartbeat()
     .AddRateLimiting();
 

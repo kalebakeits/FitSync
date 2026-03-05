@@ -20,7 +20,7 @@ public class MockFetcherService(ILogger<MockFetcherService> logger) : IFetcherSe
         FetchedActivity activity =
             new(
                 ExternalActivityId: $"zwift-{guid}",
-                Source: "Zwift",
+                Source: d,
                 ActivityDate: DateTime.UtcNow.AddHours(-1),
                 FileName: $"mock-activity-{guid}.fit",
                 FitFileData: fitData,

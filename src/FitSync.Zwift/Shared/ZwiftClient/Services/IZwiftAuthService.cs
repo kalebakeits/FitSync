@@ -1,4 +1,4 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient.Services;
+namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
 using FitSync.Database.Models;
 

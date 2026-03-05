@@ -6,7 +6,7 @@ public interface IRateLimiter
 {
     Task<bool> RateLimitedReachedAsync(
         ServiceType serviceType,
-        int RequestCap,
+        IReadOnlyList<RateLimit> limits,
         CancellationToken cancellationToken = default
     );
 }

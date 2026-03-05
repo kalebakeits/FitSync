@@ -3,11 +3,11 @@ namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
-using FitSync.Shared.Features.RateLimiting;
 using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.FitModification.Services;
 using FitSync.Garmin.Uploader.Features.GarminUpload;
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
+using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -35,44 +35,36 @@ public class ActivityProcessor(
         CancellationToken cancellationToken
     )
     {
-        ServiceType type = ServiceType.GarminUploader;
-        int limit = this.options.Value.GarminApiRateLimit;
-        if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
-            return;
-
-        int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(
-            u =>
-                u.ActivityId == activityId
-                && u.DestinationServiceType == ServiceTypes.Garmin
-                && u.ClaimedBy == null
-                && u.Status == ActivityStatus.Pending
-        )
-            .ExecuteUpdateAsync(
-                u =>
-                    u.SetProperty(x => x.Status, ActivityStatus.Claimed)
-                        .SetProperty(x => x.ClaimedBy, instanceId)
-                        .SetProperty(x => x.ClaimedAt, DateTime.UtcNow),
-                cancellationToken
-            );
-
-        if (affected == 0)
-        {
-            this.logger.LogInformation(
-                "Upload status for activity {ActivityId} already claimed. We'll get em next time.",
-                activityId
-            );
-            return;
-        }
-
-        this.logger.LogInformation(
-            "Successfully claimed upload status for activity {ActivityId}. Take your L boys.",
-            activityId
+        bool claimed = await this.TryClaimAsync(
+            activityId,
+            instanceId,
+            u => u.ClaimedBy == null && u.Status == ActivityStatus.Pending,
+            cancellationToken
         );
 
-        await this.ProcessActivityAsync(activityId, cancellationToken);
+        if (claimed)
+            await this.ProcessActivityAsync(activityId, cancellationToken);
     }
 
-    public async Task ProcessActivityAsync(Guid activityId, CancellationToken cancellationToken)
+    public async Task ReclaimAndProcessActivityAsync(
+        Guid activityId,
+        string instanceId,
+        DateTime orphanCutoff,
+        CancellationToken cancellationToken
+    )
+    {
+        bool claimed = await this.TryClaimAsync(
+            activityId,
+            instanceId,
+            u => u.ClaimedBy != null && u.ClaimedAt < orphanCutoff,
+            cancellationToken
+        );
+
+        if (claimed)
+            await this.ProcessActivityAsync(activityId, cancellationToken);
+    }
+
+    private async Task ProcessActivityAsync(Guid activityId, CancellationToken cancellationToken)
     {
         Activity? activity = await this.fitSyncDbContext.Activities.Include(a => a.User)
             .FirstOrDefaultAsync(a => a.Id == activityId, cancellationToken);
@@ -95,21 +87,18 @@ public class ActivityProcessor(
             return;
         }
 
-        ActivityUploadStatus? uploadStatus = await this.fitSyncDbContext.ActivityUploadStatuses
-            .FirstOrDefaultAsync(
+        ActivityUploadStatus? uploadStatus =
+            await this.fitSyncDbContext.ActivityUploadStatuses.FirstOrDefaultAsync(
                 u => u.ActivityId == activityId && u.DestinationServiceType == ServiceTypes.Garmin,
                 cancellationToken
             );
 
         if (uploadStatus == null)
         {
-            this.logger.LogWarning(
-                "No Garmin upload status for activity {ActivityId}",
-                activityId
-            );
+            this.logger.LogWarning("No Garmin upload status for activity {ActivityId}", activityId);
             return;
         }
-
+        UploadResult? uploadResult = null;
         try
         {
             uploadStatus.Status = ActivityStatus.Processing;
@@ -122,23 +111,14 @@ public class ActivityProcessor(
                 activity.UserId
             );
 
-            byte[] modifiedFit = this.fitModifierFactory
-                .GetModifier(activity.Source)
+            byte[] modifiedFit = this.fitModifierFactory.GetModifier(activity.Source)
                 .ModifyDeviceInfo(activity.FitFileData ?? Array.Empty<byte>());
 
-            UploadResult uploadResult = await this.garminUploader.UploadActivityAsync(
+            uploadResult = await this.garminUploader.UploadActivityAsync(
                 modifiedFit,
                 activity.User,
                 cancellationToken
             );
-
-            await this.resultHandler.HandleUploadResultAsync(
-                activity,
-                uploadStatus,
-                uploadResult,
-                this.options.Value.MaxRetries
-            );
-            await this.fitSyncDbContext.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -147,26 +127,61 @@ public class ActivityProcessor(
                 "Failed to process activity {ActivityId}. Sorry chat",
                 activityId
             );
-
-            uploadStatus.Status = ActivityStatus.Failed;
-            uploadStatus.LastError = ex.Message;
-            uploadStatus.LastErrorAt = DateTime.UtcNow;
-            uploadStatus.RetryCount++;
-
-            if (uploadStatus.RetryCount < this.options.Value.MaxRetries)
-            {
-                this.logger.LogInformation(
-                    "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
-                    activityId,
-                    uploadStatus.RetryCount,
-                    this.options.Value.MaxRetries
-                );
-                uploadStatus.Status = ActivityStatus.Pending;
-                uploadStatus.ClaimedBy = null;
-                uploadStatus.ClaimedAt = null;
-            }
-
+        }
+        finally
+        {
+            uploadResult ??= UploadResult.Failed("Activity failed for an unknown reason.");
+            await this.resultHandler.HandleUploadResultAsync(
+                activity,
+                uploadStatus,
+                uploadResult,
+                this.options.Value.MaxRetries
+            );
             await this.fitSyncDbContext.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    private async Task<bool> TryClaimAsync(
+        Guid activityId,
+        string instanceId,
+        System.Linq.Expressions.Expression<Func<ActivityUploadStatus, bool>> claimPredicate,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            await this.rateLimiter.RateLimitedReachedAsync(
+                ServiceType.GarminUploader,
+                this.options.Value.RateLimits,
+                cancellationToken
+            )
+        )
+            return false;
+
+        int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(
+            u => u.ActivityId == activityId && u.DestinationServiceType == ServiceTypes.Garmin
+        )
+            .Where(claimPredicate)
+            .ExecuteUpdateAsync(
+                u =>
+                    u.SetProperty(x => x.Status, ActivityStatus.Claimed)
+                        .SetProperty(x => x.ClaimedBy, instanceId)
+                        .SetProperty(x => x.ClaimedAt, DateTime.UtcNow),
+                cancellationToken
+            );
+
+        if (affected == 0)
+        {
+            this.logger.LogInformation(
+                "Upload status for activity {ActivityId} already claimed. We'll get em next time.",
+                activityId
+            );
+            return false;
+        }
+
+        this.logger.LogInformation(
+            "Successfully claimed upload status for activity {ActivityId}. Take your L boys.",
+            activityId
+        );
+        return true;
     }
 }

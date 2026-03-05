@@ -1,7 +1,5 @@
 namespace FitSync.Shared.Features.Fetcher;
 
-using Humanizer;
-
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.Services;
 using Microsoft.Extensions.DependencyInjection;

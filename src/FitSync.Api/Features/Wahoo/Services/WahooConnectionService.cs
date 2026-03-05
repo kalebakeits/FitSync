@@ -82,7 +82,7 @@ public class WahooConnectionService(
             {
                 Id = Guid.NewGuid(),
                 IntegrationId = integration.Id,
-                FetchIntervalMinutes = 10,
+                FetchIntervalMinutes = 360,
             });
         }
         else

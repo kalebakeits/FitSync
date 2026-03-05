@@ -7,12 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class FetcherFeature
 {
-    public static IServiceCollection AddFetcher<TQueueService, TFetcherService>(
+    public static IServiceCollection AddFetcher<TFetcherClient>(
         this IServiceCollection services,
         Func<IConfigurationSection> getConfigSection
     )
-        where TQueueService : class, IUserQueuerService
-        where TFetcherService : class, IFetcherService
+        where TFetcherClient : class, IFetcherClient
     {
         services
             .AddOptions<FetcherOptions>()
@@ -21,8 +20,9 @@ public static class FetcherFeature
             .ValidateOnStart();
 
         return services
-            .AddScoped<IUserQueuerService, TQueueService>()
-            .AddScoped<IFetcherService, TFetcherService>()
+            .AddScoped<IUserQueuerService, UserQueuerService>()
+            .AddScoped<IFetcherService, FetcherService>()
+            .AddScoped<IFetcherClient, TFetcherClient>()
             .AddScoped<IDestinationGate, DestinationGate>()
             .AddScoped<IActivityPublisher, ActivityPublisher>()
             .AddScoped<IActivityPersistenceService, ActivityPersistenceService>()

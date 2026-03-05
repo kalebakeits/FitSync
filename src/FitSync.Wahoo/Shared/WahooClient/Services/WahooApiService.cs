@@ -3,10 +3,12 @@ namespace FitSync.Wahoo.Shared.WahooClient.Services;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using FitSync.Database.Enums;
 using FitSync.Database.Models;
-using FitSync.Wahoo.Shared.AuthData;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
+using FitSync.Shared.Features.RateLimiting;
+using FitSync.Wahoo.Shared.AuthData;
 using FitSync.Wahoo.Shared.Configuration;
 using FitSync.Wahoo.Shared.WahooClient.DTOs;
 using Microsoft.AspNetCore.WebUtilities;
@@ -18,6 +20,7 @@ public class WahooApiService(
     IWahooAuthService authService,
     IOptions<WahooClientOptions> options,
     IEncryptionService encryptionService,
+    IRateLimiter rateLimiter,
     ILogger<WahooApiService> logger
 ) : IWahooApiService
 {
@@ -25,6 +28,7 @@ public class WahooApiService(
     private readonly IWahooAuthService authService = authService;
     private readonly IOptions<WahooClientOptions> options = options;
     private readonly IEncryptionService encryptionService = encryptionService;
+    private readonly IRateLimiter rateLimiter = rateLimiter;
     private readonly ILogger<WahooApiService> logger = logger;
 
     public async Task<List<WahooWorkoutDto>> FetchWorkoutsAsync(
@@ -33,6 +37,11 @@ public class WahooApiService(
         CancellationToken cancellationToken = default
     )
     {
+        IReadOnlyList<RateLimit> limits = this.options.Value.RateLimits;
+
+        if (limits.Count > 0 && await this.rateLimiter.RateLimitedReachedAsync(ServiceType.WahooFetcher, limits, cancellationToken))
+            return [];
+
         await this.authService.EnsureAuthenticatedAsync(integration, cancellationToken);
 
         string url = $"{this.options.Value.BaseUrl.TrimEnd('/')}/v1/workouts";
@@ -42,6 +51,12 @@ public class WahooApiService(
 
         while (true)
         {
+            if (limits.Count > 0 && await this.rateLimiter.RateLimitedReachedAsync(ServiceType.WahooFetcher, limits, cancellationToken))
+            {
+                this.logger.LogWarning("Wahoo rate limit hit mid-fetch for user {UserId}. Returning partial results.", integration.UserId);
+                break;
+            }
+
             WahooAuthData authData = integration.GetAuthData<WahooAuthData>(this.encryptionService);
             Dictionary<string, string?> parameters = new()
             {

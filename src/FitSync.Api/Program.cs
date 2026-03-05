@@ -74,7 +74,7 @@ builder
     .AddConnectionsFeature()
     .AddActivitiesFeature()
     .AddFetchersFeature()
-    .AddWahooFeature()
+    .AddWahooFeature(() => builder.Configuration.GetSection("WahooOptions"))
     .AddEndpointsApiExplorer()
     .AddAuthorization()
     .AddControllers(o => o.Conventions.Add(new RoutePrefixConvention("api")));

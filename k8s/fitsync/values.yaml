@@ -22,7 +22,7 @@ shared:
     fromName: "FitSync"
 
   # Base fetcher configuration (shared by all fetchers)
-  pollIntervalMinutes: 60 # How often to poll for new activities
+  pollIntervalMinutes: 5 # How often the worker wakes to check for due users
   lookbackDays: 28 # How many days back to check for activities
   deadThresholdMinutes: 5 # Minutes before considering an uploader dead
   maxPendingActivities: 50 # Max un-uploaded activities before pausing
@@ -120,8 +120,12 @@ zwiftFetcher:
       baseUrl: "https://us-or-rly101.zwift.com"
       clientId: "Zwift_Mobile_Link"
       clientSecret: "TokenSecret"
-      amazonS3RateLimit: 500
-      zwiftApiRateLimit: 50
+      zwiftApiRateLimits:
+        - windowMinutes: 1
+          cap: 50
+      amazonS3RateLimits:
+        - windowMinutes: 1
+          cap: 500
 
   resources:
     requests:
@@ -143,6 +147,13 @@ wahooFetcher:
     baseUrl: "https://api.wahooligan.com"
     lookbackDays: 28
     # clientId and clientSecret are stored in k8s secret: fitsync-wahoo-secret
+    rateLimits:
+      - windowMinutes: 5
+        cap: 25
+      - windowMinutes: 60
+        cap: 100
+      - windowMinutes: 1440
+        cap: 250
 
   resources:
     requests:
@@ -164,7 +175,9 @@ garminUploader:
     heartbeatIntervalMinutes: 1
     maxRetries: 3
     orphanThresholdMinutes: 2
-    garminApiRateLimit: 50
+    rateLimits:
+      - windowMinutes: 1
+        cap: 10
 
   resources:
     requests:

@@ -6,5 +6,6 @@ public sealed record GlobalVariables(
     string Instance,
     string HostName,
     int HeartbeatIntervalMinutes,
-    ServiceType ServiceType
+    ServiceType ServiceType,
+    string ServiceName
 );

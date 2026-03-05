@@ -60,17 +60,21 @@ public class ActivityPersistenceService(
 
         this.dbContext.Activities.Add(activity);
 
-        List<UserDestinationConfig> destinations = await this.dbContext.UserDestinationConfigs
-            .Where(c => c.UserId == userId && c.SourceServiceType == fetchedActivity.Source)
-            .ToListAsync(cancellationToken);
+        List<UserDestinationConfig> destinations =
+            await this.dbContext.UserDestinationConfigs.Where(
+                c => c.UserId == userId && c.SourceServiceType == fetchedActivity.Source
+            )
+                .ToListAsync(cancellationToken);
 
         foreach (UserDestinationConfig dest in destinations)
         {
-            this.dbContext.ActivityUploadStatuses.Add(new ActivityUploadStatus
-            {
-                ActivityId = activity.Id,
-                DestinationServiceType = dest.DestinationServiceType,
-            });
+            this.dbContext.ActivityUploadStatuses.Add(
+                new ActivityUploadStatus
+                {
+                    ActivityId = activity.Id,
+                    DestinationServiceType = dest.DestinationServiceType,
+                }
+            );
         }
 
         await this.dbContext.SaveChangesAsync(cancellationToken);
