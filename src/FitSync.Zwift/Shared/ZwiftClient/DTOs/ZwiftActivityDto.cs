@@ -1,16 +1,16 @@
 namespace FitSync.Zwift.Shared.ZwiftClient.DTOs;
 
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
-public record ZwiftActivityProfileDto([property: JsonProperty("riding")] bool Riding);
+public record ZwiftActivityProfileDto([property: JsonPropertyName("riding")] bool Riding);
 
 public record ZwiftActivityDto(
-    [property: JsonProperty("id")] long Id,
-    [property: JsonProperty("name")] string Name,
-    [property: JsonProperty("startDate")] string StartDate,
-    [property: JsonProperty("fitFileBucket")] string FitFileBucket,
-    [property: JsonProperty("fitFileKey")] string FitFileKey,
-    [property: JsonProperty("profile")] ZwiftActivityProfileDto? Profile
+    [property: JsonPropertyName("id")] long Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("startDate")] string StartDate,
+    [property: JsonPropertyName("fitFileBucket")] string FitFileBucket,
+    [property: JsonPropertyName("fitFileKey")] string FitFileKey,
+    [property: JsonPropertyName("profile")] ZwiftActivityProfileDto? Profile
 )
 {
     public DateTime GetStartDateTime() =>

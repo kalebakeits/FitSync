@@ -12,7 +12,7 @@ using FitSync.Zwift.Shared.AuthData;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using FitSync.Zwift.Shared.Configuration;
 
 public class ZwiftApiService(
@@ -81,7 +81,7 @@ public class ZwiftApiService(
         response.EnsureSuccessStatusCode();
 
         string json = await response.Content.ReadAsStringAsync(cancellationToken);
-        ZwiftActivityDto[] activities = JToken.Parse(json).ToObject<ZwiftActivityDto[]>() ?? [];
+        ZwiftActivityDto[] activities = JsonSerializer.Deserialize<ZwiftActivityDto[]>(json) ?? [];
 
         this.logger.LogInformation(
             "Zwift returned {Count} activities for user {UserId}.",
