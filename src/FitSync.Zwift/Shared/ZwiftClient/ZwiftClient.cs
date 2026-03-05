@@ -1,8 +1,9 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient;
+namespace FitSync.Zwift.Shared.ZwiftClient;
 
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.DTOs;
-using FitSync.Zwift.Fetcher.Features.ZwiftClient.Services;
+using FitSync.Zwift.Shared.ZwiftClient.Services;
+using FitSync.Zwift.Shared.ZwiftClient;
 using Microsoft.Extensions.Logging;
 
 public class ZwiftClient(
@@ -28,7 +29,9 @@ public class ZwiftClient(
         var activities = await this.apiService.FetchActivitiesAsync(integration, cancellationToken);
 
         List<FetchedActivity> fetched = await this.activityProcessor.ProcessActivitiesAsync(
-            activities, lookbackDays, cancellationToken
+            activities,
+            lookbackDays,
+            cancellationToken
         );
 
         this.logger.LogInformation(

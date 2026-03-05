@@ -19,7 +19,6 @@ public class OrphanedActivityReclaimer(
     private readonly IOptions<GarminUploaderOptions> options = options;
     private readonly ILogger<OrphanedActivityReclaimer> logger = logger;
     private readonly IActivityProcessor activityProcessor = activityProcessor;
-    private const int orphanProcessingBatchSize = 5;
 
     public async Task ReclaimOrphanedActivitiesAsync(CancellationToken cancellationToken)
     {
@@ -33,41 +32,38 @@ public class OrphanedActivityReclaimer(
             ActivityStatus.Claimed,
         ];
 
-        List<Guid> orphanedActivityIds = await this.fitSyncDbContext.ActivityUploadStatuses
-            .Where(u => u.DestinationServiceType == ServiceTypes.Garmin)
-            .Where(u => incompleteStatuses.Contains(u.Status))
-            .Where(u => u.ClaimedBy != null && u.ClaimedAt < cutoff)
-            .Take(orphanProcessingBatchSize)
-            .Select(u => u.ActivityId)
-            .ToListAsync(cancellationToken);
+        IQueryable<ActivityUploadStatus> orphanedActivities =
+            this.fitSyncDbContext.ActivityUploadStatuses.Where(
+                u => u.DestinationServiceType == ServiceTypes.Garmin
+            )
+                .Where(u => incompleteStatuses.Contains(u.Status))
+                .Where(u => u.ClaimedBy != null)
+                .Where(u => u.ClaimedAt < cutoff);
 
-        if (orphanedActivityIds.Count == 0)
+        int orphanCount = await orphanedActivities.CountAsync(cancellationToken);
+
+        if (orphanCount == 0)
         {
             this.logger.LogDebug("There are no orphans to adopt. Back you go!");
             return;
         }
 
         this.logger.LogWarning(
-            "Adopting {Count} orphans. Ids: {@ActivityIds}",
-            orphanedActivityIds.Count,
-            orphanedActivityIds
+            "{AffectedRows} orphans have been found. Will attempt to adopt them.",
+            orphanCount
         );
 
-        await this.fitSyncDbContext.ActivityUploadStatuses
-            .Where(u =>
-                orphanedActivityIds.Contains(u.ActivityId)
-                && u.DestinationServiceType == ServiceTypes.Garmin
-            )
-            .ExecuteUpdateAsync(u =>
-                u.SetProperty(x => x.Status, ActivityStatus.Pending)
-                    .SetProperty(x => x.ClaimedAt, (DateTime?)null)
-                    .SetProperty(x => x.ClaimedBy, (string?)null)
+        await foreach (
+            Guid activityId in orphanedActivities.Select(a => a.ActivityId).ToAsyncEnumerable()
+        )
+        {
+            this.logger.LogDebug("Trying to adopt orphan - Activity: {ActivityId}.", activityId);
+            await this.activityProcessor.ReclaimAndProcessActivityAsync(
+                activityId,
+                this.options.Value.InstanceId,
+                cutoff,
+                cancellationToken
             );
-
-        await Parallel.ForEachAsync(
-            orphanedActivityIds,
-            async (id, ct) =>
-                await this.activityProcessor.ClaimAndProcessActivityAsync(id, this.options.Value.InstanceId, ct)
-        );
+        }
     }
 }

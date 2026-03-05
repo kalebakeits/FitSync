@@ -1,7 +1,7 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient.Services;
+namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
 using FitSync.Shared.Features.Fetcher.DTOs;
-using FitSync.Zwift.Fetcher.Features.ZwiftClient.DTOs;
+using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 
 public interface IZwiftActivityProcessor
 {

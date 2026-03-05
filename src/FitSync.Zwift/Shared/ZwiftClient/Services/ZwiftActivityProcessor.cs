@@ -1,10 +1,11 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient.Services;
+namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.DTOs;
 using FitSync.Shared.Features.RateLimiting;
-using FitSync.Zwift.Fetcher.Configuration;
-using FitSync.Zwift.Fetcher.Features.ZwiftClient.DTOs;
+using FitSync.Zwift.Shared.Configuration;
+using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -57,7 +58,7 @@ public class ZwiftActivityProcessor(
                 fetchedActivities.Add(
                     new FetchedActivity(
                         ExternalActivityId: activity.Id.ToString(),
-                        Source: "Zwift",
+                        Source: ServiceTypes.Zwift,
                         ActivityDate: activityStartDate,
                         FileName: $"zwift_{activityStartDate:yyyyMMdd_HHmmss}_{activity.Id}.fit",
                         FitFileData: fitFileData,
@@ -76,8 +77,13 @@ public class ZwiftActivityProcessor(
         CancellationToken cancellationToken
     )
     {
-        ServiceType type = ServiceType.AmazonS3;
-        if (await this.rateLimiter.RateLimitedReachedAsync(type, this.options.Value.AmazonS3RateLimits, cancellationToken))
+        if (
+            await this.rateLimiter.RateLimitedReachedAsync(
+                ServiceType.AmazonS3,
+                this.options.Value.AmazonS3RateLimits,
+                cancellationToken
+            )
+        )
             return [];
 
         bool missingFileDetails =

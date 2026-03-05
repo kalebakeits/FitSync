@@ -27,8 +27,10 @@ data:
         "MaxParallelUsers": {{ .Values.shared.maxParallelUsers }},
         "MaxParallelActivities": {{ .Values.shared.maxParallelActivities }},
         "MaxSequentialCredentialFailures": {{ .Values.shared.maxSequentialCredentialFailures }},
-        "BaseUrl": "{{ .Values.wahooFetcher.config.baseUrl }}",
-        "RateLimits": {{ .Values.wahooFetcher.config.rateLimits | toJson }}
+        "Client": {
+          "BaseUrl": "{{ .Values.wahooFetcher.config.baseUrl }}",
+          "RateLimits": {{ .Values.wahooFetcher.config.rateLimits | toJson }}
+        }
       },
       "AllowedHosts": "*"
     }

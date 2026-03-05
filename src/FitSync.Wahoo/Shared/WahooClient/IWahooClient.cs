@@ -1,15 +1,11 @@
 namespace FitSync.Wahoo.Shared.WahooClient;
 
-using FitSync.Database.Models;
-using FitSync.Shared.Features.Fetcher.DTOs;
+using FitSync.Shared.Features.Fetcher.Services;
 
-public interface IWahooClient
+public interface IWahooClient : IFetcherClient
 {
-    Task<List<FetchedActivity>> GetActivitiesAsync(
-        Integration integration,
-        int lookbackDays,
+    Task<byte[]> DownloadFitFileAsync(
+        string fileUrl,
         CancellationToken cancellationToken = default
     );
-
-    Task<byte[]> DownloadFitFileAsync(string fileUrl, CancellationToken cancellationToken = default);
 }

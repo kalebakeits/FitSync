@@ -1,13 +1,14 @@
 using FitSync.Database;
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
+using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
 using FitSync.Shared.Features.RateLimiting;
-using FitSync.Zwift.Fetcher.Configuration;
-using FitSync.Zwift.Fetcher.Features.ZwiftClient;
-using FitSync.Zwift.Fetcher.Features.ZwiftFetcher;
+using FitSync.Zwift.Shared.Configuration;
+using FitSync.Zwift.Shared.ZwiftClient;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -48,7 +49,8 @@ builder.Services.AddGlobalVariables(
     fetcherConfig.InstanceId,
     Environment.MachineName,
     fetcherConfig.HeartbeatIntervalMinutes,
-    ServiceType.ZwiftFetcher
+    ServiceType.ZwiftFetcher,
+    ServiceTypes.Zwift
 );
 
 // Kafka producer
@@ -57,7 +59,7 @@ builder.AddKafkaProducer<string, string>("kafka");
 // Features
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
-    .AddZwiftFetcher(() => builder.Configuration.GetSection("ZwiftFetcherOptions"))
+    .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("WahooFetcherOptions"))
     .AddZwiftClient()
     .AddHeartbeat()
     .AddRateLimiting();

@@ -1,4 +1,4 @@
-namespace FitSync.Zwift.Fetcher.Configuration;
+namespace FitSync.Zwift.Shared.Configuration;
 
 using FitSync.Shared.Configuration;
 using FitSync.Shared.Features.RateLimiting;

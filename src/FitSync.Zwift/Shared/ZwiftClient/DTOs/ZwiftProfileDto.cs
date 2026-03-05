@@ -1,4 +1,4 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient.DTOs;
+namespace FitSync.Zwift.Shared.ZwiftClient.DTOs;
 
 using System.Text.Json.Serialization;
 

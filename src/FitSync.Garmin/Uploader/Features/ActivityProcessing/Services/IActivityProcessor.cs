@@ -8,5 +8,10 @@ public interface IActivityProcessor
         CancellationToken cancellationToken
     );
 
-    Task ProcessActivityAsync(Guid activityId, CancellationToken cancellationToken);
+    Task ReclaimAndProcessActivityAsync(
+        Guid activityId,
+        string instanceId,
+        DateTime orphanCutoff,
+        CancellationToken cancellationToken
+    );
 }

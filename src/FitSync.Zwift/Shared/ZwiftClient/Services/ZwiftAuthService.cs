@@ -1,15 +1,15 @@
-namespace FitSync.Zwift.Fetcher.Features.ZwiftClient.Services;
+namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
 using FitSync.Database;
 using FitSync.Database.Models;
-using FitSync.Zwift.Shared.AuthData;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
-using FitSync.Zwift.Fetcher.Configuration;
-using FitSync.Zwift.Fetcher.Features.ZwiftClient.DTOs;
+using FitSync.Zwift.Shared.ZwiftClient.DTOs;
+using FitSync.Zwift.Shared.AuthData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using FitSync.Zwift.Shared.Configuration;
 
 public class ZwiftAuthService(
     HttpClient httpClient,
@@ -32,7 +32,9 @@ public class ZwiftAuthService(
     {
         ZwiftAuthData authData = integration.GetAuthData<ZwiftAuthData>(this.encryptionService);
 
-        if (!string.IsNullOrEmpty(authData.AccessToken) && !string.IsNullOrEmpty(authData.ProfileId))
+        if (
+            !string.IsNullOrEmpty(authData.AccessToken) && !string.IsNullOrEmpty(authData.ProfileId)
+        )
         {
             return;
         }
@@ -67,7 +69,11 @@ public class ZwiftAuthService(
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Re-authentication failed for user {UserId}.", integration.UserId);
+            this.logger.LogError(
+                ex,
+                "Re-authentication failed for user {UserId}.",
+                integration.UserId
+            );
             return false;
         }
     }
@@ -78,24 +84,31 @@ public class ZwiftAuthService(
         CancellationToken cancellationToken
     )
     {
-        this.logger.LogInformation("Authenticating with Zwift for user {UserId}.", integration.UserId);
+        this.logger.LogInformation(
+            "Authenticating with Zwift for user {UserId}.",
+            integration.UserId
+        );
 
-        FormUrlEncodedContent content = new(new Dictionary<string, string>
-        {
-            ["username"] = authData.Username,
-            ["password"] = authData.Password,
-            ["client_id"] = this.options.Value.ClientId,
-            ["grant_type"] = "password",
-        });
+        FormUrlEncodedContent content =
+            new(
+                new Dictionary<string, string>
+                {
+                    ["username"] = authData.Username,
+                    ["password"] = authData.Password,
+                    ["client_id"] = this.options.Value.ClientId,
+                    ["grant_type"] = "password",
+                }
+            );
 
         HttpResponseMessage response = await this.httpClient.PostAsync(
-            this.options.Value.AuthUrl, content, cancellationToken
+            this.options.Value.AuthUrl,
+            content,
+            cancellationToken
         );
 
         if (!response.IsSuccessStatusCode)
         {
-            await this.dbContext.Integrations
-                .Where(i => i.Id == integration.Id)
+            await this.dbContext.Integrations.Where(i => i.Id == integration.Id)
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(i => i.FailureCount, i => i.FailureCount + 1),
                     cancellationToken
@@ -103,18 +116,21 @@ public class ZwiftAuthService(
             response.EnsureSuccessStatusCode();
         }
 
-        AuthTokenResponse tokenResponse = await response.Content
-            .ReadFromJsonAsync<AuthTokenResponse>(cancellationToken: cancellationToken)
-            ?? throw new Exception("Failed to deserialize Zwift auth response.");
+        AuthTokenResponse tokenResponse =
+            await response.Content.ReadFromJsonAsync<AuthTokenResponse>(
+                cancellationToken: cancellationToken
+            ) ?? throw new Exception("Failed to deserialize Zwift auth response.");
 
         authData.AccessToken = tokenResponse.AccessToken;
         authData.RefreshToken = tokenResponse.RefreshToken;
-        authData.ProfileId = await this.FetchProfileIdAsync(authData.AccessToken, cancellationToken);
+        authData.ProfileId = await this.FetchProfileIdAsync(
+            authData.AccessToken,
+            cancellationToken
+        );
 
         integration.SetAuthData(authData, this.encryptionService);
 
-        await this.dbContext.Integrations
-            .Where(i => i.Id == integration.Id)
+        await this.dbContext.Integrations.Where(i => i.Id == integration.Id)
             .ExecuteUpdateAsync(s => s.SetProperty(i => i.FailureCount, 0), cancellationToken);
 
         await this.dbContext.SaveChangesAsync(cancellationToken);
@@ -129,21 +145,27 @@ public class ZwiftAuthService(
     {
         this.logger.LogInformation("Refreshing Zwift token for user {UserId}.", integration.UserId);
 
-        FormUrlEncodedContent content = new(new Dictionary<string, string>
-        {
-            ["refresh_token"] = authData.RefreshToken!,
-            ["client_id"] = this.options.Value.ClientId,
-            ["grant_type"] = "refresh_token",
-        });
+        FormUrlEncodedContent content =
+            new(
+                new Dictionary<string, string>
+                {
+                    ["refresh_token"] = authData.RefreshToken!,
+                    ["client_id"] = this.options.Value.ClientId,
+                    ["grant_type"] = "refresh_token",
+                }
+            );
 
         HttpResponseMessage response = await this.httpClient.PostAsync(
-            this.options.Value.AuthUrl, content, cancellationToken
+            this.options.Value.AuthUrl,
+            content,
+            cancellationToken
         );
         response.EnsureSuccessStatusCode();
 
-        AuthTokenResponse tokenResponse = await response.Content
-            .ReadFromJsonAsync<AuthTokenResponse>(cancellationToken: cancellationToken)
-            ?? throw new Exception("Failed to deserialize Zwift token refresh response.");
+        AuthTokenResponse tokenResponse =
+            await response.Content.ReadFromJsonAsync<AuthTokenResponse>(
+                cancellationToken: cancellationToken
+            ) ?? throw new Exception("Failed to deserialize Zwift token refresh response.");
 
         authData.AccessToken = tokenResponse.AccessToken;
         authData.RefreshToken = tokenResponse.RefreshToken;
@@ -151,7 +173,10 @@ public class ZwiftAuthService(
         await this.dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<string> FetchProfileIdAsync(string accessToken, CancellationToken cancellationToken)
+    private async Task<string> FetchProfileIdAsync(
+        string accessToken,
+        CancellationToken cancellationToken
+    )
     {
         string url = $"{this.options.Value.BaseUrl}/api/profiles/me";
         this.httpClient.DefaultRequestHeaders.Authorization =
@@ -162,10 +187,12 @@ public class ZwiftAuthService(
         );
         HttpResponseMessage response = await this.httpClient.GetAsync(url, cancellationToken);
         response.EnsureSuccessStatusCode();
-        ZwiftProfileDto profile = await response.Content.ReadFromJsonAsync<ZwiftProfileDto>(
-            cancellationToken: cancellationToken
-        ) ?? throw new Exception("Failed to retrieve Zwift profile.");
-        if (profile.Id == 0) throw new Exception("Invalid Zwift profile ID.");
+        ZwiftProfileDto profile =
+            await response.Content.ReadFromJsonAsync<ZwiftProfileDto>(
+                cancellationToken: cancellationToken
+            ) ?? throw new Exception("Failed to retrieve Zwift profile.");
+        if (profile.Id == 0)
+            throw new Exception("Invalid Zwift profile ID.");
         return profile.Id.ToString();
     }
 }

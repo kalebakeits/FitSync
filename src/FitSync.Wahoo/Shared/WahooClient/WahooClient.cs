@@ -23,16 +23,20 @@ public class WahooClient(
     )
     {
         List<WahooWorkoutDto> workouts = await this.apiService.FetchWorkoutsAsync(
-            integration, lookbackDays, cancellationToken
+            integration,
+            lookbackDays,
+            cancellationToken
         );
 
         List<FetchedActivity> activities = await this.activityProcessor.ProcessActivitiesAsync(
-            workouts, cancellationToken
+            workouts,
+            cancellationToken
         );
 
         this.logger.LogInformation(
             "WahooClient processed {Count} activities for user {UserId}.",
-            activities.Count, integration.UserId
+            activities.Count,
+            integration.UserId
         );
 
         return activities;

@@ -13,13 +13,17 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
 
     private const string SsoEmbedUrl = "https://sso.garmin.com/sso/embed";
     private const string SsoSignInUrl = "https://sso.garmin.com/sso/signin";
-    private const string OAuth1TokenUrl = "https://connectapi.garmin.com/oauth-service/oauth/preauthorized";
-    private const string OAuth2TokenUrl = "https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0";
+    private const string OAuth1TokenUrl =
+        "https://connectapi.garmin.com/oauth-service/oauth/preauthorized";
+    private const string OAuth2TokenUrl =
+        "https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0";
     private const string UploadUrl = "https://connectapi.garmin.com/upload-service/upload";
-    private const string ConsumerCredentialsUrl = "https://thegarth.s3.amazonaws.com/oauth_consumer.json";
+    private const string ConsumerCredentialsUrl =
+        "https://thegarth.s3.amazonaws.com/oauth_consumer.json";
     private const string UserAgent = "GCM-iOS-5.7.2.1";
     private const string Origin = "https://sso.garmin.com";
-    private const string OAuth1LoginUrlParam = "https://sso.garmin.com/sso/embed&accepts-mfa-tokens=true";
+    private const string OAuth1LoginUrlParam =
+        "https://sso.garmin.com/sso/embed&accepts-mfa-tokens=true";
 
     private static readonly object CommonQueryParams = new
     {
@@ -61,7 +65,9 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
         Regex tokenRegex = CsrfTokenRegex();
         Match match = tokenRegex.Match(rawBody);
         if (!match.Success)
-            throw new InvalidOperationException($"Failed to find CSRF token in Garmin SSO response. Body length: {rawBody.Length}");
+            throw new InvalidOperationException(
+                $"Failed to find CSRF token in Garmin SSO response. Body length: {rawBody.Length}"
+            );
 
         string csrfToken = match.Groups["csrf"].Value;
         this.logger.LogInformation("CSRF token obtained.");
@@ -120,19 +126,30 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
     {
         this.logger.LogInformation("Fetching OAuth1 token.");
 
-        OAuthRequest oauthClient = OAuthRequest.ForRequestToken(credentials.ConsumerKey, credentials.ConsumerSecret);
-        oauthClient.RequestUrl = $"{OAuth1TokenUrl}?ticket={ticket}&login-url={OAuth1LoginUrlParam}";
+        OAuthRequest oauthClient = OAuthRequest.ForRequestToken(
+            credentials.ConsumerKey,
+            credentials.ConsumerSecret
+        );
+        oauthClient.RequestUrl =
+            $"{OAuth1TokenUrl}?ticket={ticket}&login-url={OAuth1LoginUrlParam}";
 
-        string response = await oauthClient.RequestUrl
-            .WithHeader("User-Agent", UserAgent)
+        string response = await oauthClient
+            .RequestUrl.WithHeader("User-Agent", UserAgent)
             .WithHeader("Authorization", oauthClient.GetAuthorizationHeader())
             .GetStringAsync(cancellationToken: ct);
 
-        System.Collections.Specialized.NameValueCollection queryParams = HttpUtility.ParseQueryString(response);
-        string oauthToken = queryParams.Get("oauth_token")
-            ?? throw new InvalidOperationException($"oauth_token missing in OAuth1 response: {response}");
-        string oauthTokenSecret = queryParams.Get("oauth_token_secret")
-            ?? throw new InvalidOperationException($"oauth_token_secret missing in OAuth1 response: {response}");
+        System.Collections.Specialized.NameValueCollection queryParams =
+            HttpUtility.ParseQueryString(response);
+        string oauthToken =
+            queryParams.Get("oauth_token")
+            ?? throw new InvalidOperationException(
+                $"oauth_token missing in OAuth1 response: {response}"
+            );
+        string oauthTokenSecret =
+            queryParams.Get("oauth_token_secret")
+            ?? throw new InvalidOperationException(
+                $"oauth_token_secret missing in OAuth1 response: {response}"
+            );
 
         this.logger.LogInformation("OAuth1 token obtained.");
         return (oauthToken, oauthTokenSecret);
@@ -156,18 +173,25 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
         );
         oauthClient.RequestUrl = OAuth2TokenUrl;
 
-        GarminOAuth2Token token = await oauthClient.RequestUrl
-            .WithHeader("User-Agent", UserAgent)
+        GarminOAuth2Token token = await oauthClient
+            .RequestUrl.WithHeader("User-Agent", UserAgent)
             .WithHeader("Authorization", oauthClient.GetAuthorizationHeader())
             .WithHeader("Content-Type", "application/x-www-form-urlencoded")
             .PostUrlEncodedAsync(new object(), cancellationToken: ct) // empty body — Content-Type header must be preserved
             .ReceiveJson<GarminOAuth2Token>();
 
-        this.logger.LogInformation("OAuth2 token obtained. Expires in {ExpiresIn}s.", token.ExpiresIn);
+        this.logger.LogInformation(
+            "OAuth2 token obtained. Expires in {ExpiresIn}s.",
+            token.ExpiresIn
+        );
         return token;
     }
 
-    public async Task<UploadResult> UploadActivityAsync(byte[] fitFileData, string accessToken, CancellationToken ct)
+    public async Task<UploadResult> UploadActivityAsync(
+        byte[] fitFileData,
+        string accessToken,
+        CancellationToken ct
+    )
     {
         string tempFile = Path.Combine(Path.GetTempPath(), $"fit_{Guid.NewGuid()}.fit");
         await File.WriteAllBytesAsync(tempFile, fitFileData, ct);
@@ -175,7 +199,10 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
         try
         {
             string fileName = Path.GetFileName(tempFile);
-            this.logger.LogInformation("Uploading activity to Garmin ({Bytes} bytes).", fitFileData.Length);
+            this.logger.LogInformation(
+                "Uploading activity to Garmin ({Bytes} bytes).",
+                fitFileData.Length
+            );
 
             using IFlurlClient uploadClient = new FlurlClient();
             using IFlurlResponse response = await uploadClient
@@ -186,7 +213,13 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
                 .WithHeader("User-Agent", UserAgent)
                 .AllowHttpStatus("2xx,409")
                 .PostMultipartAsync(
-                    data => data.AddFile("\"file\"", path: tempFile, contentType: "application/octet-stream", fileName: $"\"{fileName}\""),
+                    data =>
+                        data.AddFile(
+                            "\"file\"",
+                            path: tempFile,
+                            contentType: "application/octet-stream",
+                            fileName: $"\"{fileName}\""
+                        ),
                     cancellationToken: ct
                 );
 
@@ -194,23 +227,38 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
 
             if (statusCode == (int)HttpStatusCode.Conflict)
             {
-                this.logger.LogInformation("Activity already uploaded (409 Conflict — treated as success).");
+                this.logger.LogInformation(
+                    "Activity already uploaded (409 Conflict — treated as success)."
+                );
                 return UploadResult.Succeeded();
             }
 
             if (statusCode >= 200 && statusCode <= 299)
             {
-                this.logger.LogInformation("Activity uploaded successfully (HTTP {StatusCode}).", statusCode);
+                this.logger.LogInformation(
+                    "Activity uploaded successfully (HTTP {StatusCode}).",
+                    statusCode
+                );
                 return UploadResult.Succeeded();
             }
 
             this.logger.LogError("Unexpected upload status code {StatusCode}.", statusCode);
-            return UploadResult.Failed($"Unexpected status code: {statusCode}", (HttpStatusCode)statusCode);
+            return UploadResult.Failed(
+                $"Unexpected status code: {statusCode}",
+                (HttpStatusCode)statusCode
+            );
         }
         catch (FlurlHttpException ex)
         {
-            this.logger.LogError(ex, "HTTP error uploading to Garmin: {StatusCode}.", ex.StatusCode);
-            return UploadResult.Failed(ex.Message, ex.StatusCode.HasValue ? (HttpStatusCode)ex.StatusCode.Value : null);
+            this.logger.LogError(
+                ex,
+                "HTTP error uploading to Garmin: {StatusCode}.",
+                ex.StatusCode
+            );
+            return UploadResult.Failed(
+                ex.Message,
+                ex.StatusCode.HasValue ? (HttpStatusCode)ex.StatusCode.Value : null
+            );
         }
         finally
         {

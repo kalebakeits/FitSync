@@ -55,12 +55,12 @@ spec:
             secretKeyRef:
               name: fitsync-secrets
               key: data-protection-key
-        - name: WahooFetcherOptions__ClientId
+        - name: WahooFetcherOptions__Client__ClientId
           valueFrom:
             secretKeyRef:
               name: fitsync-wahoo-secret
               key: client-id
-        - name: WahooFetcherOptions__ClientSecret
+        - name: WahooFetcherOptions__Client__ClientSecret
           valueFrom:
             secretKeyRef:
               name: fitsync-wahoo-secret

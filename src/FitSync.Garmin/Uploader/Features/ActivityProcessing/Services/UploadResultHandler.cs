@@ -34,14 +34,17 @@ public class UploadResultHandler(
                 uploadStatus.DestinationServiceType
             );
 
-            await this.fitSyncDbContext.Integrations
-                .Where(i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin)
+            await this.fitSyncDbContext.Integrations.Where(
+                i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin
+            )
                 .ExecuteUpdateAsync(s => s.SetProperty(i => i.FailureCount, 0));
 
             return;
         }
 
-        uploadStatus.Status = this.activityStatusMapper.MapHttpStatusToActivityStatus(result.StatusCode);
+        uploadStatus.Status = this.activityStatusMapper.MapHttpStatusToActivityStatus(
+            result.StatusCode
+        );
         uploadStatus.LastError = result.ErrorMessage;
         uploadStatus.LastErrorAt = DateTime.UtcNow;
         uploadStatus.RetryCount++;
@@ -53,11 +56,17 @@ public class UploadResultHandler(
             uploadStatus.Status
         );
 
-        if (result.StatusCode == HttpStatusCode.Unauthorized || result.StatusCode == HttpStatusCode.Forbidden)
+        if (
+            result.StatusCode == HttpStatusCode.Unauthorized
+            || result.StatusCode == HttpStatusCode.Forbidden
+        )
         {
-            await this.fitSyncDbContext.Integrations
-                .Where(i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin)
-                .ExecuteUpdateAsync(s => s.SetProperty(i => i.FailureCount, i => i.FailureCount + 1));
+            await this.fitSyncDbContext.Integrations.Where(
+                i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin
+            )
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(i => i.FailureCount, i => i.FailureCount + 1)
+                );
 
             this.logger.LogWarning(
                 "Incremented failure count for user {UserId}. Skill issue",
@@ -82,6 +91,7 @@ public class UploadResultHandler(
     private static bool ShouldRetry(ActivityUploadStatus uploadStatus, int maxRetries)
     {
         HashSet<ActivityStatus> noRetryStatuses = [ActivityStatus.Failed, ActivityStatus.Conflict];
-        return !noRetryStatuses.Contains(uploadStatus.Status) && uploadStatus.RetryCount < maxRetries;
+        return !noRetryStatuses.Contains(uploadStatus.Status)
+            && uploadStatus.RetryCount < maxRetries;
     }
 }
