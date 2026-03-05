@@ -1,4 +1,4 @@
-import { ListItem, Fab, Tooltip, Box, Typography } from "@mui/material";
+import { ListItem, IconButton, Tooltip, Box, Typography } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import ServiceIcon from "./ServiceIcon";
 import StatusIndicator from "./StatusIndicator";
@@ -33,7 +33,6 @@ export default function CredentialCard({
         alignItems: "stretch",
         gap: 0.75,
         my: 0.5,
-        mx: 2,
         width: "auto",
         py: 1.5,
         px: 2,
@@ -56,27 +55,15 @@ export default function CredentialCard({
         <Box sx={{ display: "flex", gap: 0.5 }}>
           {onEdit && (
             <Tooltip title="Edit credentials">
-              <Fab
-                color="primary"
-                onClick={onEdit}
-                disabled={isProcessing}
-                size="small"
-                sx={{ width: 25, height: 25, minHeight: 25 }}
-              >
+              <IconButton color="primary" onClick={onEdit} disabled={isProcessing} size="small">
                 <Edit fontSize="small" />
-              </Fab>
+              </IconButton>
             </Tooltip>
           )}
           <Tooltip title="Disconnect">
-            <Fab
-              color="error"
-              onClick={onDisconnect}
-              disabled={isProcessing}
-              size="small"
-              sx={{ width: 25, height: 25, minHeight: 25, mx: 0.5 }}
-            >
+            <IconButton color="error" onClick={onDisconnect} disabled={isProcessing} size="small">
               <Delete fontSize="small" />
-            </Fab>
+            </IconButton>
           </Tooltip>
         </Box>
       </Box>

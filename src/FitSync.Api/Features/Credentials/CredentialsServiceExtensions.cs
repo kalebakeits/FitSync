@@ -14,6 +14,8 @@ public static class CredentialsServiceExtensions
 
         services.AddScoped<IOAuthServiceHandler, WahooOAuthHandler>();
 
+        services.AddScoped<IServiceTypeResolver, ServiceTypeResolver>();
+
         return services;
     }
 }

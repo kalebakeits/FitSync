@@ -8,10 +8,38 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Session> Sessions { get; set; } = null!;
     public DbSet<Activity> Activities { get; set; } = null!;
+    public DbSet<ActivityUploadStatus> ActivityUploadStatuses { get; set; } = null!;
     public DbSet<ServiceHeartbeat> ServiceHeartbeats { get; set; } = null!;
     public DbSet<ProcessedActivity> ProcessedActivities { get; set; } = null!;
     public DbSet<Integration> Integrations { get; set; } = null!;
     public DbSet<FetcherConfig> FetcherConfigs { get; set; } = null!;
+    public DbSet<UserDestinationConfig> UserDestinationConfigs { get; set; } = null!;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserDestinationConfig>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType });
+
+            entity.HasIndex(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType })
+                  .IsUnique();
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ActivityUploadStatus>(entity =>
+        {
+            entity.HasKey(e => new { e.ActivityId, e.DestinationServiceType });
+
+            entity.HasOne(e => e.Activity)
+                  .WithMany(a => a.UploadStatuses)
+                  .HasForeignKey(e => e.ActivityId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

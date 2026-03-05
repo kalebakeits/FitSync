@@ -42,17 +42,13 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("activity_name");
 
-                    b.Property<DateTime?>("ClaimedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("claimed_at");
-
-                    b.Property<string>("ClaimedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("claimed_by");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
 
                     b.Property<string>("ExternalActivityId")
                         .IsRequired()
@@ -68,41 +64,20 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("fit_file_data");
 
-                    b.Property<string>("LastError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_error");
-
-                    b.Property<DateTime?>("LastErrorAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_error_at");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<string>("OriginalFileName")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("original_file_name");
 
-                    b.Property<DateTime?>("ProcessingCompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_completed_at");
-
-                    b.Property<DateTime?>("ProcessingStartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_started_at");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("retry_count");
-
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("source");
-
-                    b.Property<int>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -119,13 +94,63 @@ namespace FitSync.Database.Migrations
 
                     b.HasIndex(new[] { "ActivityDate" }, "idx_activities_activity_date");
 
-                    b.HasIndex(new[] { "ClaimedBy" }, "idx_activities_claimed_by");
-
-                    b.HasIndex(new[] { "Status" }, "idx_activities_status");
-
                     b.HasIndex(new[] { "UserId" }, "idx_activities_user_id");
 
                     b.ToTable("activities");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ActivityUploadStatus", b =>
+                {
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("activity_id");
+
+                    b.Property<string>("DestinationServiceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("destination_service_type");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("claimed_by");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime?>("LastErrorAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_error_at");
+
+                    b.Property<DateTime?>("ProcessingCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_completed_at");
+
+                    b.Property<DateTime?>("ProcessingStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_started_at");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.HasKey("ActivityId", "DestinationServiceType");
+
+                    b.HasIndex(new[] { "ActivityId" }, "idx_activity_upload_statuses_activity_id");
+
+                    b.HasIndex(new[] { "ClaimedBy" }, "idx_activity_upload_statuses_claimed_by");
+
+                    b.HasIndex(new[] { "Status" }, "idx_activity_upload_statuses_status");
+
+                    b.ToTable("activity_upload_statuses");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.FetcherConfig", b =>
@@ -420,6 +445,25 @@ namespace FitSync.Database.Migrations
                     b.ToTable("users");
                 });
 
+            modelBuilder.Entity("FitSync.Database.Models.UserDestinationConfig", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SourceServiceType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DestinationServiceType")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "SourceServiceType", "DestinationServiceType");
+
+                    b.HasIndex("UserId", "SourceServiceType", "DestinationServiceType")
+                        .IsUnique();
+
+                    b.ToTable("UserDestinationConfigs");
+                });
+
             modelBuilder.Entity("FitSync.Database.Models.Activity", b =>
                 {
                     b.HasOne("FitSync.Database.Models.User", "User")
@@ -429,6 +473,17 @@ namespace FitSync.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ActivityUploadStatus", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.Activity", "Activity")
+                        .WithMany("UploadStatuses")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.FetcherConfig", b =>
@@ -473,6 +528,22 @@ namespace FitSync.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.UserDestinationConfig", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.Activity", b =>
+                {
+                    b.Navigation("UploadStatuses");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.Integration", b =>

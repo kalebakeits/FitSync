@@ -8,7 +8,6 @@ export interface ActivityResponse {
   id: string;
   externalActivityId: string;
   source: string;
-  status: ActivityStatus;
   /** @nullable */
   originalFileName?: string | null;
   /** @nullable */
@@ -16,13 +15,9 @@ export interface ActivityResponse {
   activityDate: string;
   /** @nullable */
   activityName?: string | null;
-  retryCount?: number;
-  /** @nullable */
-  lastError?: string | null;
-  /** @nullable */
-  lastErrorAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  uploadStatuses?: UploadStatusEntry[];
 }
 
 export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
@@ -49,6 +44,8 @@ export interface AvailableServiceResponse {
   authType: string;
   /** @nullable */
   connectUrl?: string | null;
+  isFetcher?: boolean;
+  isUploader?: boolean;
 }
 
 export interface ConfirmPasswordResetRequest {
@@ -96,6 +93,23 @@ export interface CurrentUserResponse {
   isEmailVerified: boolean;
 }
 
+export interface DestinationMappingResponse {
+  sourceServiceType: string;
+  destinationServiceTypes: string[];
+}
+
+export interface DestinationStatusEntry {
+  serviceType: string;
+  healthy?: boolean;
+  connected?: boolean;
+}
+
+export interface FetcherStatusResponse {
+  serviceType: string;
+  status: string;
+  destinations: DestinationStatusEntry[];
+}
+
 export interface LoginRequest {
   /** @minLength 1 */
   identifier: string;
@@ -108,6 +122,10 @@ export interface PaginatedActivitiesResponse {
   total: number;
   limit: number;
   offset: number;
+}
+
+export interface PushToDestinationRequest {
+  destinationServiceType: string;
 }
 
 export interface RegisterRequest {
@@ -158,13 +176,26 @@ export interface UpdateUsernameRequest {
   username: string;
 }
 
+export interface UploadStatusEntry {
+  destinationServiceType: string;
+  status: ActivityStatus;
+  /** @nullable */
+  lastError?: string | null;
+  retryCount?: number;
+}
+
+export interface UpsertDestinationMappingsRequest {
+  /** @minLength 1 */
+  sourceServiceType: string;
+  destinationServiceTypes: string[];
+}
+
 export interface VerifyAccountRequest {
   /** @minLength 1 */
   token: string;
 }
 
 export type GetApiActivitiesParams = {
-status?: ActivityStatus;
 limit?: number;
 offset?: number;
 };

@@ -71,4 +71,11 @@ public class CredentialsController(
         );
         return this.Ok(available);
     }
+
+    [HttpGet("all", Name = "GetApiCredentialsAll")]
+    public ActionResult<List<AvailableServiceResponse>> GetAllServices()
+    {
+        List<AvailableServiceResponse> all = this.credentialsService.GetAllServices();
+        return this.Ok(all);
+    }
 }

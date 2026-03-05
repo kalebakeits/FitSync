@@ -6,6 +6,8 @@ using FitSync.Database.Models;
 public interface IServiceCredentialHandler
 {
     string ServiceType { get; }
+    bool IsFetcher { get; }
+    bool IsUploader { get; }
     string? GetDisplayName(Integration integration);
     object BuildAuthData(CreateCredentialRequest request);
     Task OnCredentialCreatedAsync(Integration integration, CancellationToken cancellationToken = default);

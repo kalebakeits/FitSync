@@ -5,5 +5,10 @@ namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 
 public interface IUploadResultHandler
 {
-    Task HandleUploadResultAsync(Activity activity, UploadResult result, int maxRetries);
+    Task HandleUploadResultAsync(
+        Activity activity,
+        ActivityUploadStatus uploadStatus,
+        UploadResult result,
+        int maxRetries
+    );
 }

@@ -125,11 +125,14 @@ public class CredentialsService(
 
         foreach (string serviceType in credentialServiceTypes.Where(s => !existing.Contains(s)))
         {
+            IServiceCredentialHandler handler = this.handlerFactory.Require(serviceType);
             available.Add(new AvailableServiceResponse
             {
                 ServiceType = serviceType,
                 AuthType = "credentials",
                 ConnectUrl = null,
+                IsFetcher = handler.IsFetcher,
+                IsUploader = handler.IsUploader,
             });
         }
 
@@ -140,10 +143,44 @@ public class CredentialsService(
                 ServiceType = oauth.ServiceType,
                 AuthType = oauth.AuthType,
                 ConnectUrl = oauth.ConnectUrl,
+                IsFetcher = oauth.IsFetcher,
+                IsUploader = oauth.IsUploader,
             });
         }
 
         return available;
+    }
+
+    public List<AvailableServiceResponse> GetAllServices()
+    {
+        List<AvailableServiceResponse> all = [];
+
+        foreach (string serviceType in this.handlerFactory.ServiceTypes)
+        {
+            IServiceCredentialHandler handler = this.handlerFactory.Require(serviceType);
+            all.Add(new AvailableServiceResponse
+            {
+                ServiceType = serviceType,
+                AuthType = "credentials",
+                ConnectUrl = null,
+                IsFetcher = handler.IsFetcher,
+                IsUploader = handler.IsUploader,
+            });
+        }
+
+        foreach (IOAuthServiceHandler oauth in this.oauthHandlers)
+        {
+            all.Add(new AvailableServiceResponse
+            {
+                ServiceType = oauth.ServiceType,
+                AuthType = oauth.AuthType,
+                ConnectUrl = oauth.ConnectUrl,
+                IsFetcher = oauth.IsFetcher,
+                IsUploader = oauth.IsUploader,
+            });
+        }
+
+        return all;
     }
 
     private CredentialResponse MapToResponse(Integration integration, string? username) =>

@@ -24,13 +24,6 @@
         ],
         "parameters": [
           {
-            "name": "status",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ActivityStatus"
-            }
-          },
-          {
             "name": "limit",
             "in": "query",
             "schema": {
@@ -127,6 +120,71 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Activities/{id}/retry": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Activities/{id}/push": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushToDestinationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushToDestinationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushToDestinationRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -445,6 +503,114 @@
         }
       }
     },
+    "/api/connections/mappings": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "GetApiConnectionsMappings",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DestinationMappingResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DestinationMappingResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DestinationMappingResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "PutApiConnectionsMappings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDestinationMappingsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDestinationMappingsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertDestinationMappingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/connections/status": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "GetApiConnectionsStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FetcherStatusResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FetcherStatusResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FetcherStatusResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Credentials": {
       "post": {
         "tags": [
@@ -556,6 +722,45 @@
         "tags": [
           "Credentials"
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AvailableServiceResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Credentials/all": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "operationId": "GetApiCredentialsAll",
         "responses": {
           "200": {
             "description": "OK",
@@ -704,7 +909,6 @@
           "externalActivityId",
           "id",
           "source",
-          "status",
           "updatedAt"
         ],
         "type": "object",
@@ -718,9 +922,6 @@
           },
           "source": {
             "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/ActivityStatus"
           },
           "originalFileName": {
             "type": "string",
@@ -739,19 +940,6 @@
             "type": "string",
             "nullable": true
           },
-          "retryCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "lastError": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastErrorAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -759,6 +947,12 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "uploadStatuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadStatusEntry"
+            }
           }
         },
         "additionalProperties": false
@@ -809,6 +1003,12 @@
           "connectUrl": {
             "type": "string",
             "nullable": true
+          },
+          "isFetcher": {
+            "type": "boolean"
+          },
+          "isUploader": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -947,6 +1147,66 @@
         },
         "additionalProperties": false
       },
+      "DestinationMappingResponse": {
+        "required": [
+          "destinationServiceTypes",
+          "sourceServiceType"
+        ],
+        "type": "object",
+        "properties": {
+          "sourceServiceType": {
+            "type": "string"
+          },
+          "destinationServiceTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "DestinationStatusEntry": {
+        "required": [
+          "serviceType"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "connected": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FetcherStatusResponse": {
+        "required": [
+          "destinations",
+          "serviceType",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DestinationStatusEntry"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "required": [
           "identifier",
@@ -991,6 +1251,18 @@
           "offset": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PushToDestinationRequest": {
+        "required": [
+          "destinationServiceType"
+        ],
+        "type": "object",
+        "properties": {
+          "destinationServiceType": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1092,6 +1364,50 @@
             "maxLength": 50,
             "minLength": 3,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UploadStatusEntry": {
+        "required": [
+          "destinationServiceType",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "destinationServiceType": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ActivityStatus"
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          },
+          "retryCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpsertDestinationMappingsRequest": {
+        "required": [
+          "destinationServiceTypes",
+          "sourceServiceType"
+        ],
+        "type": "object",
+        "properties": {
+          "sourceServiceType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "destinationServiceTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false

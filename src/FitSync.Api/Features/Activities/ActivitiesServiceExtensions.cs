@@ -7,6 +7,7 @@ public static class ActivitiesServiceExtensions
     public static IServiceCollection AddActivitiesFeature(this IServiceCollection services)
     {
         services.AddScoped<IActivitiesService, ActivitiesService>();
+        services.AddScoped<IActivityRetryService, ActivityRetryService>();
         return services;
     }
 }

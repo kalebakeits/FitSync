@@ -3,7 +3,6 @@ namespace FitSync.Api.Features.Activities.Controllers;
 using FitSync.Api.Features.Activities.DTOs;
 using FitSync.Api.Features.Activities.Services;
 using FitSync.Api.Services;
-using FitSync.Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,24 +11,24 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize]
 public class ActivitiesController(
     IActivitiesService activitiesService,
+    IActivityRetryService activityRetryService,
     ICurrentUserService currentUserService,
     ILogger<ActivitiesController> logger
 ) : ControllerBase
 {
     private readonly IActivitiesService activitiesService = activitiesService;
+    private readonly IActivityRetryService activityRetryService = activityRetryService;
     private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly ILogger<ActivitiesController> logger = logger;
 
     [HttpGet]
     public async Task<ActionResult<PaginatedActivitiesResponse>> GetActivities(
-        [FromQuery] ActivityStatus? status = null,
         [FromQuery] int limit = 50,
         [FromQuery] int offset = 0
     )
     {
         this.logger.LogInformation(
-            "GetActivities called with status: {Status}, limit: {Limit}, offset: {Offset}",
-            status,
+            "GetActivities called with limit: {Limit}, offset: {Offset}",
             limit,
             offset
         );
@@ -37,7 +36,6 @@ public class ActivitiesController(
         Guid userId = this.currentUserService.GetUserId();
         PaginatedActivitiesResponse response = await this.activitiesService.GetActivitiesAsync(
             userId,
-            status,
             limit,
             offset
         );
@@ -76,8 +74,54 @@ public class ActivitiesController(
         await this.activitiesService.DeleteActivityAsync(userId, id);
 
         this.logger.LogInformation(
-            "Activity deleted successfully: {ActivityId} for user: {UserId}",
+            "Activity soft-deleted successfully: {ActivityId} for user: {UserId}",
             id,
+            userId
+        );
+        return NoContent();
+    }
+
+    [HttpPost("{id}/retry")]
+    public async Task<ActionResult> RetryActivity(Guid id, CancellationToken ct)
+    {
+        this.logger.LogInformation("RetryActivity called for activity: {ActivityId}", id);
+
+        Guid userId = this.currentUserService.GetUserId();
+        await this.activityRetryService.RetryFailedAsync(userId, id, ct);
+
+        this.logger.LogInformation(
+            "Retry queued for activity: {ActivityId}, user: {UserId}",
+            id,
+            userId
+        );
+        return NoContent();
+    }
+
+    [HttpPost("{id}/push")]
+    public async Task<ActionResult> PushActivity(
+        Guid id,
+        [FromBody] PushToDestinationRequest request,
+        CancellationToken ct
+    )
+    {
+        this.logger.LogInformation(
+            "PushActivity called for activity: {ActivityId}, destination: {Destination}",
+            id,
+            request.DestinationServiceType
+        );
+
+        Guid userId = this.currentUserService.GetUserId();
+        await this.activityRetryService.PushToDestinationAsync(
+            userId,
+            id,
+            request.DestinationServiceType,
+            ct
+        );
+
+        this.logger.LogInformation(
+            "Activity {ActivityId} pushed to destination {Destination} for user: {UserId}",
+            id,
+            request.DestinationServiceType,
             userId
         );
         return NoContent();

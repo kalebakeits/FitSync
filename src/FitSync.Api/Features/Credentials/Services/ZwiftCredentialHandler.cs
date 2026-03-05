@@ -19,6 +19,8 @@ public class ZwiftCredentialHandler(
     private readonly ILogger<ZwiftCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Zwift;
+    public bool IsFetcher => true;
+    public bool IsUploader => false;
     public string AuthType => "credentials";
     public string? ConnectUrl => null;
 

@@ -36,7 +36,7 @@ public class BackpressureMonitor(
             return false;
         }
 
-        int pendingCount = await this.dbContext.Activities.CountAsync(
+        int pendingCount = await this.dbContext.ActivityUploadStatuses.CountAsync(
             a => a.Status == ActivityStatus.Pending,
             cancellationToken
         );

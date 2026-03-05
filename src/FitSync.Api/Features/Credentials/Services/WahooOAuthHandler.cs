@@ -10,6 +10,8 @@ public class WahooOAuthHandler(IEncryptionService encryptionService) : IOAuthSer
     private readonly IEncryptionService encryptionService = encryptionService;
 
     public string ServiceType => ServiceTypes.Wahoo;
+    public bool IsFetcher => true;
+    public bool IsUploader => false;
     public string AuthType => "oauth";
     public string ConnectUrl => "/api/wahoo/connect";
 

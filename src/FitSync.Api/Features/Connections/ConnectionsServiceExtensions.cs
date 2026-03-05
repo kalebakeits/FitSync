@@ -7,6 +7,8 @@ public static class ConnectionsServiceExtensions
     public static IServiceCollection AddConnectionsFeature(this IServiceCollection services)
     {
         services.AddScoped<IConnectionsService, ConnectionsService>();
+        services.AddScoped<IDestinationMappingService, DestinationMappingService>();
+        services.AddScoped<IFetcherStatusService, FetcherStatusService>();
         return services;
     }
 }

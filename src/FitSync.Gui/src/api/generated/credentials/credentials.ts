@@ -317,3 +317,88 @@ export function useGetApiCredentialsAvailable<TData = Awaited<ReturnType<typeof 
 
 
 
+export const getApiCredentialsAll = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<AvailableServiceResponse[]>(
+      {url: `/api/Credentials/all`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetApiCredentialsAllQueryKey = () => {
+    return [
+    `/api/Credentials/all`
+    ] as const;
+    }
+
+    
+export const getGetApiCredentialsAllQueryOptions = <TData = Awaited<ReturnType<typeof getApiCredentialsAll>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiCredentialsAllQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiCredentialsAll>>> = ({ signal }) => getApiCredentialsAll(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiCredentialsAllQueryResult = NonNullable<Awaited<ReturnType<typeof getApiCredentialsAll>>>
+export type GetApiCredentialsAllQueryError = unknown
+
+
+export function useGetApiCredentialsAll<TData = Awaited<ReturnType<typeof getApiCredentialsAll>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiCredentialsAll>>,
+          TError,
+          Awaited<ReturnType<typeof getApiCredentialsAll>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiCredentialsAll<TData = Awaited<ReturnType<typeof getApiCredentialsAll>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiCredentialsAll>>,
+          TError,
+          Awaited<ReturnType<typeof getApiCredentialsAll>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiCredentialsAll<TData = Awaited<ReturnType<typeof getApiCredentialsAll>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetApiCredentialsAll<TData = Awaited<ReturnType<typeof getApiCredentialsAll>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiCredentialsAll>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetApiCredentialsAllQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

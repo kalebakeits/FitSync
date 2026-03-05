@@ -2,6 +2,7 @@ namespace FitSync.Garmin.Uploader.Features.OrphanedWork.Services;
 
 using FitSync.Database;
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 using Microsoft.EntityFrameworkCore;
@@ -32,13 +33,16 @@ public class OrphanedActivityReclaimer(
             ActivityStatus.Claimed,
         ];
 
-        List<Guid> orphanedActivityIds = await this.fitSyncDbContext.Activities.Where(
-            a => incompleteStatuses.Contains(a.Status)
-        )
-            .Where(a => a.ClaimedAt < cutoff)
-            .Where(a => a.ClaimedBy != null)
+        List<Guid> orphanedActivityIds = await this.fitSyncDbContext.ActivityUploadStatuses
+            .Where(u => u.DestinationServiceType == ServiceTypes.Garmin)
+            .Where(u => incompleteStatuses.Contains(u.Status))
+            .Where(u =>
+                (u.ClaimedBy != null && u.ClaimedAt < cutoff) ||
+                (u.Status == ActivityStatus.Pending && u.ClaimedBy == null && u.Activity.UpdatedAt < cutoff)
+            )
             .Take(orphanProcessingBatchSize)
-            .Select(a => a.Id)
+            .Select(u => u.ActivityId)
+            .Distinct()
             .ToListAsync(cancellationToken);
 
         if (orphanedActivityIds.Count == 0)
@@ -53,24 +57,18 @@ public class OrphanedActivityReclaimer(
             orphanedActivityIds
         );
 
-        // Release the orphaned activities
-        await fitSyncDbContext
-            .Activities.Where(a => orphanedActivityIds.Contains(a.Id))
-            .ExecuteUpdateAsync(
-                (a) =>
-                    a.SetProperty(x => x.Status, ActivityStatus.Pending)
-                        .SetProperty(x => x.ClaimedAt, (DateTime?)null)
-                        .SetProperty(x => x.ClaimedBy, (string?)null)
+        await this.fitSyncDbContext.ActivityUploadStatuses
+            .Where(u =>
+                orphanedActivityIds.Contains(u.ActivityId)
+                && u.DestinationServiceType == ServiceTypes.Garmin
+            )
+            .ExecuteUpdateAsync(u =>
+                u.SetProperty(x => x.Status, ActivityStatus.Pending)
+                    .SetProperty(x => x.ClaimedAt, (DateTime?)null)
+                    .SetProperty(x => x.ClaimedBy, (string?)null)
             );
 
-        await Parallel.ForEachAsync(
-            orphanedActivityIds,
-            async (id, CancellationToken) =>
-                await this.activityProcessor.ClaimAndProcessActivityAsync(
-                    id,
-                    this.options.Value.InstanceId,
-                    cancellationToken
-                )
-        );
+        foreach (Guid id in orphanedActivityIds)
+            await this.activityProcessor.ClaimAndProcessActivityAsync(id, this.options.Value.InstanceId, cancellationToken);
     }
 }

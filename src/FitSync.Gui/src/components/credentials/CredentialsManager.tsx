@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  getGetApiCredentialsAvailableQueryKey,
   getGetApiCredentialsQueryKey,
   useGetApiCredentialsAvailable,
   usePostApiCredentials,
@@ -11,7 +12,6 @@ import {
   useGetApiConnections,
 } from "../../api/generated/connections/connections";
 import type {
-  AvailableServiceResponse,
   ConnectionResponse,
   CreateCredentialRequest,
 } from "../../api/generated/fitSyncApi.schemas";
@@ -28,11 +28,11 @@ export default function CredentialsManager() {
     username: string;
   } | null>(null);
 
-  const { data: connectionsData, isLoading } = useGetApiConnections({
+  const { data: connections = [], isLoading } = useGetApiConnections({
     query: { refetchInterval: 60000 },
   });
 
-  const { data: availableServicesData } = useGetApiCredentialsAvailable({
+  const { data: availableServices = [] } = useGetApiCredentialsAvailable({
     query: { enabled: !editingCredential },
   });
 
@@ -52,6 +52,7 @@ export default function CredentialsManager() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetApiConnectionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetApiCredentialsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetApiCredentialsAvailableQueryKey() });
       },
     },
   });
@@ -83,8 +84,6 @@ export default function CredentialsManager() {
     }
   };
 
-  const connections = (connectionsData as unknown as ConnectionResponse[]) || [];
-  const availableServices = (availableServicesData as unknown as AvailableServiceResponse[]) || [];
 
   return (
     <>

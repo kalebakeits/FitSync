@@ -25,4 +25,6 @@ public interface ICredentialsService
         Guid userId,
         CancellationToken cancellationToken = default
     );
+
+    List<AvailableServiceResponse> GetAllServices();
 }

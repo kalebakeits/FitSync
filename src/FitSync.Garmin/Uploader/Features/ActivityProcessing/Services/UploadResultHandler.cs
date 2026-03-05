@@ -19,15 +19,20 @@ public class UploadResultHandler(
 
     public async Task HandleUploadResultAsync(
         Activity activity,
+        ActivityUploadStatus uploadStatus,
         UploadResult result,
         int maxRetries
     )
     {
         if (result.Success)
         {
-            activity.Status = ActivityStatus.Uploaded;
-            activity.ProcessingCompletedAt = DateTime.UtcNow;
-            this.logger.LogInformation("Successfully uploaded activity {ActivityId}. Let's goooooooo", activity.Id);
+            uploadStatus.Status = ActivityStatus.Uploaded;
+            uploadStatus.ProcessingCompletedAt = DateTime.UtcNow;
+            this.logger.LogInformation(
+                "Successfully uploaded activity {ActivityId} to {Destination}. Let's goooooooo",
+                activity.Id,
+                uploadStatus.DestinationServiceType
+            );
 
             await this.fitSyncDbContext.Integrations
                 .Where(i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin)
@@ -36,12 +41,17 @@ public class UploadResultHandler(
             return;
         }
 
-        activity.Status = this.activityStatusMapper.MapHttpStatusToActivityStatus(result.StatusCode);
-        activity.LastError = result.ErrorMessage;
-        activity.LastErrorAt = DateTime.UtcNow;
-        activity.RetryCount++;
+        uploadStatus.Status = this.activityStatusMapper.MapHttpStatusToActivityStatus(result.StatusCode);
+        uploadStatus.LastError = result.ErrorMessage;
+        uploadStatus.LastErrorAt = DateTime.UtcNow;
+        uploadStatus.RetryCount++;
 
-        this.logger.LogWarning("Upload failed for activity {ActivityId} with status {Status}. Womp womp", activity.Id, activity.Status);
+        this.logger.LogWarning(
+            "Upload failed for activity {ActivityId} to {Destination} with status {Status}. Womp womp",
+            activity.Id,
+            uploadStatus.DestinationServiceType,
+            uploadStatus.Status
+        );
 
         if (result.StatusCode == HttpStatusCode.Unauthorized || result.StatusCode == HttpStatusCode.Forbidden)
         {
@@ -49,21 +59,29 @@ public class UploadResultHandler(
                 .Where(i => i.UserId == activity.UserId && i.ServiceType == ServiceTypes.Garmin)
                 .ExecuteUpdateAsync(s => s.SetProperty(i => i.FailureCount, i => i.FailureCount + 1));
 
-            this.logger.LogWarning("Incremented failure count for user {UserId}. Skill issue", activity.UserId);
+            this.logger.LogWarning(
+                "Incremented failure count for user {UserId}. Skill issue",
+                activity.UserId
+            );
         }
 
-        if (ShouldRetry(activity, maxRetries))
+        if (ShouldRetry(uploadStatus, maxRetries))
         {
-            this.logger.LogInformation("Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker", activity.Id, activity.RetryCount, maxRetries);
-            activity.Status = ActivityStatus.Pending;
-            activity.ClaimedBy = null;
-            activity.ClaimedAt = null;
+            this.logger.LogInformation(
+                "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
+                activity.Id,
+                uploadStatus.RetryCount,
+                maxRetries
+            );
+            uploadStatus.Status = ActivityStatus.Pending;
+            uploadStatus.ClaimedBy = null;
+            uploadStatus.ClaimedAt = null;
         }
     }
 
-    private static bool ShouldRetry(Activity activity, int maxRetries)
+    private static bool ShouldRetry(ActivityUploadStatus uploadStatus, int maxRetries)
     {
-        HashSet<ActivityStatus> statuses = [ActivityStatus.Failed, ActivityStatus.Conflict];
-        return !statuses.Contains(activity.Status) && activity.RetryCount < maxRetries;
+        HashSet<ActivityStatus> noRetryStatuses = [ActivityStatus.Failed, ActivityStatus.Conflict];
+        return !noRetryStatuses.Contains(uploadStatus.Status) && uploadStatus.RetryCount < maxRetries;
     }
 }

@@ -41,14 +41,13 @@ export default function SyncHelpModal({ open, onClose }: SyncHelpModalProps) {
             </Typography>
             <Box component="ol" sx={{ pl: 2, m: 0 }}>
               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Configure Garmin + Zwift credentials and connect Wahoo
+                Connect your integrations in Settings → Integrations
               </Typography>
               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Ensure both credentials are enabled (update them if they're
-                disabled)
+                Configure destination routing — map each source to an uploader
               </Typography>
               <Typography component="li" variant="body2">
-                Credentials are automatically disabled after multiple
+                Integrations are automatically disabled after multiple
                 consecutive sync failures
               </Typography>
             </Box>

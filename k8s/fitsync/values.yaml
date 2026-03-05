@@ -141,6 +141,7 @@ wahooFetcher:
   config:
     instanceId: "wahoo-fetcher-k8s"
     baseUrl: "https://api.wahooligan.com"
+    lookbackDays: 28
     # clientId and clientSecret are stored in k8s secret: fitsync-wahoo-secret
 
   resources:
@@ -172,6 +173,27 @@ garminUploader:
     limits:
       memory: "1Gi"
       cpu: "1000m"
+
+# Purger configuration
+purger:
+  enabled: true
+  image: fitsync-purger
+  tag: latest
+  replicas: 1
+
+  config:
+    purgeIntervalMinutes: 60
+    sourceLookbackDays:
+      zwift: 28
+      wahoo: 180
+
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
 
 # ============================================================================
 # LOGGING CONFIGURATION

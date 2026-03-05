@@ -24,7 +24,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ConnectionResponse
+  ConnectionResponse,
+  DestinationMappingResponse,
+  FetcherStatusResponse,
+  UpsertDestinationMappingsRequest
 } from '../fitSyncApi.schemas';
 
 import { customAxiosInstance } from '../../axios-instance';
@@ -172,4 +175,230 @@ const {mutation: mutationOptions} = options ?
 
       return useMutation(mutationOptions, queryClient);
     }
+    export const getApiConnectionsMappings = (
     
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<DestinationMappingResponse[]>(
+      {url: `/api/connections/mappings`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetApiConnectionsMappingsQueryKey = () => {
+    return [
+    `/api/connections/mappings`
+    ] as const;
+    }
+
+    
+export const getGetApiConnectionsMappingsQueryOptions = <TData = Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiConnectionsMappingsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiConnectionsMappings>>> = ({ signal }) => getApiConnectionsMappings(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiConnectionsMappingsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiConnectionsMappings>>>
+export type GetApiConnectionsMappingsQueryError = unknown
+
+
+export function useGetApiConnectionsMappings<TData = Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiConnectionsMappings>>,
+          TError,
+          Awaited<ReturnType<typeof getApiConnectionsMappings>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiConnectionsMappings<TData = Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiConnectionsMappings>>,
+          TError,
+          Awaited<ReturnType<typeof getApiConnectionsMappings>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiConnectionsMappings<TData = Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetApiConnectionsMappings<TData = Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsMappings>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetApiConnectionsMappingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const putApiConnectionsMappings = (
+    upsertDestinationMappingsRequest: UpsertDestinationMappingsRequest,
+ ) => {
+      
+      
+      return customAxiosInstance<void>(
+      {url: `/api/connections/mappings`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: upsertDestinationMappingsRequest
+    },
+      );
+    }
+  
+
+
+export const getPutApiConnectionsMappingsMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiConnectionsMappings>>, TError,{data: UpsertDestinationMappingsRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putApiConnectionsMappings>>, TError,{data: UpsertDestinationMappingsRequest}, TContext> => {
+
+const mutationKey = ['putApiConnectionsMappings'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApiConnectionsMappings>>, {data: UpsertDestinationMappingsRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  putApiConnectionsMappings(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutApiConnectionsMappingsMutationResult = NonNullable<Awaited<ReturnType<typeof putApiConnectionsMappings>>>
+    export type PutApiConnectionsMappingsMutationBody = UpsertDestinationMappingsRequest
+    export type PutApiConnectionsMappingsMutationError = unknown
+
+    export const usePutApiConnectionsMappings = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiConnectionsMappings>>, TError,{data: UpsertDestinationMappingsRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putApiConnectionsMappings>>,
+        TError,
+        {data: UpsertDestinationMappingsRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getPutApiConnectionsMappingsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    export const getApiConnectionsStatus = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<FetcherStatusResponse[]>(
+      {url: `/api/connections/status`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetApiConnectionsStatusQueryKey = () => {
+    return [
+    `/api/connections/status`
+    ] as const;
+    }
+
+    
+export const getGetApiConnectionsStatusQueryOptions = <TData = Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiConnectionsStatusQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiConnectionsStatus>>> = ({ signal }) => getApiConnectionsStatus(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiConnectionsStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getApiConnectionsStatus>>>
+export type GetApiConnectionsStatusQueryError = unknown
+
+
+export function useGetApiConnectionsStatus<TData = Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiConnectionsStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getApiConnectionsStatus>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiConnectionsStatus<TData = Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiConnectionsStatus>>,
+          TError,
+          Awaited<ReturnType<typeof getApiConnectionsStatus>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiConnectionsStatus<TData = Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetApiConnectionsStatus<TData = Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiConnectionsStatus>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetApiConnectionsStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

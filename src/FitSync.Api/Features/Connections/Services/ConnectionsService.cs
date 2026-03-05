@@ -49,9 +49,19 @@ public class ConnectionsService(
             );
 
         if (integration == null)
-        {
             return;
-        }
+
+        int removed = await this.context.UserDestinationConfigs
+            .Where(c => c.UserId == userId && c.DestinationServiceType == serviceType)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (removed > 0)
+            this.logger.LogInformation(
+                "Removed {Count} destination mappings pointing at {ServiceType} for user {UserId}.",
+                removed,
+                serviceType,
+                userId
+            );
 
         this.context.Integrations.Remove(integration);
         await this.context.SaveChangesAsync(cancellationToken);

@@ -2,7 +2,6 @@ namespace FitSync.Api.Features.Wahoo.Webhook.Services;
 
 using FitSync.Api.Features.Wahoo.Webhook.DTOs;
 using FitSync.Database;
-using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.Services;
 using FitSync.Wahoo.Shared.WahooClient;
@@ -73,7 +72,6 @@ public class WahooWebhookService(
             UserId = integration.UserId,
             ExternalActivityId = externalId,
             Source = ServiceTypes.Wahoo,
-            Status = ActivityStatus.Pending,
             OriginalFileName = $"wahoo_{externalId}.fit",
             FitFileData = fitData,
             FileSizeBytes = fitData.LongLength,
@@ -84,6 +82,20 @@ public class WahooWebhookService(
         };
 
         this.dbContext.Activities.Add(dbActivity);
+
+        List<UserDestinationConfig> destinations = await this.dbContext.UserDestinationConfigs
+            .Where(c => c.UserId == integration.UserId && c.SourceServiceType == ServiceTypes.Wahoo)
+            .ToListAsync(cancellationToken);
+
+        foreach (UserDestinationConfig dest in destinations)
+        {
+            this.dbContext.ActivityUploadStatuses.Add(new ActivityUploadStatus
+            {
+                ActivityId = dbActivity.Id,
+                DestinationServiceType = dest.DestinationServiceType,
+            });
+        }
+
         await this.dbContext.SaveChangesAsync(cancellationToken);
         await this.activityPublisher.PublishActivityFetchedAsync(dbActivity, cancellationToken);
 

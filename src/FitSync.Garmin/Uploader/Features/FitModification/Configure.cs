@@ -10,6 +10,8 @@ public static class FitModificationFeatureExtensions
         services.AddScoped<IFitFileEncoder, FitFileEncoder>();
         services.AddScoped<IDeviceInfoModifier, DeviceInfoModifier>();
         services.AddScoped<IFitModifier, FitModifier>();
+        services.AddScoped<IWahooFitModifier, WahooFitModifier>();
+        services.AddScoped<IFitModifierFactory, FitModifierFactory>();
 
         return services;
     }

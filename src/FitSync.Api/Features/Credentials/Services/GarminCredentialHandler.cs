@@ -15,6 +15,8 @@ public class GarminCredentialHandler(
     private readonly ILogger<GarminCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Garmin;
+    public bool IsFetcher => false;
+    public bool IsUploader => true;
     public string AuthType => "credentials";
     public string? ConnectUrl => null;
 

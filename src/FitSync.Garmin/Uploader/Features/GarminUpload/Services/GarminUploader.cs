@@ -4,24 +4,24 @@ using System.Net;
 using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Garmin.Shared.AuthData;
+using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
-using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
-using global::Garmin.Connect;
-using global::Garmin.Connect.Auth;
-using global::Garmin.Connect.Auth.External;
-using global::Garmin.Connect.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 public class GarminUploader(
     ILogger<GarminUploader> logger,
     FitSyncDbContext fitSyncDbContext,
-    IEncryptionService encryptionService
+    IEncryptionService encryptionService,
+    IGarminApiClient apiClient,
+    IGarminAuthService authService
 ) : IGarminUploader
 {
     private readonly ILogger<GarminUploader> logger = logger;
     private readonly FitSyncDbContext fitSyncDbContext = fitSyncDbContext;
     private readonly IEncryptionService encryptionService = encryptionService;
+    private readonly IGarminApiClient apiClient = apiClient;
+    private readonly IGarminAuthService authService = authService;
 
     public async Task<UploadResult> UploadActivityAsync(
         byte[] fitFileData,
@@ -40,55 +40,39 @@ public class GarminUploader(
             return UploadResult.Failed("No Garmin integration found.");
         }
 
-        GarminAuthData authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
-        BasicAuthParameters authParameters = new(authData.Username, authData.Password);
-        GarminConnectClient client = new(new GarminConnectContext(new HttpClient(), authParameters));
-
-        string tempFile = Path.Combine(Path.GetTempPath(), $"fit_{Guid.NewGuid()}.fit");
-        await File.WriteAllBytesAsync(tempFile, fitFileData, cancellationToken);
-
         try
         {
-            await client.UploadFile(tempFile, cancellationToken);
-            this.logger.LogInformation("Upload successful for user {Username}.", user.Username);
-            return UploadResult.Succeeded();
-        }
-        catch (GarminConnectRequestException ex)
-        {
-            return this.HandleException(ex, ex.Status, user.Id);
-        }
-        catch (GarminConnectAuthenticationException ex)
-        {
-            return this.HandleException(ex, HttpStatusCode.Unauthorized, user.Id);
-        }
-        catch (HttpRequestException ex)
-        {
-            return this.HandleException(ex, ex.StatusCode, user.Id);
+            await this.authService.EnsureAuthenticatedAsync(integration, cancellationToken);
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Unexpected error during Garmin upload for user {UserId}.", user.Id);
-            return UploadResult.Failed($"Unexpected error: {ex.Message}");
+            this.logger.LogError(ex, "Garmin auth failed for user {UserId}.", user.Id);
+            return UploadResult.Failed($"Authentication failed: {ex.Message}");
         }
-        finally
+
+        GarminAuthData authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
+        UploadResult result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);
+
+        if (!result.Success && result.StatusCode == HttpStatusCode.Unauthorized)
         {
-            if (File.Exists(tempFile))
-                File.Delete(tempFile);
+            this.logger.LogWarning("Garmin upload got 401 for user {UserId}, attempting token refresh.", user.Id);
+            bool refreshed = await this.authService.TryRefreshAsync(integration, cancellationToken);
+
+            if (!refreshed)
+            {
+                this.logger.LogError("Token refresh failed for user {UserId}.", user.Id);
+                return UploadResult.Failed("Token refresh failed after 401.", HttpStatusCode.Unauthorized);
+            }
+
+            // Reload authData after refresh
+            await this.fitSyncDbContext.Entry(integration).ReloadAsync(cancellationToken);
+            authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
+            result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);
         }
-    }
 
-    private UploadResult HandleException(Exception ex, HttpStatusCode? statusCode, Guid userId)
-    {
-        if (statusCode.HasValue && (int)statusCode >= 200 && (int)statusCode <= 299)
-            return UploadResult.Succeeded();
+        if (result.Success)
+            this.logger.LogInformation("Upload successful for user {Username}.", user.Username);
 
-        if (statusCode.HasValue)
-        {
-            this.logger.LogError("Garmin upload failed with HTTP {StatusCode} for user {UserId}.", (int)statusCode.Value, userId);
-            return UploadResult.Failed($"Garmin upload failed: {ex.Message}", statusCode.Value);
-        }
-
-        this.logger.LogError(ex, "Garmin upload failed for user {UserId}.", userId);
-        return UploadResult.Failed($"Garmin upload failed: {ex.Message}");
+        return result;
     }
 }

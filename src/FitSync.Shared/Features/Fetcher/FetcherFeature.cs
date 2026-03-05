@@ -23,6 +23,7 @@ public static class FetcherFeature
         return services
             .AddScoped<IUserQueuerService, TQueueService>()
             .AddScoped<IFetcherService, TFetcherService>()
+            .AddScoped<IDestinationGate, DestinationGate>()
             .AddScoped<IActivityPublisher, ActivityPublisher>()
             .AddScoped<IActivityPersistenceService, ActivityPersistenceService>()
             .AddScoped<IBackpressureMonitor, BackpressureMonitor>()

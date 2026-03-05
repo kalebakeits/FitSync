@@ -39,6 +39,7 @@ HELM_ARGS=(
     --set zwiftFetcher.tag="$TAG"
     --set garminUploader.tag="$TAG"
     --set wahooFetcher.tag="$TAG"
+    --set purger.tag="$TAG"
 )
 
 if helm list -n "$NAMESPACE" | grep -q "fitsync"; then
@@ -64,6 +65,7 @@ kubectl rollout restart deployment gui -n "$NAMESPACE"
 kubectl rollout restart deployment zwift-fetcher -n "$NAMESPACE"
 kubectl rollout restart deployment garmin-uploader -n "$NAMESPACE"
 kubectl rollout restart deployment wahoo-fetcher -n "$NAMESPACE"
+kubectl rollout restart deployment purger -n "$NAMESPACE"
 
 echo "Waiting for deployments to be ready..."
 kubectl rollout status deployment api -n "$NAMESPACE" --timeout=300s
@@ -71,6 +73,7 @@ kubectl rollout status deployment gui -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment zwift-fetcher -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment garmin-uploader -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment wahoo-fetcher -n "$NAMESPACE" --timeout=300s
+kubectl rollout status deployment purger -n "$NAMESPACE" --timeout=300s
 
 echo ""
 echo "Deployment complete."

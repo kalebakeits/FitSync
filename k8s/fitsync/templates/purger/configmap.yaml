@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: purger-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  appsettings.Production.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "{{ .Values.logging.level.default }}",
+          "Microsoft.Hosting.Lifetime": "{{ .Values.logging.level.microsoft }}",
+          "Microsoft.EntityFrameworkCore": "{{ .Values.logging.level.entityFramework }}"
+        }
+      },
+      "PurgerOptions": {
+        "PurgeIntervalMinutes": {{ .Values.purger.config.purgeIntervalMinutes }},
+        "SourceLookbackDays": {
+          "Zwift": {{ .Values.purger.config.sourceLookbackDays.zwift }},
+          "Wahoo": {{ .Values.purger.config.sourceLookbackDays.wahoo }}
+        }
+      }
+    }

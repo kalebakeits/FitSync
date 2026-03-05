@@ -13,7 +13,7 @@ namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 
 public class ActivityProcessor(
     FitSyncDbContext dbContext,
-    IFitModifier fitModifier,
+    IFitModifierFactory fitModifierFactory,
     IGarminUploader garminUploader,
     IUploadResultHandler resultHandler,
     ILogger<ActivityProcessor> logger,
@@ -22,7 +22,7 @@ public class ActivityProcessor(
 ) : IActivityProcessor
 {
     private readonly FitSyncDbContext fitSyncDbContext = dbContext;
-    private readonly IFitModifier fitModifier = fitModifier;
+    private readonly IFitModifierFactory fitModifierFactory = fitModifierFactory;
     private readonly IGarminUploader garminUploader = garminUploader;
     private readonly IUploadResultHandler resultHandler = resultHandler;
     private readonly ILogger<ActivityProcessor> logger = logger;
@@ -40,12 +40,16 @@ public class ActivityProcessor(
         if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
             return;
 
-        int affected = await this.fitSyncDbContext.Activities.Where(
-            a => a.Id == activityId && a.ClaimedBy == null
+        int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(
+            u =>
+                u.ActivityId == activityId
+                && u.DestinationServiceType == ServiceTypes.Garmin
+                && u.ClaimedBy == null
+                && u.Status == ActivityStatus.Pending
         )
             .ExecuteUpdateAsync(
-                a =>
-                    a.SetProperty(x => x.Status, ActivityStatus.Claimed)
+                u =>
+                    u.SetProperty(x => x.Status, ActivityStatus.Claimed)
                         .SetProperty(x => x.ClaimedBy, instanceId)
                         .SetProperty(x => x.ClaimedAt, DateTime.UtcNow),
                 cancellationToken
@@ -54,14 +58,14 @@ public class ActivityProcessor(
         if (affected == 0)
         {
             this.logger.LogInformation(
-                "Activity {ActivityId} was already claimed by another instance. We'll get em next time.",
+                "Upload status for activity {ActivityId} already claimed. We'll get em next time.",
                 activityId
             );
             return;
         }
 
         this.logger.LogInformation(
-            "Successfully claimed activity {ActivityId}. Take your L boys.",
+            "Successfully claimed upload status for activity {ActivityId}. Take your L boys.",
             activityId
         );
 
@@ -76,7 +80,31 @@ public class ActivityProcessor(
         if (activity == null)
         {
             this.logger.LogWarning(
-                "Activity {ActivityId} not found. This really should not have happend",
+                "Activity {ActivityId} not found. This really should not have happened",
+                activityId
+            );
+            return;
+        }
+
+        if (activity.IsDeleted)
+        {
+            this.logger.LogInformation(
+                "Activity {ActivityId} is soft-deleted, skipping processing",
+                activityId
+            );
+            return;
+        }
+
+        ActivityUploadStatus? uploadStatus = await this.fitSyncDbContext.ActivityUploadStatuses
+            .FirstOrDefaultAsync(
+                u => u.ActivityId == activityId && u.DestinationServiceType == ServiceTypes.Garmin,
+                cancellationToken
+            );
+
+        if (uploadStatus == null)
+        {
+            this.logger.LogWarning(
+                "No Garmin upload status for activity {ActivityId}",
                 activityId
             );
             return;
@@ -84,8 +112,8 @@ public class ActivityProcessor(
 
         try
         {
-            activity.Status = ActivityStatus.Processing;
-            activity.ProcessingStartedAt = DateTime.UtcNow;
+            uploadStatus.Status = ActivityStatus.Processing;
+            uploadStatus.ProcessingStartedAt = DateTime.UtcNow;
             await this.fitSyncDbContext.SaveChangesAsync(cancellationToken);
 
             this.logger.LogInformation(
@@ -94,9 +122,9 @@ public class ActivityProcessor(
                 activity.UserId
             );
 
-            byte[] modifiedFit = this.fitModifier.ModifyDeviceInfo(
-                activity.FitFileData ?? Array.Empty<byte>()
-            );
+            byte[] modifiedFit = this.fitModifierFactory
+                .GetModifier(activity.Source)
+                .ModifyDeviceInfo(activity.FitFileData ?? Array.Empty<byte>());
 
             UploadResult uploadResult = await this.garminUploader.UploadActivityAsync(
                 modifiedFit,
@@ -106,6 +134,7 @@ public class ActivityProcessor(
 
             await this.resultHandler.HandleUploadResultAsync(
                 activity,
+                uploadStatus,
                 uploadResult,
                 this.options.Value.MaxRetries
             );
@@ -119,23 +148,22 @@ public class ActivityProcessor(
                 activityId
             );
 
-            activity.Status = ActivityStatus.Failed;
-            activity.LastError = ex.Message;
-            activity.LastErrorAt = DateTime.UtcNow;
-            activity.RetryCount++;
+            uploadStatus.Status = ActivityStatus.Failed;
+            uploadStatus.LastError = ex.Message;
+            uploadStatus.LastErrorAt = DateTime.UtcNow;
+            uploadStatus.RetryCount++;
 
-            // Retry logic
-            if (activity.RetryCount < this.options.Value.MaxRetries)
+            if (uploadStatus.RetryCount < this.options.Value.MaxRetries)
             {
                 this.logger.LogInformation(
                     "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
                     activityId,
-                    activity.RetryCount,
+                    uploadStatus.RetryCount,
                     this.options.Value.MaxRetries
                 );
-                activity.Status = ActivityStatus.Pending;
-                activity.ClaimedBy = null;
-                activity.ClaimedAt = null;
+                uploadStatus.Status = ActivityStatus.Pending;
+                uploadStatus.ClaimedBy = null;
+                uploadStatus.ClaimedAt = null;
             }
 
             await this.fitSyncDbContext.SaveChangesAsync(cancellationToken);

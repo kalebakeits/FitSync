@@ -49,7 +49,7 @@ Alternatively configure `src/FitSync.Mock/Fetcher/appsettings.json` to auto-popu
 | `FitSync.Mock/Fetcher` | Dev-only fetcher using local `.fit` test files |
 | `FitSync.Database` | EF Core migrations |
 
-Kafka for activity queuing, PostgreSQL for persistence, Kubernetes + Helm for deployment.
+Sources route to N destinations via user-configured mappings (`user_destination_configs`). Kafka for activity queuing, PostgreSQL for persistence, Kubernetes + Helm for deployment.
 
 ## Building & Deploying 🚀
 
@@ -77,7 +77,7 @@ REGISTRY=localhost:5000 TAG=latest ./scripts/build.sh
 ## Future Work 🚀
 
 - Fetchers for Strava, TrainingPeaks, etc.
-- Upload to multiple destinations
+- Upload to multiple destinations (many-to-many routing implemented)
 - Bi-directional sync
 - Overall service health indicator (GUI)
 
