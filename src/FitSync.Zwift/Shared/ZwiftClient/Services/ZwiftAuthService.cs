@@ -1,5 +1,6 @@
 namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
+using System.Net.Http.Json;
 using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Encryption.Extensions;

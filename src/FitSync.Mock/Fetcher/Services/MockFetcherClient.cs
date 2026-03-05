@@ -6,21 +6,22 @@ using FitSync.Shared.Features.Fetcher.DTOs;
 using FitSync.Shared.Features.Fetcher.Services;
 using Microsoft.Extensions.Logging;
 
-public class MockFetcherService(ILogger<MockFetcherService> logger) : IFetcherService
+public class MockFetcherClient(ILogger<MockFetcherClient> logger) : IFetcherClient
 {
-    private readonly ILogger<MockFetcherService> logger = logger;
+    private readonly ILogger<MockFetcherClient> logger = logger;
 
     public async Task<List<FetchedActivity>> GetActivitiesAsync(
-        User user,
-        CancellationToken cancellationToken
+        Integration integration,
+        int lookbackDays,
+        CancellationToken cancellationToken = default
     )
     {
         byte[] fitData = this.GetMockFitFileData();
         Guid guid = Guid.NewGuid();
         FetchedActivity activity =
             new(
-                ExternalActivityId: $"zwift-{guid}",
-                Source: d,
+                ExternalActivityId: $"mock-{guid}",
+                Source: "Mock",
                 ActivityDate: DateTime.UtcNow.AddHours(-1),
                 FileName: $"mock-activity-{guid}.fit",
                 FitFileData: fitData,

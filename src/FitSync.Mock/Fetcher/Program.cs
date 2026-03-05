@@ -1,5 +1,6 @@
 using FitSync.Database;
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Mock.Fetcher.Configuration;
 using FitSync.Mock.Fetcher.Services;
 using FitSync.Shared.Extensions;
@@ -7,7 +8,6 @@ using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
-using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -54,7 +54,8 @@ builder.Services.AddGlobalVariables(
     mockConfig.InstanceId,
     Environment.MachineName,
     mockConfig.HeartbeatIntervalMinutes,
-    ServiceType.MockFetcher
+    ServiceType.MockFetcher,
+    ServiceTypes.Zwift
 );
 
 // Kafka producer
@@ -73,9 +74,7 @@ services.AddHostedService<UserVerificationWorker>();
 if (mockConfig.RunFetcher)
 {
     services
-        .AddFetcher<UserQueuerService, MockFetcherService>(
-            () => builder.Configuration.GetSection("MockFetcherOptions")
-        )
+        .AddFetcher<MockFetcherClient>(() => builder.Configuration.GetSection("MockFetcherOptions"))
         .AddHeartbeat();
 }
 

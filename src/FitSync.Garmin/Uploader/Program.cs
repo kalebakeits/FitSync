@@ -1,6 +1,7 @@
 using Confluent.Kafka;
 using FitSync.Database;
 using FitSync.Database.Enums;
+using FitSync.Database.Models;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.GlobalVariables;
@@ -51,7 +52,8 @@ builder.Services.AddGlobalVariables(
     uploaderConfig.InstanceId,
     Environment.MachineName,
     uploaderConfig.HeartbeatIntervalMinutes,
-    ServiceType.GarminUploader
+    ServiceType.GarminUploader,
+    ServiceTypes.Garmin
 );
 
 // Kafka consumer
