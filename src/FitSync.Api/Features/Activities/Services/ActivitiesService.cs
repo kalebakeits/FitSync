@@ -3,7 +3,6 @@ namespace FitSync.Api.Features.Activities.Services;
 using FitSync.Api.Exceptions;
 using FitSync.Api.Features.Activities.DTOs;
 using FitSync.Database;
-using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,29 +14,24 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
 
     public async Task<PaginatedActivitiesResponse> GetActivitiesAsync(
         Guid userId,
-        ActivityStatus? status,
         int limit,
         int offset
     )
     {
         this.logger.LogInformation(
-            "Getting activities for user: {UserId}, status: {Status}, limit: {Limit}, offset: {Offset}",
+            "Getting activities for user: {UserId}, limit: {Limit}, offset: {Offset}",
             userId,
-            status,
             limit,
             offset
         );
 
-        IQueryable<Activity> query = this.context.Activities.Where(a => a.UserId == userId);
-
-        if (status.HasValue)
-        {
-            query = query.Where(a => a.Status == status.Value);
-        }
+        IQueryable<Activity> query = this.context.Activities
+            .Where(a => a.UserId == userId && !a.IsDeleted);
 
         int total = await query.CountAsync();
 
         List<Activity> activities = await query
+            .Include(a => a.UploadStatuses)
             .OrderByDescending(a => a.ActivityDate)
             .Skip(offset)
             .Take(limit)
@@ -51,25 +45,7 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
         );
 
         List<ActivityResponse> items = activities
-            .Select(
-                a =>
-                    new ActivityResponse
-                    {
-                        Id = a.Id,
-                        ExternalActivityId = a.ExternalActivityId,
-                        Source = a.Source,
-                        Status = a.Status,
-                        OriginalFileName = a.OriginalFileName,
-                        FileSizeBytes = a.FileSizeBytes,
-                        ActivityDate = a.ActivityDate,
-                        ActivityName = a.ActivityName,
-                        RetryCount = a.RetryCount,
-                        LastError = a.LastError,
-                        LastErrorAt = a.LastErrorAt,
-                        CreatedAt = a.CreatedAt,
-                        UpdatedAt = a.UpdatedAt
-                    }
-            )
+            .Select(a => MapToResponse(a))
             .ToList();
 
         return new PaginatedActivitiesResponse
@@ -89,9 +65,9 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             activityId
         );
 
-        Activity? activity = await this.context.Activities.FirstOrDefaultAsync(
-            a => a.Id == activityId && a.UserId == userId
-        );
+        Activity? activity = await this.context.Activities
+            .Include(a => a.UploadStatuses)
+            .FirstOrDefaultAsync(a => a.Id == activityId && a.UserId == userId && !a.IsDeleted);
 
         if (activity == null)
         {
@@ -109,34 +85,19 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             activityId
         );
 
-        return new ActivityResponse
-        {
-            Id = activity.Id,
-            ExternalActivityId = activity.ExternalActivityId,
-            Source = activity.Source,
-            Status = activity.Status,
-            OriginalFileName = activity.OriginalFileName,
-            FileSizeBytes = activity.FileSizeBytes,
-            ActivityDate = activity.ActivityDate,
-            ActivityName = activity.ActivityName,
-            RetryCount = activity.RetryCount,
-            LastError = activity.LastError,
-            LastErrorAt = activity.LastErrorAt,
-            CreatedAt = activity.CreatedAt,
-            UpdatedAt = activity.UpdatedAt
-        };
+        return MapToResponse(activity);
     }
 
     public async Task DeleteActivityAsync(Guid userId, Guid activityId)
     {
         this.logger.LogInformation(
-            "Deleting activity for user: {UserId}, activity: {ActivityId}",
+            "Soft-deleting activity for user: {UserId}, activity: {ActivityId}",
             userId,
             activityId
         );
 
         Activity? activity = await this.context.Activities.FirstOrDefaultAsync(
-            a => a.Id == activityId && a.UserId == userId
+            a => a.Id == activityId && a.UserId == userId && !a.IsDeleted
         );
 
         if (activity == null)
@@ -149,32 +110,36 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             throw new NotFoundException("Activity not found.");
         }
 
-        // Delete the activity
-        this.context.Activities.Remove(activity);
-
-        // Also delete the ProcessedActivity record so it can be re-fetched
-        ProcessedActivity? processedActivity = await this.context.ProcessedActivities.FirstOrDefaultAsync(
-            p =>
-                p.UserId == userId
-                && p.ExternalActivityId == activity.ExternalActivityId
-                && p.Source == activity.Source
-        );
-
-        if (processedActivity != null)
-        {
-            this.context.ProcessedActivities.Remove(processedActivity);
-            this.logger.LogInformation(
-                "Removed ProcessedActivity record for {ExternalActivityId} - activity will be re-fetched",
-                activity.ExternalActivityId
-            );
-        }
+        activity.IsDeleted = true;
+        activity.DeletedAt = DateTime.UtcNow;
 
         await this.context.SaveChangesAsync();
 
         this.logger.LogInformation(
-            "Activity deleted successfully - user: {UserId}, activity: {ActivityId}",
+            "Activity soft-deleted successfully - user: {UserId}, activity: {ActivityId}",
             userId,
             activityId
         );
     }
+
+    private static ActivityResponse MapToResponse(Activity a) =>
+        new()
+        {
+            Id = a.Id,
+            ExternalActivityId = a.ExternalActivityId,
+            Source = a.Source,
+            OriginalFileName = a.OriginalFileName,
+            FileSizeBytes = a.FileSizeBytes,
+            ActivityDate = a.ActivityDate,
+            ActivityName = a.ActivityName,
+            CreatedAt = a.CreatedAt,
+            UpdatedAt = a.UpdatedAt,
+            UploadStatuses = a.UploadStatuses.Select(u => new UploadStatusEntry
+            {
+                DestinationServiceType = u.DestinationServiceType,
+                Status = u.Status,
+                LastError = u.LastError,
+                RetryCount = u.RetryCount,
+            }).ToList(),
+        };
 }

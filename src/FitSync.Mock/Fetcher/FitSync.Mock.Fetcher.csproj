@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-FitSync.Mock.Fetcher-1ab797ef-b5f7-42ec-bb10-544e4b34bd7b</UserSecretsId>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="10.0.0-rc.1.25502.57" />
+    <PackageReference Include="Aspire.Confluent.Kafka" Version="10.0.0-rc.1.25502.57" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-rc.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FitSync.Database\FitSync.Database.csproj" />
+    <ProjectReference Include="..\..\FitSync.Shared\FitSync.Shared.csproj" />
+    <ProjectReference Include="..\..\FitSync.Garmin\Shared\FitSync.Garmin.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\*.fit">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

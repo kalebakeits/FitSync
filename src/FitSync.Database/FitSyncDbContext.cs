@@ -1,17 +1,45 @@
+namespace FitSync.Database;
+
 using FitSync.Database.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Database;
 
 public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Session> Sessions { get; set; } = null!;
     public DbSet<Activity> Activities { get; set; } = null!;
+    public DbSet<ActivityUploadStatus> ActivityUploadStatuses { get; set; } = null!;
     public DbSet<ServiceHeartbeat> ServiceHeartbeats { get; set; } = null!;
     public DbSet<ProcessedActivity> ProcessedActivities { get; set; } = null!;
-    public DbSet<ZwiftFetcherConfig> ZwiftFetcherConfigs { get; set; } = null!;
-    public DbSet<UserCredential> UserCredentials { get; set; } = null!;
+    public DbSet<Integration> Integrations { get; set; } = null!;
+    public DbSet<FetcherConfig> FetcherConfigs { get; set; } = null!;
+    public DbSet<UserDestinationConfig> UserDestinationConfigs { get; set; } = null!;
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserDestinationConfig>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType });
+
+            entity.HasIndex(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType })
+                  .IsUnique();
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ActivityUploadStatus>(entity =>
+        {
+            entity.HasKey(e => new { e.ActivityId, e.DestinationServiceType });
+
+            entity.HasOne(e => e.Activity)
+                  .WithMany(a => a.UploadStatuses)
+                  .HasForeignKey(e => e.ActivityId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -51,17 +79,17 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
                     heartbeat.CreatedAt = DateTime.UtcNow;
                 heartbeat.UpdatedAt = DateTime.UtcNow;
             }
-            else if (entry.Entity is ZwiftFetcherConfig zwiftFetcherConfig)
+            else if (entry.Entity is Integration integration)
             {
                 if (entry.State == EntityState.Added)
-                    zwiftFetcherConfig.CreatedAt = DateTime.UtcNow;
-                zwiftFetcherConfig.UpdatedAt = DateTime.UtcNow;
+                    integration.CreatedAt = DateTime.UtcNow;
+                integration.UpdatedAt = DateTime.UtcNow;
             }
-            else if (entry.Entity is UserCredential userCredential)
+            else if (entry.Entity is FetcherConfig fetcherConfig)
             {
                 if (entry.State == EntityState.Added)
-                    userCredential.CreatedAt = DateTime.UtcNow;
-                userCredential.UpdatedAt = DateTime.UtcNow;
+                    fetcherConfig.CreatedAt = DateTime.UtcNow;
+                fetcherConfig.UpdatedAt = DateTime.UtcNow;
             }
             else if (entry.Entity is Session session)
             {

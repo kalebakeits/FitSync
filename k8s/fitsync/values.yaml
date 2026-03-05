@@ -77,6 +77,12 @@ api:
   tag: latest
   replicas: 1
 
+  wahoo:
+    baseUrl: "https://api.wahooligan.com"
+    redirectUri: "https://fitsync.kaleba.app/api/wahoo/callback"
+    frontendUrl: "https://fitsync.kaleba.app"
+    # clientId, clientSecret, webhookToken are stored in k8s secret: fitsync-wahoo-secret
+
   resources:
     requests:
       memory: "256Mi"
@@ -103,22 +109,19 @@ gui:
 # ZwiftFetcher configuration
 zwiftFetcher:
   enabled: true
-  image: fitsync-zwiftfetcher
+  image: fitsync-zwift-fetcher
   tag: latest
   replicas: 1
 
   config:
-    # Instance identifier (useful for tracking in logs/metrics)
     instanceId: "zwift-fetcher-k8s"
-
-    # Zwift-specific API configuration
     zwift:
       authUrl: "https://secure.zwift.com/auth/realms/zwift/protocol/openid-connect/token"
       baseUrl: "https://us-or-rly101.zwift.com"
       clientId: "Zwift_Mobile_Link"
       clientSecret: "TokenSecret"
       amazonS3RateLimit: 500
-      zwfitApiRateLimit: 50
+      zwiftApiRateLimit: 50
 
   resources:
     requests:
@@ -128,22 +131,18 @@ zwiftFetcher:
       memory: "1Gi"
       cpu: "1000m"
 
-# Uploader configuration
-uploader:
+# WahooFetcher configuration
+wahooFetcher:
   enabled: true
-  image: fitsync-garminuploader
+  image: fitsync-wahoo-fetcher
   tag: latest
   replicas: 1
 
   config:
-    # Instance identifier
-    instanceId: "uploader-k8s"
-
-    # Uploader-specific configuration
-    heartbeatIntervalMinutes: 1 # How often to send heartbeat
-    maxRetries: 3 # Max upload attempts before marking as failed
-    orphanThresholdMinutes: 2 # Minutes before reclaiming orphaned work
-    garminApiRateLimit: 50 # Garmin API rate limit per minute
+    instanceId: "wahoo-fetcher-k8s"
+    baseUrl: "https://api.wahooligan.com"
+    lookbackDays: 28
+    # clientId and clientSecret are stored in k8s secret: fitsync-wahoo-secret
 
   resources:
     requests:
@@ -152,6 +151,51 @@ uploader:
     limits:
       memory: "1Gi"
       cpu: "1000m"
+
+# GarminUploader configuration
+garminUploader:
+  enabled: true
+  image: fitsync-garmin-uploader
+  tag: latest
+  replicas: 1
+
+  config:
+    instanceId: "garmin-uploader-k8s"
+    heartbeatIntervalMinutes: 1
+    maxRetries: 3
+    orphanThresholdMinutes: 2
+    garminApiRateLimit: 50
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+# Purger configuration
+purger:
+  enabled: true
+  image: fitsync-purger
+  tag: latest
+  replicas: 1
+
+  config:
+    purgeIntervalMinutes: 60
+    sourceLookbackDays:
+      zwift: 28
+      wahoo: 180
+    enableDataRetentionPurge: false
+    dataRetentionDays: 365
+
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
 
 # ============================================================================
 # LOGGING CONFIGURATION

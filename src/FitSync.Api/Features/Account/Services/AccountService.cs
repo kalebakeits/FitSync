@@ -1,7 +1,7 @@
+namespace FitSync.Api.Features.Account.Services;
+
 using FitSync.Database;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Api.Features.Account.Services;
 
 public class AccountService(ILogger<AccountService> logger, FitSyncDbContext fitSyncDbContext)
     : IAccountService

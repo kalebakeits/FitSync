@@ -1,6 +1,6 @@
-using FitSync.Api.Exceptions;
-
 namespace FitSync.Api.Middleware;
+
+using FitSync.Api.Exceptions;
 
 public class GlobalExceptionMiddleware
 {

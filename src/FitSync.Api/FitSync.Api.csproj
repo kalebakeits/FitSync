@@ -23,6 +23,9 @@
   <ItemGroup>
     <ProjectReference Include="..\FitSync.Database\FitSync.Database.csproj" />
     <ProjectReference Include="..\FitSync.Shared\FitSync.Shared.csproj" />
+    <ProjectReference Include="..\FitSync.Garmin\Shared\FitSync.Garmin.Shared.csproj" />
+    <ProjectReference Include="..\FitSync.Wahoo\Shared\FitSync.Wahoo.Shared.csproj" />
+    <ProjectReference Include="..\FitSync.Zwift\Shared\FitSync.Zwift.Shared.csproj" />
   </ItemGroup>
 
 </Project>

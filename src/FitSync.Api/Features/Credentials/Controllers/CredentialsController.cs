@@ -1,13 +1,13 @@
+namespace FitSync.Api.Features.Credentials.Controllers;
+
 using FitSync.Api.Features.Credentials.DTOs;
 using FitSync.Api.Features.Credentials.Services;
 using FitSync.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FitSync.Api.Features.Credentials.Controllers;
-
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class CredentialsController(
     ICredentialsService credentialsService,
@@ -21,83 +21,64 @@ public class CredentialsController(
 
     [HttpPost]
     public async Task<ActionResult<CredentialResponse>> CreateOrUpdateCredential(
-        [FromBody] CreateCredentialRequest request
+        [FromBody] CreateCredentialRequest request,
+        CancellationToken cancellationToken
     )
     {
-        if (this.logger.IsEnabled(LogLevel.Information))
-        {
-            this.logger.LogInformation(
-                "CreateOrUpdateCredential called for service: {ServiceType}",
-                request.ServiceType
-            );
-        }
-
         Guid userId = this.currentUserService.GetUserId();
         CredentialResponse credential = await this.credentialsService.CreateOrUpdateCredentialAsync(
             userId,
-            request
+            request,
+            cancellationToken
         );
-
-        this.logger.LogInformation(
-            "Credential created/updated for user: {UserId}, service: {ServiceType}",
-            userId,
-            request.ServiceType
-        );
-        return Ok(credential);
+        this.logger.LogInformation("Credential upserted for {ServiceType} user {UserId}.", request.ServiceType, userId);
+        return this.Ok(credential);
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<CredentialResponse>>> GetCredentials()
+    public async Task<ActionResult<List<CredentialResponse>>> GetCredentials(
+        CancellationToken cancellationToken
+    )
     {
-        this.logger.LogInformation("GetCredentials called");
-
         Guid userId = this.currentUserService.GetUserId();
+        this.logger.LogInformation("Getting credentials for user {UserId}.", userId);
         List<CredentialResponse> credentials = await this.credentialsService.GetCredentialsAsync(
-            userId
+            userId,
+            cancellationToken
         );
-
-        this.logger.LogInformation(
-            "Retrieved {Count} credentials for user: {UserId}",
-            credentials.Count,
-            userId
-        );
-        return Ok(credentials);
+        return this.Ok(credentials);
     }
 
     [HttpDelete("{serviceType}")]
-    public async Task<ActionResult> DeleteCredential(string serviceType)
+    public async Task<ActionResult> DeleteCredential(
+        string serviceType,
+        CancellationToken cancellationToken
+    )
     {
-        this.logger.LogInformation(
-            "DeleteCredential called for service: {ServiceType}",
-            serviceType
-        );
-
         Guid userId = this.currentUserService.GetUserId();
-        await this.credentialsService.DeleteCredentialAsync(userId, serviceType);
-
-        this.logger.LogInformation(
-            "Credential deleted successfully for user: {UserId}, service: {ServiceType}",
-            userId,
-            serviceType
-        );
-        return NoContent();
+        await this.credentialsService.DeleteCredentialAsync(userId, serviceType, cancellationToken);
+        this.logger.LogInformation("Deleted credential for {ServiceType} user {UserId}.", serviceType, userId);
+        return this.NoContent();
     }
 
     [HttpGet("available")]
-    public async Task<ActionResult<List<string>>> GetAvailableServices()
+    public async Task<ActionResult<List<AvailableServiceResponse>>> GetAvailableServices(
+        CancellationToken cancellationToken
+    )
     {
-        this.logger.LogInformation("GetAvailableServices called");
-
         Guid userId = this.currentUserService.GetUserId();
-        List<string> availableServices = await this.credentialsService.GetAvailableServicesAsync(
-            userId
+        this.logger.LogInformation("Getting available services for user {UserId}.", userId);
+        List<AvailableServiceResponse> available = await this.credentialsService.GetAvailableServicesAsync(
+            userId,
+            cancellationToken
         );
+        return this.Ok(available);
+    }
 
-        this.logger.LogInformation(
-            "Retrieved {Count} available services for user: {UserId}",
-            availableServices.Count,
-            userId
-        );
-        return Ok(availableServices);
+    [HttpGet("all", Name = "GetApiCredentialsAll")]
+    public ActionResult<List<AvailableServiceResponse>> GetAllServices()
+    {
+        List<AvailableServiceResponse> all = this.credentialsService.GetAllServices();
+        return this.Ok(all);
     }
 }

@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace FitSync.Api.Features.Auth.DTOs;
+
+using System.ComponentModel.DataAnnotations;
 
 public class VerifyAccountRequest
 {

@@ -1,26 +1,26 @@
-import { ListItem, Fab, Tooltip, Box, Typography } from "@mui/material";
+import { ListItem, IconButton, Tooltip, Box, Typography } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import ServiceIcon from "./ServiceIcon";
 import StatusIndicator from "./StatusIndicator";
 
 interface CredentialCardProps {
   serviceType: string;
-  username: string;
+  displayName?: string | null;
   updatedAt: string;
   enabled: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  isDeleting: boolean;
+  onEdit?: () => void;
+  onDisconnect: () => void;
+  isProcessing: boolean;
 }
 
 export default function CredentialCard({
   serviceType,
-  username,
+  displayName,
   updatedAt,
   enabled,
   onEdit,
-  onDelete,
-  isDeleting,
+  onDisconnect,
+  isProcessing,
 }: CredentialCardProps) {
   return (
     <ListItem
@@ -33,13 +33,11 @@ export default function CredentialCard({
         alignItems: "stretch",
         gap: 0.75,
         my: 0.5,
-        mx: 2,
         width: "auto",
         py: 1.5,
         px: 2,
       }}
     >
-      {/* Top Row: Service Name and Action Buttons */}
       <Box
         sx={{
           display: "flex",
@@ -55,41 +53,21 @@ export default function CredentialCard({
           <StatusIndicator enabled={enabled} />
         </Box>
         <Box sx={{ display: "flex", gap: 0.5 }}>
-          <Tooltip title="Edit credentials">
-            <Fab
-              color="primary"
-              onClick={onEdit}
-              disabled={isDeleting}
-              size="small"
-              sx={{
-                width: 25,
-                height: 25,
-                minHeight: 25,
-              }}
-            >
-              <Edit fontSize="small" />
-            </Fab>
-          </Tooltip>
-          <Tooltip title="Delete credentials">
-            <Fab
-              color="error"
-              onClick={onDelete}
-              disabled={isDeleting}
-              size="small"
-              sx={{
-                width: 25,
-                height: 25,
-                minHeight: 25,
-                mx: 0.5,
-              }}
-            >
+          {onEdit && (
+            <Tooltip title="Edit credentials">
+              <IconButton color="primary" onClick={onEdit} disabled={isProcessing} size="small">
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Disconnect">
+            <IconButton color="error" onClick={onDisconnect} disabled={isProcessing} size="small">
               <Delete fontSize="small" />
-            </Fab>
+            </IconButton>
           </Tooltip>
         </Box>
       </Box>
 
-      {/* Bottom Row: Icon and Details */}
       <Box
         sx={{
           display: "grid",
@@ -100,18 +78,20 @@ export default function CredentialCard({
       >
         <ServiceIcon serviceType={serviceType} />
         <Box sx={{ minWidth: 0 }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              mb: 0.25,
-            }}
-          >
-            Username: {username}
-          </Typography>
+          {displayName && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                mb: 0.25,
+              }}
+            >
+              Username: {displayName}
+            </Typography>
+          )}
           <Typography variant="caption" color="text.secondary">
             Last updated: {new Date(updatedAt).toLocaleDateString()}
           </Typography>

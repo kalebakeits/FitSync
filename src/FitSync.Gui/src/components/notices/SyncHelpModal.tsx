@@ -41,14 +41,13 @@ export default function SyncHelpModal({ open, onClose }: SyncHelpModalProps) {
             </Typography>
             <Box component="ol" sx={{ pl: 2, m: 0 }}>
               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Configure credentials for both Garmin and Zwift
+                Connect your integrations in Settings → Integrations
               </Typography>
               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-                Ensure both credentials are enabled (update them if they're
-                disabled)
+                Configure destination routing — map each source to an uploader
               </Typography>
               <Typography component="li" variant="body2">
-                Credentials are automatically disabled after multiple
+                Integrations are automatically disabled after multiple
                 consecutive sync failures
               </Typography>
             </Box>
@@ -62,9 +61,10 @@ export default function SyncHelpModal({ open, onClose }: SyncHelpModalProps) {
               The Process
             </Typography>
             <Typography variant="body2" paragraph>
-              FitSync checks your Zwift account every hour for new activities.
-              When found, activities are automatically uploaded to Garmin
-              Connect and appear as virtual rides recorded on a Garmin EDGE 820.
+              FitSync checks your Zwift account for new activities and also
+              listens for Wahoo workout webhooks. When found, activities are
+              automatically uploaded to Garmin Connect and appear as virtual
+              rides recorded on a Garmin EDGE 820.
             </Typography>
             <Typography variant="body2" paragraph>
               Why does this matter? Garmin only calculates training readiness,
@@ -171,10 +171,10 @@ export default function SyncHelpModal({ open, onClose }: SyncHelpModalProps) {
             </Typography>
             <Box component="ul" sx={{ pl: 2, m: 0 }}>
               <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                Wahoo as a source
+                Bryton as a source
               </Typography>
               <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                Bryton as a source
+                Source-specific sync rules
               </Typography>
               <Typography component="li" variant="body2">
                 Multiple destinations with customizable rules for different

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: purger
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.purger.replicas }}
+  selector:
+    matchLabels:
+      app: purger
+  template:
+    metadata:
+      labels:
+        app: purger
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:16
+        command:
+          - sh
+          - -c
+          - |
+            until pg_isready -h postgres -p 5432 -U {{ .Values.postgres.username }}; do
+              echo "Waiting for postgres..."
+              sleep 2
+            done
+            echo "Postgres is ready!"
+      containers:
+      - name: purger
+        image: {{ .Values.imageRegistry }}/{{ .Values.purger.image }}:{{ .Values.purger.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-secrets
+              key: postgres-password
+        - name: ConnectionStrings__FitSync
+          value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+        - name: DataProtectionOptions__DataProtectionKey
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-secrets
+              key: data-protection-key
+        volumeMounts:
+        - name: config
+          mountPath: /app/appsettings.Production.json
+          subPath: appsettings.Production.json
+        resources:
+          {{- toYaml .Values.purger.resources | nindent 10 }}
+      volumes:
+      - name: config
+        configMap:
+          name: purger-config

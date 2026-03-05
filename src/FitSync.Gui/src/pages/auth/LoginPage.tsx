@@ -8,11 +8,6 @@ import { usePostApiAuthLogin } from "../../api/generated/auth/auth";
 import AuthLayout from "../../components/auth/AuthLayout";
 import { loginSchema, type LoginFormData } from "../../schemas/auth";
 
-interface AuthResponse {
-  userId: string;
-  username: string;
-}
-
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -34,8 +29,7 @@ export default function LoginPage() {
   const loginMutation = usePostApiAuthLogin({
     mutation: {
       onSuccess: (data) => {
-        const authData = data as unknown as AuthResponse;
-        login(authData.userId, authData.username);
+        login(data.userId, data.username);
         navigate("/dashboard");
       },
       onError: (error: any) => {

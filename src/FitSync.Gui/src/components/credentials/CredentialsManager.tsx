@@ -1,25 +1,24 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  getGetApiCredentialsAvailableQueryKey,
   getGetApiCredentialsQueryKey,
-  useDeleteApiCredentialsServiceType,
-  useGetApiCredentials,
   useGetApiCredentialsAvailable,
   usePostApiCredentials,
 } from "../../api/generated/credentials/credentials";
-import type { CreateCredentialRequest } from "../../api/generated/fitSyncApi.schemas";
+import {
+  getGetApiConnectionsQueryKey,
+  useDeleteApiConnectionsServiceType,
+  useGetApiConnections,
+} from "../../api/generated/connections/connections";
+import type {
+  ConnectionResponse,
+  CreateCredentialRequest,
+} from "../../api/generated/fitSyncApi.schemas";
 import DashboardColumn from "../dashboard/DashboardColumn";
 import CredentialModal from "./CredentialModal";
 import CredentialsContent from "./CredentialsContent";
 import CredentialsHeader from "./CredentialsHeader";
-
-interface Credential {
-  serviceType: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
-  enabled: boolean;
-}
 
 export default function CredentialsManager() {
   const queryClient = useQueryClient();
@@ -29,11 +28,12 @@ export default function CredentialsManager() {
     username: string;
   } | null>(null);
 
-  const { data: credentials, isLoading } = useGetApiCredentials({
+  const { data: connections = [], isLoading } = useGetApiConnections({
     query: { refetchInterval: 60000 },
   });
-  const { data: availableServicesData } = useGetApiCredentialsAvailable({
-    query: { enabled: modalOpen && !editingCredential },
+
+  const { data: availableServices = [] } = useGetApiCredentialsAvailable({
+    query: { enabled: !editingCredential },
   });
 
   const addMutation = usePostApiCredentials({
@@ -41,28 +41,27 @@ export default function CredentialsManager() {
       onSuccess: () => {
         setModalOpen(false);
         setEditingCredential(null);
-        queryClient.invalidateQueries({
-          queryKey: getGetApiCredentialsQueryKey(),
-        });
+        queryClient.invalidateQueries({ queryKey: getGetApiConnectionsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetApiCredentialsQueryKey() });
       },
     },
   });
 
-  const deleteMutation = useDeleteApiCredentialsServiceType({
+  const disconnectMutation = useDeleteApiConnectionsServiceType({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: getGetApiCredentialsQueryKey(),
-        });
+        queryClient.invalidateQueries({ queryKey: getGetApiConnectionsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetApiCredentialsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetApiCredentialsAvailableQueryKey() });
       },
     },
   });
 
-  const handleOpenModal = (credential?: Credential) => {
-    if (credential) {
+  const handleOpenModal = (connection?: ConnectionResponse) => {
+    if (connection) {
       setEditingCredential({
-        serviceType: credential.serviceType,
-        username: credential.username,
+        serviceType: connection.serviceType ?? "",
+        username: connection.displayName ?? "",
       });
     } else {
       setEditingCredential(null);
@@ -79,17 +78,12 @@ export default function CredentialsManager() {
     addMutation.mutate({ data });
   };
 
-  const handleDelete = (serviceType: string) => {
-    if (
-      confirm(
-        `Are you sure you want to delete your ${serviceType} credentials?`,
-      )
-    ) {
-      deleteMutation.mutate({ serviceType });
+  const handleDisconnect = (serviceType: string) => {
+    if (confirm(`Are you sure you want to remove your ${serviceType} connection?`)) {
+      disconnectMutation.mutate({ serviceType });
     }
   };
 
-  const credentialsList = (credentials as unknown as Credential[]) || [];
 
   return (
     <>
@@ -97,7 +91,7 @@ export default function CredentialsManager() {
         open={modalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
-        availableServices={(availableServicesData as unknown as string[]) || []}
+        availableServices={availableServices}
         isSubmitting={addMutation.isPending}
         error={
           addMutation.isError
@@ -112,11 +106,11 @@ export default function CredentialsManager() {
         header={<CredentialsHeader onAddClick={() => handleOpenModal()} />}
         body={
           <CredentialsContent
-            credentials={credentialsList}
+            connections={connections}
             isLoading={isLoading}
-            isDeleting={deleteMutation.isPending}
+            isProcessing={disconnectMutation.isPending}
             onEdit={handleOpenModal}
-            onDelete={handleDelete}
+            onDisconnect={handleDisconnect}
           />
         }
       />

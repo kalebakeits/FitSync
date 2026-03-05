@@ -6,11 +6,8 @@
  */
 export interface ActivityResponse {
   id: string;
-  /** @nullable */
-  externalActivityId: string | null;
-  /** @nullable */
-  source: string | null;
-  status: ActivityStatus;
+  externalActivityId: string;
+  source: string;
   /** @nullable */
   originalFileName?: string | null;
   /** @nullable */
@@ -18,13 +15,9 @@ export interface ActivityResponse {
   activityDate: string;
   /** @nullable */
   activityName?: string | null;
-  retryCount?: number;
-  /** @nullable */
-  lastError?: string | null;
-  /** @nullable */
-  lastErrorAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  uploadStatuses?: UploadStatusEntry[];
 }
 
 export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
@@ -43,8 +36,16 @@ export const ActivityStatus = {
 
 export interface AuthSuccessResponse {
   userId: string;
+  username: string;
+}
+
+export interface AvailableServiceResponse {
+  serviceType: string;
+  authType: string;
   /** @nullable */
-  username: string | null;
+  connectUrl?: string | null;
+  isFetcher?: boolean;
+  isUploader?: boolean;
 }
 
 export interface ConfirmPasswordResetRequest {
@@ -57,6 +58,16 @@ export interface ConfirmPasswordResetRequest {
   newPassword: string;
 }
 
+export interface ConnectionResponse {
+  serviceType: string;
+  authType: string;
+  connected: boolean;
+  enabled: boolean;
+  /** @nullable */
+  displayName?: string | null;
+  updatedAt: string;
+}
+
 export interface CreateCredentialRequest {
   /** @minLength 1 */
   serviceType: string;
@@ -67,10 +78,8 @@ export interface CreateCredentialRequest {
 }
 
 export interface CredentialResponse {
-  /** @nullable */
-  serviceType: string | null;
-  /** @nullable */
-  username: string | null;
+  serviceType: string;
+  username: string;
   createdAt: string;
   updatedAt: string;
   enabled: boolean;
@@ -78,12 +87,27 @@ export interface CredentialResponse {
 
 export interface CurrentUserResponse {
   userId: string;
-  /** @nullable */
-  username: string | null;
-  /** @nullable */
-  email: string | null;
+  username: string;
+  email: string;
   isVerified: boolean;
   isEmailVerified: boolean;
+}
+
+export interface DestinationMappingResponse {
+  sourceServiceType: string;
+  destinationServiceTypes: string[];
+}
+
+export interface DestinationStatusEntry {
+  serviceType: string;
+  healthy?: boolean;
+  connected?: boolean;
+}
+
+export interface FetcherStatusResponse {
+  serviceType: string;
+  status: string;
+  destinations: DestinationStatusEntry[];
 }
 
 export interface LoginRequest {
@@ -94,11 +118,14 @@ export interface LoginRequest {
 }
 
 export interface PaginatedActivitiesResponse {
-  /** @nullable */
-  items: ActivityResponse[] | null;
+  items: ActivityResponse[];
   total: number;
   limit: number;
   offset: number;
+}
+
+export interface PushToDestinationRequest {
+  destinationServiceType: string;
 }
 
 export interface RegisterRequest {
@@ -149,13 +176,26 @@ export interface UpdateUsernameRequest {
   username: string;
 }
 
+export interface UploadStatusEntry {
+  destinationServiceType: string;
+  status: ActivityStatus;
+  /** @nullable */
+  lastError?: string | null;
+  retryCount?: number;
+}
+
+export interface UpsertDestinationMappingsRequest {
+  /** @minLength 1 */
+  sourceServiceType: string;
+  destinationServiceTypes: string[];
+}
+
 export interface VerifyAccountRequest {
   /** @minLength 1 */
   token: string;
 }
 
 export type GetApiActivitiesParams = {
-status?: ActivityStatus;
 limit?: number;
 offset?: number;
 };

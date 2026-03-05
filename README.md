@@ -16,9 +16,9 @@ dotnet run --project src/FitSync.AppHost
 
 **Default credentials**: `default` / `default1`
 
-Aspire handles everything - database migrations, service orchestration, test data seeding.
+Aspire handles everything — database migrations, service orchestration, test data seeding.
 
-The mock fetcher will auto-verify every user every 30s on dev so you don't need SMTP config.
+The mock fetcher auto-verifies every user every 30s so you don't need SMTP config.
 
 ### Configuration
 
@@ -26,29 +26,60 @@ The mock fetcher runs by default and processes test `.fit` files for the default
 
 You can log in and change the Garmin credentials to test against a real Connect account.
 
-Alternatively you can configure `appsettings.json` so it is auto-populated on startup:
+Alternatively configure `src/FitSync.Mock/Fetcher/appsettings.json` to auto-populate on startup:
 ```json
 "MockFetcherOptions": {
-  "RunFetcher": false,  // Disable/Enable mock fetching for default user
-  "GarminUsername": "your-email@example.com",  // If you want to test with a real Connect account
-  "GarminPassword": "your-password"
+  "RunFetcher": false,
+  "GarminConnectEmail": "your-email@example.com",
+  "GarminConnectPassword": "your-password"
 }
 ```
 
-*Create a test account if you do this*
+*Use a test account if you do this.*
 
 ## Architecture 🏗️
 
-Microservices (fetcher, uploader, API, GUI) + Kafka + PostgreSQL + Kubernetes deployment.
+| Service | Description |
+|---|---|
+| `FitSync.Api` | REST API |
+| `FitSync.Gui` | React frontend |
+| `FitSync.Zwift/Fetcher` | Polls Zwift for new activities |
+| `FitSync.Wahoo/Fetcher` | Receives Wahoo webhook events |
+| `FitSync.Garmin/Uploader` | Uploads activities to Garmin Connect |
+| `FitSync.Mock/Fetcher` | Dev-only fetcher using local `.fit` test files |
+| `FitSync.Database` | EF Core migrations |
+
+Sources route to N destinations via user-configured mappings (`user_destination_configs`). Kafka for activity queuing, PostgreSQL for persistence, Kubernetes + Helm for deployment.
+
+## Building & Deploying 🚀
+
+Each service has its own build script so they can run in parallel:
+
+```bash
+# Build all images in parallel
+REGISTRY=localhost:5000 TAG=latest ./scripts/build.sh
+
+# Or build individually
+./scripts/build/api.sh
+./scripts/build/zwift-fetcher.sh
+./scripts/build/wahoo-fetcher.sh
+./scripts/build/garmin-uploader.sh
+./scripts/build/gui.sh
+./scripts/build/migrate.sh
+
+# Deploy to Kubernetes
+./scripts/deploy.sh
+
+# Build and deploy in one step
+./scripts/build-and-deploy.sh
+```
 
 ## Future Work 🚀
 
-- Fetchers for Wahoo, Strava, etc.
-- Upload to multiple destinations
+- Fetchers for Strava, TrainingPeaks, etc.
+- Upload to multiple destinations (many-to-many routing implemented)
 - Bi-directional sync
-- Health checks for source/destination services before processing
-- Pause workers when upstream/downstream services unavailable
-- Overall service indicator (GUI)
+- Overall service health indicator (GUI)
 
 ---
 

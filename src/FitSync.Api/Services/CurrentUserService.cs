@@ -1,6 +1,6 @@
-using System.Security.Claims;
-
 namespace FitSync.Api.Services;
+
+using System.Security.Claims;
 
 public interface ICurrentUserService
 {

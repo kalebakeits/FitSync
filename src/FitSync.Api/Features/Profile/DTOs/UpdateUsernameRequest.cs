@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace FitSync.Api.Features.Profile.DTOs;
+
+using System.ComponentModel.DataAnnotations;
 
 public class UpdateUsernameRequest
 {

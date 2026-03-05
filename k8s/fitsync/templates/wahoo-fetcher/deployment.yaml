@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wahoo-fetcher
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.wahooFetcher.replicas }}
+  selector:
+    matchLabels:
+      app: wahoo-fetcher
+  template:
+    metadata:
+      labels:
+        app: wahoo-fetcher
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:16
+        command:
+          - sh
+          - -c
+          - |
+            until pg_isready -h postgres -p 5432 -U {{ .Values.postgres.username }}; do
+              echo "Waiting for postgres..."
+              sleep 2
+            done
+            echo "Postgres is ready!"
+      - name: wait-for-kafka
+        image: busybox:1.35
+        command:
+          - sh
+          - -c
+          - |
+            until nc -z kafka 9092; do
+              echo "Waiting for kafka..."
+              sleep 2
+            done
+            echo "Kafka is ready!"
+      containers:
+      - name: wahoo-fetcher
+        image: {{ .Values.imageRegistry }}/{{ .Values.wahooFetcher.image }}:{{ .Values.wahooFetcher.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-secrets
+              key: postgres-password
+        - name: ConnectionStrings__FitSync
+          value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+        - name: DataProtectionOptions__DataProtectionKey
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-secrets
+              key: data-protection-key
+        - name: WahooFetcherOptions__ClientId
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-wahoo-secret
+              key: client-id
+        - name: WahooFetcherOptions__ClientSecret
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-wahoo-secret
+              key: client-secret
+        volumeMounts:
+        - name: config
+          mountPath: /app/appsettings.Production.json
+          subPath: appsettings.Production.json
+        resources:
+          {{- toYaml .Values.wahooFetcher.resources | nindent 10 }}
+      volumes:
+      - name: config
+        configMap:
+          name: wahoo-fetcher-config

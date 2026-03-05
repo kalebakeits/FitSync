@@ -59,6 +59,21 @@ spec:
             secretKeyRef:
               name: fitsync-email-secret
               key: smtp-password
+        - name: WahooOptions__ClientId
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-wahoo-secret
+              key: client-id
+        - name: WahooOptions__ClientSecret
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-wahoo-secret
+              key: client-secret
+        - name: WahooOptions__WebhookToken
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-wahoo-secret
+              key: webhook-token
         - name: ConnectionStrings__FitSync
           value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
         ports:

@@ -26,7 +26,8 @@ import type {
 import type {
   ActivityResponse,
   GetApiActivitiesParams,
-  PaginatedActivitiesResponse
+  PaginatedActivitiesResponse,
+  PushToDestinationRequest
 } from '../fitSyncApi.schemas';
 
 import { customAxiosInstance } from '../../axios-instance';
@@ -257,6 +258,121 @@ const {mutation: mutationOptions} = options ?
       > => {
 
       const mutationOptions = getDeleteApiActivitiesIdMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    export const postApiActivitiesIdRetry = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<void>(
+      {url: `/api/Activities/${id}/retry`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostApiActivitiesIdRetryMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdRetry>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdRetry>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postApiActivitiesIdRetry'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiActivitiesIdRetry>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postApiActivitiesIdRetry(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostApiActivitiesIdRetryMutationResult = NonNullable<Awaited<ReturnType<typeof postApiActivitiesIdRetry>>>
+    
+    export type PostApiActivitiesIdRetryMutationError = unknown
+
+    export const usePostApiActivitiesIdRetry = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdRetry>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postApiActivitiesIdRetry>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostApiActivitiesIdRetryMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    export const postApiActivitiesIdPush = (
+    id: string,
+    pushToDestinationRequest: PushToDestinationRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customAxiosInstance<void>(
+      {url: `/api/Activities/${id}/push`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: pushToDestinationRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getPostApiActivitiesIdPushMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdPush>>, TError,{id: string;data: PushToDestinationRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdPush>>, TError,{id: string;data: PushToDestinationRequest}, TContext> => {
+
+const mutationKey = ['postApiActivitiesIdPush'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApiActivitiesIdPush>>, {id: string;data: PushToDestinationRequest}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postApiActivitiesIdPush(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostApiActivitiesIdPushMutationResult = NonNullable<Awaited<ReturnType<typeof postApiActivitiesIdPush>>>
+    export type PostApiActivitiesIdPushMutationBody = PushToDestinationRequest
+    export type PostApiActivitiesIdPushMutationError = unknown
+
+    export const usePostApiActivitiesIdPush = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiActivitiesIdPush>>, TError,{id: string;data: PushToDestinationRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postApiActivitiesIdPush>>,
+        TError,
+        {id: string;data: PushToDestinationRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getPostApiActivitiesIdPushMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

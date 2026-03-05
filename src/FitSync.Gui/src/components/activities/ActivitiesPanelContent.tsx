@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetApiActivities,
   useDeleteApiActivitiesId,
+  usePostApiActivitiesIdRetry,
   getGetApiActivitiesQueryKey,
 } from "../../api/generated/activities/activities";
 import EmptyActivityList from "./EmptyActivities";
@@ -28,18 +29,23 @@ export default function ActivitiesPanelContent() {
     },
   );
 
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: getGetApiActivitiesQueryKey() });
+
   const deleteMutation = useDeleteApiActivitiesId({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: getGetApiActivitiesQueryKey(),
-        });
-      },
-    },
+    mutation: { onSuccess: invalidate },
+  });
+
+  const retryMutation = usePostApiActivitiesIdRetry({
+    mutation: { onSuccess: invalidate },
   });
 
   const handleDelete = (activityId: string) => {
     deleteMutation.mutate({ id: activityId });
+  };
+
+  const handleRetry = (activityId: string) => {
+    retryMutation.mutate({ id: activityId });
   };
 
   if (isLoading) {
@@ -63,7 +69,11 @@ export default function ActivitiesPanelContent() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-        <ActivityList activities={activities} onDelete={handleDelete} />
+        <ActivityList
+          activities={activities}
+          onDelete={handleDelete}
+          onRetry={handleRetry}
+        />
       </Box>
       <Box
         sx={{

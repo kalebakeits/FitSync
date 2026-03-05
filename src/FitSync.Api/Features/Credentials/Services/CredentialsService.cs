@@ -1,3 +1,5 @@
+namespace FitSync.Api.Features.Credentials.Services;
+
 using FitSync.Api.Configurations;
 using FitSync.Api.Exceptions;
 using FitSync.Api.Features.Credentials.DTOs;
@@ -8,13 +10,12 @@ using FitSync.Shared.Features.Encryption.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace FitSync.Api.Features.Credentials.Services;
-
 public class CredentialsService(
     FitSyncDbContext context,
     IEncryptionService encryptionService,
     IOptions<AppConfiguration> appConfiguration,
     ServiceCredentialHandlerFactory handlerFactory,
+    IEnumerable<IOAuthServiceHandler> oauthHandlers,
     ILogger<CredentialsService> logger
 ) : ICredentialsService
 {
@@ -23,206 +24,172 @@ public class CredentialsService(
     private readonly ILogger<CredentialsService> logger = logger;
     private readonly IOptions<AppConfiguration> appConfiguration = appConfiguration;
     private readonly ServiceCredentialHandlerFactory handlerFactory = handlerFactory;
+    private readonly IEnumerable<IOAuthServiceHandler> oauthHandlers = oauthHandlers;
 
     public async Task<CredentialResponse> CreateOrUpdateCredentialAsync(
         Guid userId,
-        CreateCredentialRequest request
+        CreateCredentialRequest request,
+        CancellationToken cancellationToken = default
     )
     {
-        this.logger.LogInformation(
-            "Creating or updating credential for user: {UserId}, service: {ServiceType}",
-            userId,
-            request.ServiceType
-        );
+        IServiceCredentialHandler handler = this.handlerFactory.Require(request.ServiceType);
 
-        UserCredential? existing = await this.context.UserCredentials.FirstOrDefaultAsync(
-            c => c.UserId == userId && c.ServiceType == request.ServiceType
+        Integration? existing = await this.context.Integrations.FirstOrDefaultAsync(
+            i => i.UserId == userId && i.ServiceType == request.ServiceType,
+            cancellationToken
         );
-        string plaintextUsername;
-        IServiceCredentialHandler? handler;
 
         if (existing != null)
         {
-            this.logger.LogInformation(
-                "Updating existing credential for user: {UserId}, service: {ServiceType}",
-                userId,
-                request.ServiceType
-            );
-
-            existing.Username = request.Username;
-            existing.Password = request.Password;
-            existing.UpdatedAt = DateTime.UtcNow;
-            existing.FailureCount = 0; // Reset failure count when credentials are updated
-
-            plaintextUsername = existing.Username;
-            existing.Encrypt(this.encryptionService);
-
-            await this.context.SaveChangesAsync();
-
-            this.logger.LogInformation(
-                "Credential updated successfully for user: {UserId}, service: {ServiceType}",
-                userId,
-                request.ServiceType
-            );
-
-            // Notify service-specific handler (in case config needs to be created/updated)
-            handler = this.handlerFactory.GetHandler(request.ServiceType);
-            if (handler != null)
-            {
-                await handler.OnCredentialCreatedAsync(userId);
-            }
-
-            return new CredentialResponse
-            {
-                ServiceType = existing.ServiceType,
-                Username = plaintextUsername,
-                CreatedAt = existing.CreatedAt,
-                UpdatedAt = existing.UpdatedAt,
-                Enabled =
-                    existing.FailureCount < appConfiguration.Value.MaxSequentialCredentialFailures,
-            };
+            existing.SetAuthData(handler.BuildAuthData(request), this.encryptionService);
+            existing.FailureCount = 0;
+            await this.context.SaveChangesAsync(cancellationToken);
+            await handler.OnCredentialCreatedAsync(existing, cancellationToken);
+            this.logger.LogInformation("Updated integration for {ServiceType} user {UserId}.", request.ServiceType, userId);
+            return this.MapToResponse(existing, request.Username);
         }
 
-        this.logger.LogInformation(
-            "Creating new credential for user: {UserId}, service: {ServiceType}",
-            userId,
-            request.ServiceType
-        );
-
-        UserCredential credential =
-            new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                ServiceType = request.ServiceType,
-                Username = request.Username,
-                Password = request.Password,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                FailureCount = 0 // Initialize failure count to 0
-            };
-
-        plaintextUsername = credential.Username;
-        credential.Encrypt(this.encryptionService);
-
-        this.context.UserCredentials.Add(credential);
-        await this.context.SaveChangesAsync();
-
-        this.logger.LogInformation(
-            "Credential created successfully for user: {UserId}, service: {ServiceType}",
-            userId,
-            request.ServiceType
-        );
-
-        handler = this.handlerFactory.GetHandler(request.ServiceType);
-        if (handler != null)
+        Integration integration = new()
         {
-            await handler.OnCredentialCreatedAsync(userId);
-        }
-
-        return new CredentialResponse
-        {
-            ServiceType = credential.ServiceType,
-            Username = plaintextUsername,
-            CreatedAt = credential.CreatedAt,
-            UpdatedAt = credential.UpdatedAt,
-            Enabled =
-                credential.FailureCount < appConfiguration.Value.MaxSequentialCredentialFailures,
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            ServiceType = request.ServiceType,
+            FailureCount = 0,
         };
+        integration.SetAuthData(handler.BuildAuthData(request), this.encryptionService);
+        this.context.Integrations.Add(integration);
+        await this.context.SaveChangesAsync(cancellationToken);
+        await handler.OnCredentialCreatedAsync(integration, cancellationToken);
+
+        this.logger.LogInformation("Created integration for {ServiceType} user {UserId}.", request.ServiceType, userId);
+        return this.MapToResponse(integration, request.Username);
     }
 
-    public async Task<List<CredentialResponse>> GetCredentialsAsync(Guid userId)
+    public async Task<List<CredentialResponse>> GetCredentialsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
-        this.logger.LogInformation("Getting credentials for user: {UserId}", userId);
+        List<string> credentialServiceTypes = this.handlerFactory.ServiceTypes;
 
-        List<UserCredential> credentials = await this.context.UserCredentials.Where(
-            c => c.UserId == userId
-        )
-            .ToListAsync();
+        List<Integration> integrations = await this.context.Integrations
+            .Where(i => i.UserId == userId && credentialServiceTypes.Contains(i.ServiceType))
+            .ToListAsync(cancellationToken);
 
-        this.logger.LogInformation(
-            "Retrieved {Count} credentials for user: {UserId}",
-            credentials.Count,
-            userId
-        );
-
-        return credentials
-            .Select(c =>
-            {
-                return new CredentialResponse
-                {
-                    ServiceType = c.ServiceType,
-                    Username = c.Decrypt(this.encryptionService).Username,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt,
-                    Enabled =
-                        c.FailureCount < appConfiguration.Value.MaxSequentialCredentialFailures,
-                };
-            })
-            .ToList();
-    }
-
-    public async Task DeleteCredentialAsync(Guid userId, string serviceType)
-    {
-        this.logger.LogInformation(
-            "Deleting credential for user: {UserId}, service: {ServiceType}",
-            userId,
-            serviceType
-        );
-
-        UserCredential? credential = await this.context.UserCredentials.FirstOrDefaultAsync(
-            c => c.UserId == userId && c.ServiceType == serviceType
-        );
-
-        if (credential == null)
+        return integrations.Select(i =>
         {
-            this.logger.LogWarning(
-                "Credential not found for deletion - user: {UserId}, service: {ServiceType}",
-                userId,
-                serviceType
-            );
+            string? displayName = this.handlerFactory.Require(i.ServiceType).GetDisplayName(i);
+            return this.MapToResponse(i, displayName);
+        }).ToList();
+    }
+
+    public async Task DeleteCredentialAsync(
+        Guid userId,
+        string serviceType,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Integration? integration = await this.context.Integrations.FirstOrDefaultAsync(
+            i => i.UserId == userId && i.ServiceType == serviceType,
+            cancellationToken
+        );
+
+        if (integration == null)
             throw new NotFoundException("Credential not found.");
-        }
 
-        this.context.UserCredentials.Remove(credential);
-        await this.context.SaveChangesAsync();
+        this.context.Integrations.Remove(integration);
+        await this.context.SaveChangesAsync(cancellationToken);
 
-        this.logger.LogInformation(
-            "Credential deleted successfully for user: {UserId}, service: {ServiceType}",
-            userId,
-            serviceType
-        );
-
-        // Notify service-specific handler
-        IServiceCredentialHandler? handler = this.handlerFactory.GetHandler(serviceType);
+        IServiceCredentialHandler? handler = this.handlerFactory.Get(serviceType);
         if (handler != null)
-        {
-            await handler.OnCredentialDeletedAsync(userId);
-        }
+            await handler.OnCredentialDeletedAsync(integration, cancellationToken);
+
+        this.logger.LogInformation("Deleted integration for {ServiceType} user {UserId}.", serviceType, userId);
     }
 
-    public async Task<List<string>> GetAvailableServicesAsync(Guid userId)
+    public async Task<List<AvailableServiceResponse>> GetAvailableServicesAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
-        this.logger.LogInformation("Getting available services for user: {UserId}", userId);
+        List<string> credentialServiceTypes = this.handlerFactory.ServiceTypes;
+        List<string> oauthServiceTypes = this.oauthHandlers.Select(h => h.ServiceType).ToList();
+        List<string> allServiceTypes = [.. credentialServiceTypes, .. oauthServiceTypes];
 
-        List<string> allServices = [ServiceTypes.Zwift, ServiceTypes.Garmin];
+        List<string> existing = await this.context.Integrations
+            .Where(i => i.UserId == userId && allServiceTypes.Contains(i.ServiceType))
+            .Select(i => i.ServiceType)
+            .ToListAsync(cancellationToken);
 
-        List<string> existingServices = await this.context.UserCredentials.Where(
-            c => c.UserId == userId
-        )
-            .Select(c => c.ServiceType)
-            .ToListAsync();
+        List<AvailableServiceResponse> available = [];
 
-        List<string> availableServices = allServices
-            .Where(s => !existingServices.Contains(s))
-            .ToList();
+        foreach (string serviceType in credentialServiceTypes.Where(s => !existing.Contains(s)))
+        {
+            IServiceCredentialHandler handler = this.handlerFactory.Require(serviceType);
+            available.Add(new AvailableServiceResponse
+            {
+                ServiceType = serviceType,
+                AuthType = "credentials",
+                ConnectUrl = null,
+                IsFetcher = handler.IsFetcher,
+                IsUploader = handler.IsUploader,
+            });
+        }
 
-        this.logger.LogInformation(
-            "Found {Count} available services for user: {UserId}",
-            availableServices.Count,
-            userId
-        );
+        foreach (IOAuthServiceHandler oauth in this.oauthHandlers.Where(h => !existing.Contains(h.ServiceType)))
+        {
+            available.Add(new AvailableServiceResponse
+            {
+                ServiceType = oauth.ServiceType,
+                AuthType = oauth.AuthType,
+                ConnectUrl = oauth.ConnectUrl,
+                IsFetcher = oauth.IsFetcher,
+                IsUploader = oauth.IsUploader,
+            });
+        }
 
-        return availableServices;
+        return available;
     }
+
+    public List<AvailableServiceResponse> GetAllServices()
+    {
+        List<AvailableServiceResponse> all = [];
+
+        foreach (string serviceType in this.handlerFactory.ServiceTypes)
+        {
+            IServiceCredentialHandler handler = this.handlerFactory.Require(serviceType);
+            all.Add(new AvailableServiceResponse
+            {
+                ServiceType = serviceType,
+                AuthType = "credentials",
+                ConnectUrl = null,
+                IsFetcher = handler.IsFetcher,
+                IsUploader = handler.IsUploader,
+            });
+        }
+
+        foreach (IOAuthServiceHandler oauth in this.oauthHandlers)
+        {
+            all.Add(new AvailableServiceResponse
+            {
+                ServiceType = oauth.ServiceType,
+                AuthType = oauth.AuthType,
+                ConnectUrl = oauth.ConnectUrl,
+                IsFetcher = oauth.IsFetcher,
+                IsUploader = oauth.IsUploader,
+            });
+        }
+
+        return all;
+    }
+
+    private CredentialResponse MapToResponse(Integration integration, string? username) =>
+        new()
+        {
+            ServiceType = integration.ServiceType,
+            Username = username ?? string.Empty,
+            CreatedAt = integration.CreatedAt,
+            UpdatedAt = integration.UpdatedAt,
+            Enabled = integration.FailureCount < this.appConfiguration.Value.MaxSequentialCredentialFailures,
+        };
 }

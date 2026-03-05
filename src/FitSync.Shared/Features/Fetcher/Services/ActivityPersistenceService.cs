@@ -2,7 +2,6 @@ namespace FitSync.Shared.Features.Fetcher.Services;
 
 using System.Text.Json;
 using FitSync.Database;
-using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -48,7 +47,6 @@ public class ActivityPersistenceService(
                 UserId = userId,
                 ExternalActivityId = fetchedActivity.ExternalActivityId,
                 Source = fetchedActivity.Source,
-                Status = ActivityStatus.Pending,
                 FitFileData = fetchedActivity.FitFileData,
                 FileSizeBytes = fetchedActivity.FitFileData.Length,
                 OriginalFileName = fetchedActivity.FileName,
@@ -61,6 +59,20 @@ public class ActivityPersistenceService(
             };
 
         this.dbContext.Activities.Add(activity);
+
+        List<UserDestinationConfig> destinations = await this.dbContext.UserDestinationConfigs
+            .Where(c => c.UserId == userId && c.SourceServiceType == fetchedActivity.Source)
+            .ToListAsync(cancellationToken);
+
+        foreach (UserDestinationConfig dest in destinations)
+        {
+            this.dbContext.ActivityUploadStatuses.Add(new ActivityUploadStatus
+            {
+                ActivityId = activity.Id,
+                DestinationServiceType = dest.DestinationServiceType,
+            });
+        }
+
         await this.dbContext.SaveChangesAsync(cancellationToken);
 
         this.logger.LogInformation(

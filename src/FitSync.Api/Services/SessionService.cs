@@ -1,9 +1,9 @@
+namespace FitSync.Api.Services;
+
 using System.Security.Cryptography;
 using FitSync.Database;
 using FitSync.Database.Models;
 using Microsoft.EntityFrameworkCore;
-
-namespace FitSync.Api.Services;
 
 public interface ISessionService
 {
@@ -98,15 +98,13 @@ public class SessionService(FitSyncDbContext context, ILogger<SessionService> lo
     {
         this.logger.LogInformation("Invalidating all sessions for user: {UserId}", userId);
 
-        List<Session> sessions = await this.context.Sessions.Where(s => s.UserId == userId)
-            .ToListAsync();
-
-        this.context.Sessions.RemoveRange(sessions);
-        await this.context.SaveChangesAsync();
+        int count = await this.context.Sessions
+            .Where(s => s.UserId == userId)
+            .ExecuteDeleteAsync();
 
         this.logger.LogInformation(
             "Invalidated {Count} sessions for user: {UserId}",
-            sessions.Count,
+            count,
             userId
         );
     }

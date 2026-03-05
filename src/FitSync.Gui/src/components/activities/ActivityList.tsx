@@ -5,11 +5,13 @@ import ActivityListItem from "./ActivityListItem";
 interface ActivityListProps {
   activities: ActivityResponse[];
   onDelete?: (activityId: string) => void;
+  onRetry?: (activityId: string) => void;
 }
 
 export default function ActivityList({
   activities,
   onDelete,
+  onRetry,
 }: ActivityListProps) {
   return (
     <List sx={{ width: "auto", height: "100%", overflowY: "scroll" }}>
@@ -19,6 +21,7 @@ export default function ActivityList({
             key={activity.id}
             activity={activity}
             onDelete={onDelete}
+            onRetry={onRetry}
           />
         );
       })}

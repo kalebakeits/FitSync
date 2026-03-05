@@ -17,7 +17,7 @@ namespace FitSync.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -42,17 +42,13 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("activity_name");
 
-                    b.Property<DateTime?>("ClaimedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("claimed_at");
-
-                    b.Property<string>("ClaimedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("claimed_by");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
 
                     b.Property<string>("ExternalActivityId")
                         .IsRequired()
@@ -68,41 +64,20 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("fit_file_data");
 
-                    b.Property<string>("LastError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_error");
-
-                    b.Property<DateTime?>("LastErrorAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_error_at");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
 
                     b.Property<string>("OriginalFileName")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("original_file_name");
 
-                    b.Property<DateTime?>("ProcessingCompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_completed_at");
-
-                    b.Property<DateTime?>("ProcessingStartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processing_started_at");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("retry_count");
-
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("source");
-
-                    b.Property<int>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -119,13 +94,157 @@ namespace FitSync.Database.Migrations
 
                     b.HasIndex(new[] { "ActivityDate" }, "idx_activities_activity_date");
 
-                    b.HasIndex(new[] { "ClaimedBy" }, "idx_activities_claimed_by");
-
-                    b.HasIndex(new[] { "Status" }, "idx_activities_status");
-
                     b.HasIndex(new[] { "UserId" }, "idx_activities_user_id");
 
                     b.ToTable("activities");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ActivityUploadStatus", b =>
+                {
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("activity_id");
+
+                    b.Property<string>("DestinationServiceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("destination_service_type");
+
+                    b.Property<DateTime?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<string>("ClaimedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("claimed_by");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime?>("LastErrorAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_error_at");
+
+                    b.Property<DateTime?>("ProcessingCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_completed_at");
+
+                    b.Property<DateTime?>("ProcessingStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processing_started_at");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("retry_count");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.HasKey("ActivityId", "DestinationServiceType");
+
+                    b.HasIndex(new[] { "ActivityId" }, "idx_activity_upload_statuses_activity_id");
+
+                    b.HasIndex(new[] { "ClaimedBy" }, "idx_activity_upload_statuses_claimed_by");
+
+                    b.HasIndex(new[] { "Status" }, "idx_activity_upload_statuses_status");
+
+                    b.ToTable("activity_upload_statuses");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.FetcherConfig", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("FetchIntervalMinutes")
+                        .HasColumnType("integer")
+                        .HasColumnName("fetch_interval_minutes");
+
+                    b.Property<Guid>("IntegrationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("integration_id");
+
+                    b.Property<DateTime?>("LockExpiry")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lock_expiry");
+
+                    b.Property<DateTime?>("NextFetchTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_fetch_time");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("WorkerLockId")
+                        .HasColumnType("text")
+                        .HasColumnName("worker_lock_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IntegrationId")
+                        .IsUnique();
+
+                    b.HasIndex("NextFetchTime");
+
+                    b.ToTable("fetcher_configs");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.Integration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthData")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("auth_data");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("failure_count");
+
+                    b.Property<string>("LookupValue")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("lookup_value");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("service_type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LookupValue");
+
+                    b.HasIndex("UserId", "ServiceType")
+                        .IsUnique();
+
+                    b.ToTable("integrations");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.ProcessedActivity", b =>
@@ -326,117 +445,62 @@ namespace FitSync.Database.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("FitSync.Database.Models.UserCredential", b =>
+            modelBuilder.Entity("FitSync.Database.Models.UserDestinationConfig", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("FailureCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("failure_count");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("password");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("service_type");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("username");
+                    b.Property<string>("SourceServiceType")
+                        .HasColumnType("text");
 
-                    b.HasKey("Id");
+                    b.Property<string>("DestinationServiceType")
+                        .HasColumnType("text");
 
-                    b.HasIndex("UserId", "ServiceType")
+                    b.HasKey("UserId", "SourceServiceType", "DestinationServiceType");
+
+                    b.HasIndex("UserId", "SourceServiceType", "DestinationServiceType")
                         .IsUnique();
 
-                    b.ToTable("user_credentials");
-                });
-
-            modelBuilder.Entity("FitSync.Database.Models.ZwiftFetcherConfig", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AccessToken")
-                        .HasColumnType("text")
-                        .HasColumnName("access_token");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("FetchIntervalMinutes")
-                        .HasColumnType("integer")
-                        .HasColumnName("fetch_interval_minutes");
-
-                    b.Property<DateTime?>("LockExpiry")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("lock_expiry");
-
-                    b.Property<DateTime?>("NextFetchTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("next_fetch_time");
-
-                    b.Property<string>("ProfileId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("profile_id");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("text")
-                        .HasColumnName("refresh_token");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<string>("WorkerLockId")
-                        .HasColumnType("text")
-                        .HasColumnName("worker_lock_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NextFetchTime");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("zwift_fetcher_configs");
+                    b.ToTable("UserDestinationConfigs");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.Activity", b =>
                 {
                     b.HasOne("FitSync.Database.Models.User", "User")
                         .WithMany("Activities")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ActivityUploadStatus", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.Activity", "Activity")
+                        .WithMany("UploadStatuses")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.FetcherConfig", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.Integration", "Integration")
+                        .WithOne("FetcherConfig")
+                        .HasForeignKey("FitSync.Database.Models.FetcherConfig", "IntegrationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Integration");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.Integration", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.User", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -466,7 +530,7 @@ namespace FitSync.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FitSync.Database.Models.UserCredential", b =>
+            modelBuilder.Entity("FitSync.Database.Models.UserDestinationConfig", b =>
                 {
                     b.HasOne("FitSync.Database.Models.User", "User")
                         .WithMany()
@@ -477,15 +541,14 @@ namespace FitSync.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FitSync.Database.Models.ZwiftFetcherConfig", b =>
+            modelBuilder.Entity("FitSync.Database.Models.Activity", b =>
                 {
-                    b.HasOne("FitSync.Database.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("UploadStatuses");
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("FitSync.Database.Models.Integration", b =>
+                {
+                    b.Navigation("FetcherConfig");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.User", b =>

@@ -1,5 +1,6 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Refresh, Sync } from "@mui/icons-material";
+import ResponsiveButton from "../ResponsiveButton";
 
 interface ActivitiesHeaderProps {
   onRefreshClick: () => void;
@@ -13,33 +14,24 @@ export default function ActivitiesHeader({
   isTriggeringFetch = false,
 }: ActivitiesHeaderProps) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 1,
-      }}
-    >
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1 }}>
       <Typography variant="h5">Imported Activities</Typography>
       <Box sx={{ display: "flex", gap: 1 }}>
         {onTriggerFetch && (
-          <Button
+          <ResponsiveButton
+            icon={<Sync fontSize="small" />}
+            label={isTriggeringFetch ? "Syncing..." : "Sync Now"}
             variant="outlined"
-            startIcon={<Sync />}
             onClick={onTriggerFetch}
             disabled={isTriggeringFetch}
-          >
-            {isTriggeringFetch ? "Syncing..." : "Sync Now"}
-          </Button>
+          />
         )}
-        <Button
+        <ResponsiveButton
+          icon={<Refresh fontSize="small" />}
+          label="Refresh"
           variant="contained"
-          startIcon={<Refresh />}
           onClick={onRefreshClick}
-        >
-          Refresh
-        </Button>
+        />
       </Box>
     </Box>
   );

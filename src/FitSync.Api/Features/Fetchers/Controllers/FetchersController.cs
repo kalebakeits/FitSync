@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class FetchersController(
     IFetchersService fetchersService,
@@ -26,11 +26,7 @@ public class FetchersController(
         Guid userId = this.currentUserService.GetUserId();
         await this.fetchersService.TriggerFetchAsync(userId);
 
-        this.logger.LogInformation(
-            "Fetch triggered successfully for user: {UserId}",
-            userId
-        );
+        this.logger.LogInformation("Fetch triggered successfully for user: {UserId}", userId);
         return Ok();
     }
 }
-
