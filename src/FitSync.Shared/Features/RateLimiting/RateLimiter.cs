@@ -11,36 +11,44 @@ public class RateLimiter(IConnectionMultiplexer redis, ILogger<RateLimiter> logg
 
     public async Task<bool> RateLimitedReachedAsync(
         ServiceType serviceType,
-        int requestCap = 50,
+        IReadOnlyList<RateLimit> limits,
         CancellationToken cancellationToken = default
     )
     {
         IDatabase db = this.redis.GetDatabase();
+        string service = serviceType.ToString().ToLower();
+        DateTime now = DateTime.UtcNow;
 
-        // Key format: "ratelimit:garmin:2024-11-27-14:30"
-        string currentMinute = DateTime.UtcNow.ToString("yyyy-MM-dd-HH:mm");
-        string key = $"ratelimit:{serviceType.ToString().ToLower()}:{currentMinute}";
-
-        long newCount = await db.StringIncrementAsync(key);
-
-        if (newCount == 1)
+        foreach (RateLimit limit in limits)
         {
-            await db.KeyExpireAsync(key, TimeSpan.FromMinutes(2));
+            string key = GetWindowKey(service, now, limit.WindowMinutes);
+            long count = await db.StringIncrementAsync(key);
+
+            if (count == 1)
+                await db.KeyExpireAsync(key, TimeSpan.FromMinutes(limit.WindowMinutes + 1));
+
+            if (count > limit.Cap)
+            {
+                await db.StringDecrementAsync(key);
+                this.logger.LogWarning(
+                    "{Service} rate limited on {Window}m window (cap {Cap}). Suffering from success.",
+                    serviceType,
+                    limit.WindowMinutes,
+                    limit.Cap
+                );
+                return true;
+            }
         }
 
-        if (newCount > requestCap)
-        {
-            await db.StringDecrementAsync(key);
-            this.logger.LogWarning(
-                "{Service} is being rate limited. Suffering from success.",
-                serviceType
-            );
-            return true;
-        }
-        this.logger.LogDebug(
-            "{Service} rate limit not reached. Get more users king...",
-            serviceType
-        );
+        this.logger.LogDebug("{Service} rate limits not reached. Get more users king...", serviceType);
         return false;
+    }
+
+    private static string GetWindowKey(string service, DateTime now, int windowMinutes)
+    {
+        // Bucket the current time into the window size so all requests within
+        // the same window share the same Redis key.
+        long bucketIndex = (long)(now - DateTime.UnixEpoch).TotalMinutes / windowMinutes;
+        return $"ratelimit:{service}:{windowMinutes}m:{bucketIndex}";
     }
 }

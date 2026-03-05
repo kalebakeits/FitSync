@@ -77,8 +77,7 @@ public class ZwiftActivityProcessor(
     )
     {
         ServiceType type = ServiceType.AmazonS3;
-        int limit = this.options.Value.AmazonS3RateLimit;
-        if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
+        if (await this.rateLimiter.RateLimitedReachedAsync(type, this.options.Value.AmazonS3RateLimits, cancellationToken))
             return [];
 
         bool missingFileDetails =

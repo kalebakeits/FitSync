@@ -36,8 +36,7 @@ public class ActivityProcessor(
     )
     {
         ServiceType type = ServiceType.GarminUploader;
-        int limit = this.options.Value.GarminApiRateLimit;
-        if (await this.rateLimiter.RateLimitedReachedAsync(type, limit, cancellationToken))
+        if (await this.rateLimiter.RateLimitedReachedAsync(type, this.options.Value.RateLimits, cancellationToken))
             return;
 
         int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(

@@ -22,6 +22,6 @@ data:
         "HeartbeatIntervalMinutes": {{ .Values.garminUploader.config.heartbeatIntervalMinutes }},
         "MaxRetries": {{ .Values.garminUploader.config.maxRetries }},
         "OrphanThresholdMinutes": {{ .Values.garminUploader.config.orphanThresholdMinutes }},
-        "GarminApiRateLimit": {{ .Values.garminUploader.config.garminApiRateLimit }}
+        "RateLimits": {{ .Values.garminUploader.config.rateLimits | toJson }}
       }
     }

@@ -44,7 +44,7 @@ public class ZwiftApiService(
 
         Dictionary<string, string?> parameters = new() { ["start"] = "0", ["limit"] = "50" };
 
-        if (await this.rateLimiter.RateLimitedReachedAsync(ServiceType.ZwiftFetcher, this.options.Value.ZwfitApiRateLimit, cancellationToken))
+        if (await this.rateLimiter.RateLimitedReachedAsync(ServiceType.ZwiftFetcher, this.options.Value.ZwiftApiRateLimits, cancellationToken))
             return [];
 
         HttpResponseMessage response = await this.httpClient.GetAsync(

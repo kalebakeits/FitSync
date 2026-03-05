@@ -31,8 +31,8 @@ data:
         "BaseUrl": "{{ .Values.zwiftFetcher.config.zwift.baseUrl }}",
         "ClientId": "{{ .Values.zwiftFetcher.config.zwift.clientId }}",
         "ClientSecret": "{{ .Values.zwiftFetcher.config.zwift.clientSecret }}",
-        "AmazonS3RateLimit": {{ .Values.zwiftFetcher.config.zwift.amazonS3RateLimit }},
-        "ZwiftApiRateLimit": {{ .Values.zwiftFetcher.config.zwift.zwiftApiRateLimit }}
+        "ZwiftApiRateLimits": {{ .Values.zwiftFetcher.config.zwift.zwiftApiRateLimits | toJson }},
+        "AmazonS3RateLimits": {{ .Values.zwiftFetcher.config.zwift.amazonS3RateLimits | toJson }}
       },
       "AllowedHosts": "*"
     }
