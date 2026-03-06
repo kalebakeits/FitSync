@@ -51,7 +51,12 @@ builder.Host.UseSerilog(
 builder.Services.AddSingleton<IProducer<string, string>>(_ =>
 {
     ProducerConfig config =
-        new() { BootstrapServers = builder.Configuration.GetConnectionString("kafka") };
+        new()
+        {
+            BootstrapServers = builder.Configuration.GetConnectionString("kafka"),
+            MessageTimeoutMs = 10000,
+            MetadataMaxAgeMs = 86400000, // 24h max — static single-broker environment
+        };
     return new ProducerBuilder<string, string>(config).Build();
 });
 

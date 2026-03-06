@@ -42,67 +42,102 @@ public class WahooWebhookService(
         string externalId = workout.Id.ToString();
         string wahooUserId = payload.User.Id.ToString();
 
-        Integration? integration = await this.dbContext.Integrations.FirstOrDefaultAsync(
-            i => i.ServiceType == ServiceTypes.Wahoo && i.LookupValue == wahooUserId,
-            cancellationToken
-        );
-
-        if (integration == null)
-        {
-            this.logger.LogWarning("No Wahoo integration for Wahoo user {WahooUserId}. Skipping.", wahooUserId);
-            return;
-        }
-
-        bool alreadyProcessed = await this.dbContext.ProcessedActivities.AnyAsync(
-            p => p.UserId == integration.UserId && p.ExternalActivityId == externalId && p.Source == ServiceTypes.Wahoo,
-            cancellationToken
-        );
-
-        if (alreadyProcessed)
-        {
-            this.logger.LogInformation("Workout {ExternalId} already processed. Skipping.", externalId);
-            return;
-        }
-
-        byte[] fitData = await this.activityProcessor.DownloadFitFileAsync(fileUrl, cancellationToken);
-
-        Activity dbActivity = new()
-        {
-            Id = Guid.NewGuid(),
-            UserId = integration.UserId,
-            ExternalActivityId = externalId,
-            Source = ServiceTypes.Wahoo,
-            OriginalFileName = $"wahoo_{externalId}.fit",
-            FitFileData = fitData,
-            FileSizeBytes = fitData.LongLength,
-            ActivityDate = workout.Starts,
-            ActivityName = workout.Name,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
-
-        this.dbContext.Activities.Add(dbActivity);
-
-        List<UserDestinationConfig> destinations = await this.dbContext.UserDestinationConfigs
-            .Where(c => c.UserId == integration.UserId && c.SourceServiceType == ServiceTypes.Wahoo)
+        List<Integration> integrations = await this.dbContext.Integrations.Where(
+            i => i.ServiceType == ServiceTypes.Wahoo && i.LookupValue == wahooUserId
+        )
             .ToListAsync(cancellationToken);
 
-        foreach (UserDestinationConfig dest in destinations)
+        if (integrations.Count == 0)
         {
-            this.dbContext.ActivityUploadStatuses.Add(new ActivityUploadStatus
-            {
-                ActivityId = dbActivity.Id,
-                DestinationServiceType = dest.DestinationServiceType,
-            });
+            this.logger.LogWarning(
+                "No Wahoo integration for Wahoo user {WahooUserId}. Skipping.",
+                wahooUserId
+            );
+            return;
         }
 
-        await this.dbContext.SaveChangesAsync(cancellationToken);
-        await this.activityPublisher.PublishActivityFetchedAsync(dbActivity, cancellationToken);
+        List<Guid> alreadyProcessedUserIds = await this.dbContext.ProcessedActivities.Where(
+            p => p.ExternalActivityId == externalId && p.Source == ServiceTypes.Wahoo
+        )
+            .Select(p => p.UserId)
+            .ToListAsync(cancellationToken);
 
-        this.logger.LogInformation(
-            "Processed webhook workout {ExternalId} for user {UserId}.",
-            externalId,
-            integration.UserId
+        List<Integration> toProcess = integrations
+            .Where(i => !alreadyProcessedUserIds.Contains(i.UserId))
+            .ToList();
+
+        if (toProcess.Count == 0)
+        {
+            this.logger.LogInformation(
+                "Workout {ExternalId} already processed for all users. Skipping.",
+                externalId
+            );
+            return;
+        }
+
+        byte[] fitData = await this.activityProcessor.DownloadFitFileAsync(
+            fileUrl,
+            cancellationToken
         );
+        DateTime now = DateTime.UtcNow;
+
+        foreach (Integration integration in toProcess)
+        {
+            Activity dbActivity =
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = integration.UserId,
+                    ExternalActivityId = externalId,
+                    Source = ServiceTypes.Wahoo,
+                    OriginalFileName = $"wahoo_{externalId}.fit",
+                    FitFileData = fitData,
+                    FileSizeBytes = fitData.LongLength,
+                    ActivityDate = workout.Starts,
+                    ActivityName = workout.Name,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                };
+
+            this.dbContext.Activities.Add(dbActivity);
+
+            List<UserDestinationConfig> destinations =
+                await this.dbContext.UserDestinationConfigs.Where(
+                    c => c.UserId == integration.UserId && c.SourceServiceType == ServiceTypes.Wahoo
+                )
+                    .ToListAsync(cancellationToken);
+
+            foreach (UserDestinationConfig dest in destinations)
+            {
+                this.dbContext.ActivityUploadStatuses.Add(
+                    new ActivityUploadStatus
+                    {
+                        ActivityId = dbActivity.Id,
+                        DestinationServiceType = dest.DestinationServiceType,
+                    }
+                );
+            }
+
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+            await this.activityPublisher.PublishActivityFetchedAsync(dbActivity, cancellationToken);
+
+            this.dbContext.ProcessedActivities.Add(
+                new ProcessedActivity
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = integration.UserId,
+                    ExternalActivityId = externalId,
+                    Source = ServiceTypes.Wahoo,
+                    FetchedAt = now,
+                }
+            );
+            await this.dbContext.SaveChangesAsync(cancellationToken);
+
+            this.logger.LogInformation(
+                "Processed webhook workout {ExternalId} for user {UserId}.",
+                externalId,
+                integration.UserId
+            );
+        }
     }
 }
