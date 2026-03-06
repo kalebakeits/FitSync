@@ -30,6 +30,7 @@ shared:
   maxParallelUsers: 4 # Max users processed in parallel
   maxParallelActivities: 10 # Max activities per user in parallel
   maxSequentialCredentialFailures: 5
+  fetcherHeartbeatThresholdMinutes: 5 # Minutes before API marks fetcher heartbeat unhealthy
   appUrl: "https://fitsync.kaleba.app"
 
 imageRegistry: kalebaserver:5000

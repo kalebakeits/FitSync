@@ -18,7 +18,8 @@ data:
         "AllowedOrigins": ["{{ .Values.shared.appUrl }}"]
       },
       "AppConfiguration": {
-        "MaxSequentialCredentialFailures": {{ .Values.shared.maxSequentialCredentialFailures }}
+        "MaxSequentialCredentialFailures": {{ .Values.shared.maxSequentialCredentialFailures }},
+        "FetcherHeartbeatThresholdMinutes": {{ .Values.shared.fetcherHeartbeatThresholdMinutes }}
       },
       "EmailConfiguration": {
         "SmtpHost": "{{ .Values.shared.email.smtpHost }}",

@@ -15,6 +15,7 @@ public class GarminCredentialHandler(
     private readonly ILogger<GarminCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Garmin;
+    public Database.Enums.ServiceType? HeartbeatServiceType => null;
     public bool IsFetcher => false;
     public bool IsUploader => true;
     public string AuthType => "credentials";

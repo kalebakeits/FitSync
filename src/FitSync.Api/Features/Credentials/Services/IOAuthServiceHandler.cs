@@ -5,6 +5,7 @@ using FitSync.Database.Models;
 public interface IOAuthServiceHandler
 {
     string ServiceType { get; }
+    Database.Enums.ServiceType? HeartbeatServiceType { get; }
     bool IsFetcher { get; }
     bool IsUploader { get; }
     string AuthType { get; }

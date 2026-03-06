@@ -16,17 +16,17 @@ export default function FetcherStatusPanel({ onOpenSettings }: FetcherStatusPane
     <DashboardColumn
       header={
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography variant="h5">Active Fetchers</Typography>
-          <ResponsiveButton icon={<Settings fontSize="small" />} label="Configure" onClick={onOpenSettings} />
+          <Typography variant="h5">Fetchers</Typography>
+          <ResponsiveButton icon={<Settings fontSize="small" />} label="Manage" onClick={onOpenSettings} />
         </Box>
       }
       body={
         fetchers.length === 0 ? (
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              No fetchers connected.{" "}
+              No fetchers connected yet.{" "}
               <Button size="small" onClick={onOpenSettings}>
-                Configure integrations
+                Set up integrations
               </Button>
             </Typography>
           </Box>

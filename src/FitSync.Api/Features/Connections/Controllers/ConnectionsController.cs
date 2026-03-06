@@ -18,7 +18,8 @@ public class ConnectionsController(
 ) : ControllerBase
 {
     private readonly IConnectionsService connectionsService = connectionsService;
-    private readonly IDestinationMappingService destinationMappingService = destinationMappingService;
+    private readonly IDestinationMappingService destinationMappingService =
+        destinationMappingService;
     private readonly IFetcherStatusService fetcherStatusService = fetcherStatusService;
     private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly ILogger<ConnectionsController> logger = logger;
@@ -30,7 +31,9 @@ public class ConnectionsController(
     {
         Guid userId = this.currentUserService.GetUserId();
         this.logger.LogInformation("Getting connections for user {UserId}.", userId);
-        return this.Ok(await this.connectionsService.GetConnectionsAsync(userId, cancellationToken));
+        return this.Ok(
+            await this.connectionsService.GetConnectionsAsync(userId, cancellationToken)
+        );
     }
 
     [HttpDelete("{serviceType}", Name = "DeleteApiConnectionsServiceType")]
@@ -41,7 +44,11 @@ public class ConnectionsController(
     {
         Guid userId = this.currentUserService.GetUserId();
         await this.connectionsService.DisconnectAsync(userId, serviceType, cancellationToken);
-        this.logger.LogInformation("Disconnected {ServiceType} for user {UserId}.", serviceType, userId);
+        this.logger.LogInformation(
+            "Disconnected {ServiceType} for user {UserId}.",
+            serviceType,
+            userId
+        );
         return this.Ok();
     }
 
@@ -52,7 +59,9 @@ public class ConnectionsController(
     {
         Guid userId = this.currentUserService.GetUserId();
         this.logger.LogInformation("Getting destination mappings for user {UserId}.", userId);
-        return this.Ok(await this.destinationMappingService.GetMappingsAsync(userId, cancellationToken));
+        return this.Ok(
+            await this.destinationMappingService.GetMappingsAsync(userId, cancellationToken)
+        );
     }
 
     [HttpPut("mappings", Name = "PutApiConnectionsMappings")]
@@ -62,7 +71,11 @@ public class ConnectionsController(
     )
     {
         Guid userId = this.currentUserService.GetUserId();
-        await this.destinationMappingService.UpsertMappingsAsync(userId, request, cancellationToken);
+        await this.destinationMappingService.UpsertMappingsAsync(
+            userId,
+            request,
+            cancellationToken
+        );
         this.logger.LogInformation("Upserted destination mappings for user {UserId}.", userId);
         return this.Ok();
     }

@@ -59,7 +59,7 @@ builder.AddKafkaProducer<string, string>("kafka");
 // Features
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
-    .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("WahooFetcherOptions"))
+    .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("ZwiftFetcherOptions"))
     .AddZwiftClient()
     .AddHeartbeat()
     .AddRateLimiting();
