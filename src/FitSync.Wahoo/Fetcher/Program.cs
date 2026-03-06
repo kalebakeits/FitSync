@@ -10,7 +10,6 @@ using FitSync.Shared.Features.RateLimiting;
 using FitSync.Wahoo.Fetcher.Configuration;
 using FitSync.Wahoo.Shared.WahooClient;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,15 +24,6 @@ builder
 builder.Services.AddDbContext<FitSyncDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("FitSync"))
 );
-
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-{
-    ConfigurationOptions configuration = ConfigurationOptions.Parse(
-        builder.Configuration.GetConnectionString("Redis") ?? string.Empty
-    );
-    configuration.AbortOnConnectFail = false;
-    return ConnectionMultiplexer.Connect(configuration);
-});
 
 WahooFetcherOptions fetcherConfig =
     builder.Configuration.GetSection("WahooFetcherOptions").Get<WahooFetcherOptions>()
@@ -54,7 +44,7 @@ builder
     .AddWahooClient(() => builder.Configuration.GetSection("WahooFetcherOptions:Client"))
     .AddFetcher<WahooClient>(() => builder.Configuration.GetSection("WahooFetcherOptions"))
     .AddHeartbeat()
-    .AddRateLimiting();
+    .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty);
 
 var app = builder.Build();
 

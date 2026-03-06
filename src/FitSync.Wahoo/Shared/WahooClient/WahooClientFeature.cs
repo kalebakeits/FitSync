@@ -7,6 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 public static class WahooClientFeature
 {
+    public static IServiceCollection AddWahooActivityProcessor(this IServiceCollection services)
+    {
+        services.AddHttpClient<IWahooActivityProcessor, WahooActivityProcessor>();
+
+        return services;
+    }
+
     public static IServiceCollection AddWahooClient(
         this IServiceCollection services,
         Func<IConfigurationSection> getConfigSection
@@ -20,7 +27,7 @@ public static class WahooClientFeature
 
         services.AddHttpClient<IWahooAuthService, WahooAuthService>();
         services.AddHttpClient<IWahooApiService, WahooApiService>();
-        services.AddHttpClient<IWahooActivityProcessor, WahooActivityProcessor>();
+        services.AddWahooActivityProcessor();
         services.AddScoped<IWahooClient, WahooClient>();
 
         return services;

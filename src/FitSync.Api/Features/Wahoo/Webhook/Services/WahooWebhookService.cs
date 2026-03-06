@@ -4,18 +4,18 @@ using FitSync.Api.Features.Wahoo.Webhook.DTOs;
 using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.Services;
-using FitSync.Wahoo.Shared.WahooClient;
+using FitSync.Wahoo.Shared.WahooClient.Services;
 using Microsoft.EntityFrameworkCore;
 
 public class WahooWebhookService(
     FitSyncDbContext dbContext,
-    IWahooClient wahooClient,
+    IWahooActivityProcessor activityProcessor,
     IActivityPublisher activityPublisher,
     ILogger<WahooWebhookService> logger
 ) : IWahooWebhookService
 {
     private readonly FitSyncDbContext dbContext = dbContext;
-    private readonly IWahooClient wahooClient = wahooClient;
+    private readonly IWahooActivityProcessor activityProcessor = activityProcessor;
     private readonly IActivityPublisher activityPublisher = activityPublisher;
     private readonly ILogger<WahooWebhookService> logger = logger;
 
@@ -64,7 +64,7 @@ public class WahooWebhookService(
             return;
         }
 
-        byte[] fitData = await this.wahooClient.DownloadFitFileAsync(fileUrl, cancellationToken);
+        byte[] fitData = await this.activityProcessor.DownloadFitFileAsync(fileUrl, cancellationToken);
 
         Activity dbActivity = new()
         {
