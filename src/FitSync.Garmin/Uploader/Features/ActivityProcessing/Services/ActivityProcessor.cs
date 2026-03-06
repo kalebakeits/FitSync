@@ -7,7 +7,6 @@ using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.FitModification.Services;
 using FitSync.Garmin.Uploader.Features.GarminUpload;
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
-using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +16,6 @@ public class ActivityProcessor(
     IGarminUploader garminUploader,
     IUploadResultHandler resultHandler,
     ILogger<ActivityProcessor> logger,
-    IRateLimiter rateLimiter,
     IOptions<GarminUploaderOptions> options
 ) : IActivityProcessor
 {
@@ -26,7 +24,6 @@ public class ActivityProcessor(
     private readonly IGarminUploader garminUploader = garminUploader;
     private readonly IUploadResultHandler resultHandler = resultHandler;
     private readonly ILogger<ActivityProcessor> logger = logger;
-    private readonly IRateLimiter rateLimiter = rateLimiter;
     private readonly IOptions<GarminUploaderOptions> options = options;
 
     public async Task ClaimAndProcessActivityAsync(
@@ -148,15 +145,6 @@ public class ActivityProcessor(
         CancellationToken cancellationToken
     )
     {
-        if (
-            await this.rateLimiter.RateLimitedReachedAsync(
-                ServiceType.GarminUploader,
-                this.options.Value.RateLimits,
-                cancellationToken
-            )
-        )
-            return false;
-
         int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(
             u => u.ActivityId == activityId && u.DestinationServiceType == ServiceTypes.Garmin
         )

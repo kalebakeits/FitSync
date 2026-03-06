@@ -2,19 +2,25 @@ namespace FitSync.Garmin.Uploader.Features.GarminUpload.Services;
 
 using System.Net;
 using FitSync.Database;
+using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Garmin.Shared.AuthData;
+using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
+using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 public class GarminUploader(
     ILogger<GarminUploader> logger,
     FitSyncDbContext fitSyncDbContext,
     IEncryptionService encryptionService,
     IGarminApiClient apiClient,
-    IGarminAuthService authService
+    IGarminAuthService authService,
+    IRateLimiter rateLimiter,
+    IOptions<GarminUploaderOptions> options
 ) : IGarminUploader
 {
     private readonly ILogger<GarminUploader> logger = logger;
@@ -22,6 +28,8 @@ public class GarminUploader(
     private readonly IEncryptionService encryptionService = encryptionService;
     private readonly IGarminApiClient apiClient = apiClient;
     private readonly IGarminAuthService authService = authService;
+    private readonly IRateLimiter rateLimiter = rateLimiter;
+    private readonly IOptions<GarminUploaderOptions> options = options;
 
     public async Task<UploadResult> UploadActivityAsync(
         byte[] fitFileData,
@@ -50,6 +58,9 @@ public class GarminUploader(
             return UploadResult.Failed($"Authentication failed: {ex.Message}");
         }
 
+        if (await this.rateLimiter.RateLimitedReachedAsync(ServiceType.GarminUploader, this.options.Value.RateLimits, cancellationToken))
+            return UploadResult.RateLimited();
+
         GarminAuthData authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
         UploadResult result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);
 
@@ -64,7 +75,6 @@ public class GarminUploader(
                 return UploadResult.Failed("Token refresh failed after 401.", HttpStatusCode.Unauthorized);
             }
 
-            // Reload authData after refresh
             await this.fitSyncDbContext.Entry(integration).ReloadAsync(cancellationToken);
             authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
             result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);

@@ -116,6 +116,7 @@ zwiftFetcher:
 
   config:
     instanceId: "zwift-fetcher-k8s"
+    fetchIntervalMinutes: 60 # Fetch each user every 1 hour
     zwift:
       authUrl: "https://secure.zwift.com/auth/realms/zwift/protocol/openid-connect/token"
       baseUrl: "https://us-or-rly101.zwift.com"
@@ -147,6 +148,7 @@ wahooFetcher:
     instanceId: "wahoo-fetcher-k8s"
     baseUrl: "https://api.wahooligan.com"
     lookbackDays: 28
+    fetchIntervalMinutes: 360 # Fetch each user every 6 hours (webhook is primary delivery)
     # clientId and clientSecret are stored in k8s secret: fitsync-wahoo-secret
     rateLimits:
       - windowMinutes: 5

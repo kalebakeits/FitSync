@@ -14,6 +14,11 @@ public class FetcherOptions
     public required int PollIntervalMinutes { get; set; }
 
     /// <summary>
+    /// Gets or sets the interval in minutes between fetches for each individual user.
+    /// </summary>
+    public required int FetchIntervalMinutes { get; set; }
+
+    /// <summary>
     /// Gets or sets he number of days in the past to look back when polling user activities.
     /// </summary>
     public required int LookbackDays { get; set; }
@@ -21,7 +26,6 @@ public class FetcherOptions
     /// <summary>
     /// Gets or sets the threshold in minutes used to determine if an uploader has died.
     /// </summary>
-
     public required int DeadThresholdMinutes { get; set; }
 
     /// <summary>

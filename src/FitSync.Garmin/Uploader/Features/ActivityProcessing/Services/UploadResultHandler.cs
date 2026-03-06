@@ -13,6 +13,12 @@ public class UploadResultHandler(
     FitSyncDbContext dbContext
 ) : IUploadResultHandler
 {
+    private static readonly HashSet<ActivityStatus> TerminalStatuses =
+    [
+        ActivityStatus.Failed,
+        ActivityStatus.Conflict
+    ];
+
     private readonly IActivityStatusMapper activityStatusMapper = activityStatusMapper;
     private readonly ILogger<UploadResultHandler> logger = logger;
     private readonly FitSyncDbContext fitSyncDbContext = dbContext;
@@ -39,6 +45,19 @@ public class UploadResultHandler(
             )
                 .ExecuteUpdateAsync(s => s.SetProperty(i => i.FailureCount, 0));
 
+            return;
+        }
+
+        if (result.ShouldRetry)
+        {
+            this.logger.LogInformation(
+                "Activity {ActivityId} deferred for retry: {Reason}. I'm such a hard worker",
+                activity.Id,
+                result.ErrorMessage
+            );
+            uploadStatus.Status = ActivityStatus.Pending;
+            uploadStatus.ClaimedBy = null;
+            uploadStatus.ClaimedAt = null;
             return;
         }
 
@@ -74,7 +93,7 @@ public class UploadResultHandler(
             );
         }
 
-        if (ShouldRetry(uploadStatus, maxRetries))
+        if (!TerminalStatuses.Contains(uploadStatus.Status) && uploadStatus.RetryCount < maxRetries)
         {
             this.logger.LogInformation(
                 "Will retry activity {ActivityId} (attempt {Retry}/{Max}). I'm such a hard worker",
@@ -86,12 +105,5 @@ public class UploadResultHandler(
             uploadStatus.ClaimedBy = null;
             uploadStatus.ClaimedAt = null;
         }
-    }
-
-    private static bool ShouldRetry(ActivityUploadStatus uploadStatus, int maxRetries)
-    {
-        HashSet<ActivityStatus> noRetryStatuses = [ActivityStatus.Failed, ActivityStatus.Conflict];
-        return !noRetryStatuses.Contains(uploadStatus.Status)
-            && uploadStatus.RetryCount < maxRetries;
     }
 }

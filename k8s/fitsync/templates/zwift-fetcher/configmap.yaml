@@ -21,6 +21,7 @@ data:
         "InstanceId": "{{ .Values.zwiftFetcher.config.instanceId }}",
         "HeartbeatIntervalMinutes": {{ .Values.shared.heartbeatIntervalMinutes }},
         "PollIntervalMinutes": {{ .Values.shared.pollIntervalMinutes }},
+        "FetchIntervalMinutes": {{ .Values.zwiftFetcher.config.fetchIntervalMinutes }},
         "LookbackDays": {{ .Values.shared.lookbackDays }},
         "DeadThresholdMinutes": {{ .Values.shared.deadThresholdMinutes }},
         "MaxPendingActivities": {{ .Values.shared.maxPendingActivities }},

@@ -39,9 +39,6 @@ public class WahooApiService(
     {
         IReadOnlyList<RateLimit> limits = this.options.Value.RateLimits;
 
-        if (limits.Count > 0 && await this.rateLimiter.RateLimitedReachedAsync(ServiceType.WahooFetcher, limits, cancellationToken))
-            return [];
-
         await this.authService.EnsureAuthenticatedAsync(integration, cancellationToken);
 
         string url = $"{this.options.Value.BaseUrl.TrimEnd('/')}/v1/workouts";
