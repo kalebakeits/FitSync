@@ -11,7 +11,7 @@ function computeOverall(fetchers: FetcherStatusResponse[]): "green" | "amber" | 
   return "amber";
 }
 
-const labels = { green: "Syncing", amber: "Partial Sync", red: "Not Syncing" };
+const labels = { green: "Sync active", amber: "Sync partial", red: "Sync paused" };
 const colors = { green: "#4caf50", amber: "#ff9800", red: "#f44336" };
 
 export default function SyncStatusIndicator({ fetchers }: SyncStatusIndicatorProps) {

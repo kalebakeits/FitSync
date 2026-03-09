@@ -15,7 +15,7 @@ public static class WahooServiceExtensions
     {
         services.AddHttpClient<IWahooOAuthService, WahooAuthService>();
         services.AddScoped<IWahooConnectionService, WahooConnectionService>();
-        services.AddWahooClient(getConfigSection);
+        services.AddWahooActivityProcessor();
         services.AddScoped<IWahooWebhookService, WahooWebhookService>();
         services.AddScoped<IActivityPublisher, ActivityPublisher>();
 

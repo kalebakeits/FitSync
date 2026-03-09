@@ -1,3 +1,4 @@
+using Confluent.Kafka;
 using FitSync.Api.Configurations;
 using FitSync.Api.Features.Account;
 using FitSync.Api.Features.Activities;
@@ -9,7 +10,6 @@ using FitSync.Api.Features.Profile;
 using FitSync.Api.Features.Wahoo;
 using FitSync.Api.Middleware;
 using FitSync.Api.Services;
-using Confluent.Kafka;
 using FitSync.Database;
 using FitSync.Shared.Features.Email;
 using FitSync.Shared.Features.Email.Services;
@@ -17,6 +17,7 @@ using FitSync.Shared.Features.Encryption;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -50,7 +51,12 @@ builder.Host.UseSerilog(
 builder.Services.AddSingleton<IProducer<string, string>>(_ =>
 {
     ProducerConfig config =
-        new() { BootstrapServers = builder.Configuration.GetConnectionString("kafka") };
+        new()
+        {
+            BootstrapServers = builder.Configuration.GetConnectionString("kafka"),
+            MessageTimeoutMs = 10000,
+            MetadataMaxAgeMs = 86400000, // 24h max — static single-broker environment
+        };
     return new ProducerBuilder<string, string>(config).Build();
 });
 
@@ -77,7 +83,8 @@ builder
     .AddWahooFeature(() => builder.Configuration.GetSection("WahooOptions"))
     .AddEndpointsApiExplorer()
     .AddAuthorization()
-    .AddControllers(o => o.Conventions.Add(new RoutePrefixConvention("api")));
+    .AddControllers(o => o.Conventions.Add(new RoutePrefixConvention("api")))
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Configure cookie authentication
 builder

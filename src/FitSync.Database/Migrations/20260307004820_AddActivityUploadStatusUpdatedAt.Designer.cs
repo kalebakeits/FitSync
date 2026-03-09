@@ -3,6 +3,7 @@ using System;
 using FitSync.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitSync.Database.Migrations
 {
     [DbContext(typeof(FitSyncDbContext))]
-    partial class FitSyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260307004820_AddActivityUploadStatusUpdatedAt")]
+    partial class AddActivityUploadStatusUpdatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

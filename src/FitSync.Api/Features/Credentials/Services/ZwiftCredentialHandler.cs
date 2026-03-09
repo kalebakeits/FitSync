@@ -19,6 +19,7 @@ public class ZwiftCredentialHandler(
     private readonly ILogger<ZwiftCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Zwift;
+    public Database.Enums.ServiceType? HeartbeatServiceType => Database.Enums.ServiceType.ZwiftFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => false;
     public string AuthType => "credentials";

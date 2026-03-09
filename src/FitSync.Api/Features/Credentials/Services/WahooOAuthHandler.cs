@@ -1,5 +1,6 @@
 namespace FitSync.Api.Features.Credentials.Services;
 
+using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
@@ -10,6 +11,7 @@ public class WahooOAuthHandler(IEncryptionService encryptionService) : IOAuthSer
     private readonly IEncryptionService encryptionService = encryptionService;
 
     public string ServiceType => ServiceTypes.Wahoo;
+    public ServiceType? HeartbeatServiceType => Database.Enums.ServiceType.WahooFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => false;
     public string AuthType => "oauth";

@@ -1,18 +1,11 @@
 import { Box, Typography } from "@mui/material";
 
-const colorMap = {
-  green: { hex: "#4caf50", label: "All destinations healthy" },
-  amber: { hex: "#ff9800", label: "Some destinations failing" },
-  red: { hex: "#f44336", label: "All destinations failing" },
-  grey: { hex: "#9e9e9e", label: "No destinations configured" },
-} as const;
-
 interface TrafficLightProps {
-  status: keyof typeof colorMap;
+  color: string;
+  label: string;
 }
 
-export default function TrafficLight({ status }: TrafficLightProps) {
-  const { hex, label } = colorMap[status];
+export default function TrafficLight({ color, label }: TrafficLightProps) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <Box
@@ -20,11 +13,11 @@ export default function TrafficLight({ status }: TrafficLightProps) {
           width: 10,
           height: 10,
           borderRadius: "50%",
-          backgroundColor: hex,
-          boxShadow: `0 0 8px ${hex}cc`,
+          backgroundColor: color,
+          boxShadow: `0 0 8px ${color}cc`,
         }}
       />
-      <Typography variant="body2" sx={{ color: hex, fontWeight: 500 }}>
+      <Typography variant="body2" sx={{ color, fontWeight: 500 }}>
         {label}
       </Typography>
     </Box>

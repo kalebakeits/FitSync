@@ -25,13 +25,13 @@ export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ActivityStatus = {
-  NUMBER_0: 0,
-  NUMBER_1: 1,
-  NUMBER_2: 2,
-  NUMBER_3: 3,
-  NUMBER_4: 4,
-  NUMBER_5: 5,
-  NUMBER_6: 6,
+  Pending: 'Pending',
+  Claimed: 'Claimed',
+  Processing: 'Processing',
+  Uploaded: 'Uploaded',
+  Failed: 'Failed',
+  Conflict: 'Conflict',
+  ServiceUnavailable: 'ServiceUnavailable',
 } as const;
 
 export interface AuthSuccessResponse {
@@ -104,9 +104,22 @@ export interface DestinationStatusEntry {
   connected?: boolean;
 }
 
+export type FetcherStatusReason = typeof FetcherStatusReason[keyof typeof FetcherStatusReason];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FetcherStatusReason = {
+  None: 'None',
+  FetcherUnhealthy: 'FetcherUnhealthy',
+  NoDestinations: 'NoDestinations',
+  AllDestinationsUnhealthy: 'AllDestinationsUnhealthy',
+  SomeDestinationsUnhealthy: 'SomeDestinationsUnhealthy',
+} as const;
+
 export interface FetcherStatusResponse {
   serviceType: string;
   status: string;
+  reason: FetcherStatusReason;
   destinations: DestinationStatusEntry[];
 }
 

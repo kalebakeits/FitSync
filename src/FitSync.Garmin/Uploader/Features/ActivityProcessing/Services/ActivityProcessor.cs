@@ -7,26 +7,23 @@ using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.FitModification.Services;
 using FitSync.Garmin.Uploader.Features.GarminUpload;
 using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
-using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 public class ActivityProcessor(
     FitSyncDbContext dbContext,
-    IFitModifierFactory fitModifierFactory,
+    IFitModifier fitModifier,
     IGarminUploader garminUploader,
     IUploadResultHandler resultHandler,
     ILogger<ActivityProcessor> logger,
-    IRateLimiter rateLimiter,
     IOptions<GarminUploaderOptions> options
 ) : IActivityProcessor
 {
     private readonly FitSyncDbContext fitSyncDbContext = dbContext;
-    private readonly IFitModifierFactory fitModifierFactory = fitModifierFactory;
+    private readonly IFitModifier fitModifier = fitModifier;
     private readonly IGarminUploader garminUploader = garminUploader;
     private readonly IUploadResultHandler resultHandler = resultHandler;
     private readonly ILogger<ActivityProcessor> logger = logger;
-    private readonly IRateLimiter rateLimiter = rateLimiter;
     private readonly IOptions<GarminUploaderOptions> options = options;
 
     public async Task ClaimAndProcessActivityAsync(
@@ -56,7 +53,8 @@ public class ActivityProcessor(
         bool claimed = await this.TryClaimAsync(
             activityId,
             instanceId,
-            u => u.ClaimedBy != null && u.ClaimedAt < orphanCutoff,
+            u => (u.ClaimedBy != null && u.ClaimedAt < orphanCutoff)
+                || (u.ClaimedBy == null && u.UpdatedAt < orphanCutoff),
             cancellationToken
         );
 
@@ -111,8 +109,7 @@ public class ActivityProcessor(
                 activity.UserId
             );
 
-            byte[] modifiedFit = this.fitModifierFactory.GetModifier(activity.Source)
-                .ModifyDeviceInfo(activity.FitFileData ?? Array.Empty<byte>());
+            byte[] modifiedFit = this.fitModifier.ModifyDeviceInfo(activity.FitFileData ?? Array.Empty<byte>());
 
             uploadResult = await this.garminUploader.UploadActivityAsync(
                 modifiedFit,
@@ -148,15 +145,6 @@ public class ActivityProcessor(
         CancellationToken cancellationToken
     )
     {
-        if (
-            await this.rateLimiter.RateLimitedReachedAsync(
-                ServiceType.GarminUploader,
-                this.options.Value.RateLimits,
-                cancellationToken
-            )
-        )
-            return false;
-
         int affected = await this.fitSyncDbContext.ActivityUploadStatuses.Where(
             u => u.ActivityId == activityId && u.DestinationServiceType == ServiceTypes.Garmin
         )
@@ -165,7 +153,8 @@ public class ActivityProcessor(
                 u =>
                     u.SetProperty(x => x.Status, ActivityStatus.Claimed)
                         .SetProperty(x => x.ClaimedBy, instanceId)
-                        .SetProperty(x => x.ClaimedAt, DateTime.UtcNow),
+                        .SetProperty(x => x.ClaimedAt, DateTime.UtcNow)
+                        .SetProperty(x => x.UpdatedAt, DateTime.UtcNow),
                 cancellationToken
             );
 

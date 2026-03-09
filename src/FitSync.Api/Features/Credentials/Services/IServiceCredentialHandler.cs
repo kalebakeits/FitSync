@@ -6,6 +6,7 @@ using FitSync.Database.Models;
 public interface IServiceCredentialHandler
 {
     string ServiceType { get; }
+    Database.Enums.ServiceType? HeartbeatServiceType { get; }
     bool IsFetcher { get; }
     bool IsUploader { get; }
     string? GetDisplayName(Integration integration);

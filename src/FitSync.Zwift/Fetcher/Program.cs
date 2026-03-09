@@ -10,7 +10,6 @@ using FitSync.Shared.Features.RateLimiting;
 using FitSync.Zwift.Shared.Configuration;
 using FitSync.Zwift.Shared.ZwiftClient;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,14 +30,6 @@ builder.Services.AddDbContext<FitSyncDbContext>(
             builder.Configuration.GetSection("ConnectionStrings").GetValue<string>("FitSync")
         )
 );
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-{
-    var configuration = ConfigurationOptions.Parse(
-        builder.Configuration.GetConnectionString("Redis") ?? string.Empty
-    );
-    configuration.AbortOnConnectFail = false;
-    return ConnectionMultiplexer.Connect(configuration);
-});
 
 // Global variables
 var fetcherConfig =
@@ -59,10 +50,10 @@ builder.AddKafkaProducer<string, string>("kafka");
 // Features
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
-    .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("WahooFetcherOptions"))
+    .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("ZwiftFetcherOptions"))
     .AddZwiftClient()
     .AddHeartbeat()
-    .AddRateLimiting();
+    .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty);
 
 var app = builder.Build();
 

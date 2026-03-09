@@ -21,6 +21,7 @@ data:
         "InstanceId": "{{ .Values.wahooFetcher.config.instanceId }}",
         "HeartbeatIntervalMinutes": {{ .Values.shared.heartbeatIntervalMinutes }},
         "PollIntervalMinutes": {{ .Values.shared.pollIntervalMinutes }},
+        "FetchIntervalMinutes": {{ .Values.wahooFetcher.config.fetchIntervalMinutes }},
         "LookbackDays": {{ .Values.wahooFetcher.config.lookbackDays }},
         "DeadThresholdMinutes": {{ .Values.shared.deadThresholdMinutes }},
         "MaxPendingActivities": {{ .Values.shared.maxPendingActivities }},

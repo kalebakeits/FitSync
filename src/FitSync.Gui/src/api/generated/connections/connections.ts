@@ -42,7 +42,7 @@ export const getApiConnections = (
       
       
       return customAxiosInstance<ConnectionResponse[]>(
-      {url: `/api/connections`, method: 'GET', signal
+      {url: `/api/Connections`, method: 'GET', signal
     },
       );
     }
@@ -52,7 +52,7 @@ export const getApiConnections = (
 
 export const getGetApiConnectionsQueryKey = () => {
     return [
-    `/api/connections`
+    `/api/Connections`
     ] as const;
     }
 
@@ -126,7 +126,7 @@ export const deleteApiConnectionsServiceType = (
       
       
       return customAxiosInstance<void>(
-      {url: `/api/connections/${serviceType}`, method: 'DELETE'
+      {url: `/api/Connections/${serviceType}`, method: 'DELETE'
     },
       );
     }
@@ -182,7 +182,7 @@ const {mutation: mutationOptions} = options ?
       
       
       return customAxiosInstance<DestinationMappingResponse[]>(
-      {url: `/api/connections/mappings`, method: 'GET', signal
+      {url: `/api/Connections/mappings`, method: 'GET', signal
     },
       );
     }
@@ -192,7 +192,7 @@ const {mutation: mutationOptions} = options ?
 
 export const getGetApiConnectionsMappingsQueryKey = () => {
     return [
-    `/api/connections/mappings`
+    `/api/Connections/mappings`
     ] as const;
     }
 
@@ -266,7 +266,7 @@ export const putApiConnectionsMappings = (
       
       
       return customAxiosInstance<void>(
-      {url: `/api/connections/mappings`, method: 'PUT',
+      {url: `/api/Connections/mappings`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: upsertDestinationMappingsRequest
     },
@@ -324,7 +324,7 @@ const {mutation: mutationOptions} = options ?
       
       
       return customAxiosInstance<FetcherStatusResponse[]>(
-      {url: `/api/connections/status`, method: 'GET', signal
+      {url: `/api/Connections/status`, method: 'GET', signal
     },
       );
     }
@@ -334,7 +334,7 @@ const {mutation: mutationOptions} = options ?
 
 export const getGetApiConnectionsStatusQueryKey = () => {
     return [
-    `/api/connections/status`
+    `/api/Connections/status`
     ] as const;
     }
 

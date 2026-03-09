@@ -10,6 +10,7 @@ public class ServiceCredentialHandlerFactory(
     private readonly ILogger<ServiceCredentialHandlerFactory> logger = logger;
 
     public List<string> ServiceTypes => [.. this.handlerMap.Keys];
+    public IEnumerable<IServiceCredentialHandler> AllHandlers => this.handlerMap.Values;
 
     public IServiceCredentialHandler Require(string serviceType)
     {

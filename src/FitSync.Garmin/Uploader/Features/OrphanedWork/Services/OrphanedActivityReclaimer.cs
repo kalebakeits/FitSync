@@ -9,13 +9,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 public class OrphanedActivityReclaimer(
-    FitSyncDbContext dbContext,
+    IDbContextFactory<FitSyncDbContext> dbContextFactory,
     IOptions<GarminUploaderOptions> options,
     ILogger<OrphanedActivityReclaimer> logger,
     IActivityProcessor activityProcessor
 ) : IOrphanedActivityReclaimer
 {
-    private readonly FitSyncDbContext fitSyncDbContext = dbContext;
+    private readonly IDbContextFactory<FitSyncDbContext> dbContextFactory = dbContextFactory;
     private readonly IOptions<GarminUploaderOptions> options = options;
     private readonly ILogger<OrphanedActivityReclaimer> logger = logger;
     private readonly IActivityProcessor activityProcessor = activityProcessor;
@@ -32,13 +32,17 @@ public class OrphanedActivityReclaimer(
             ActivityStatus.Claimed,
         ];
 
+        await using FitSyncDbContext dbContext = await this.dbContextFactory.CreateDbContextAsync(cancellationToken);
+
         IQueryable<ActivityUploadStatus> orphanedActivities =
-            this.fitSyncDbContext.ActivityUploadStatuses.Where(
+            dbContext.ActivityUploadStatuses.Where(
                 u => u.DestinationServiceType == ServiceTypes.Garmin
-            )
-                .Where(u => incompleteStatuses.Contains(u.Status))
-                .Where(u => u.ClaimedBy != null)
-                .Where(u => u.ClaimedAt < cutoff);
+                && incompleteStatuses.Contains(u.Status)
+                && (
+                    (u.ClaimedBy != null && u.ClaimedAt < cutoff)
+                    || (u.ClaimedBy == null && u.UpdatedAt < cutoff)
+                )
+            );
 
         int orphanCount = await orphanedActivities.CountAsync(cancellationToken);
 
@@ -53,9 +57,7 @@ public class OrphanedActivityReclaimer(
             orphanCount
         );
 
-        await foreach (
-            Guid activityId in orphanedActivities.Select(a => a.ActivityId).ToAsyncEnumerable()
-        )
+        await foreach (Guid activityId in orphanedActivities.Select(a => a.ActivityId).AsAsyncEnumerable().WithCancellation(cancellationToken))
         {
             this.logger.LogDebug("Trying to adopt orphan - Activity: {ActivityId}.", activityId);
             await this.activityProcessor.ReclaimAndProcessActivityAsync(

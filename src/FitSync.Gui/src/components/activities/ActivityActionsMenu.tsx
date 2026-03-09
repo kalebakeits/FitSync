@@ -5,7 +5,7 @@ import type { ActivityResponse } from "../../api/generated/fitSyncApi.schemas";
 import ConfirmModal from "../ConfirmModal";
 import PushToDestinationModal from "./PushToDestinationModal";
 
-const FAILED_STATUSES = new Set([4, 5, 6]);
+const FAILED_STATUSES = new Set(["Failed", "Conflict", "ServiceUnavailable"]);
 
 interface ActivityActionsMenuProps {
   activity: ActivityResponse;

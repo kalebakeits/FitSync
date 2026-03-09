@@ -76,6 +76,8 @@ spec:
               key: webhook-token
         - name: ConnectionStrings__FitSync
           value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+        - name: ConnectionStrings__kafka
+          value: "kafka:9092"
         ports:
         - containerPort: 8080
           protocol: TCP

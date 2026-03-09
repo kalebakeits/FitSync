@@ -25,7 +25,7 @@ export default function StatusIndicator({ enabled }: StatusIndicatorProps) {
           fontWeight: 500,
         }}
       >
-        {enabled ? "Enabled" : "Disabled"}
+        {enabled ? "Enabled" : "Disabled (authentication failed)"}
       </Typography>
     </Box>
   );

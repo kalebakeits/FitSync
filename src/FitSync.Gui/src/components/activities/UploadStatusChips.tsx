@@ -3,34 +3,20 @@ import type { UploadStatusEntry } from "../../api/generated/fitSyncApi.schemas";
 
 const MAX_VISIBLE = 2;
 
+type UploadStatusValue = UploadStatusEntry["status"];
+
 function getChipColor(
-  status: number,
+  status: UploadStatusValue,
 ): "default" | "warning" | "success" | "error" {
-  if (status === 0) return "default"; // Pending
-  if (status === 1 || status === 2) return "warning"; // Claimed / Processing
-  if (status === 3 || status === 5) return "success"; // Uploaded / Already Exists
-  return "error"; // Failed / ServiceUnavailable
+  if (status === "Pending") return "default";
+  if (status === "Claimed" || status === "Processing") return "warning";
+  if (status === "Uploaded" || status === "Conflict") return "success";
+  return "error";
 }
 
-function getStatusLabel(status: number): string {
-  switch (status) {
-    case 0:
-      return "Pending";
-    case 1:
-      return "Claimed";
-    case 2:
-      return "Processing";
-    case 3:
-      return "Uploaded";
-    case 4:
-      return "Failed";
-    case 5:
-      return "Already Exists";
-    case 6:
-      return "Service Unavailable";
-    default:
-      return "Unknown";
-  }
+function getStatusLabel(status: UploadStatusValue): string {
+  if (status === "ServiceUnavailable") return "Service Unavailable";
+  return status;
 }
 
 interface UploadStatusChipsProps {

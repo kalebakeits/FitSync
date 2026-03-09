@@ -8,8 +8,8 @@ using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -23,15 +23,7 @@ builder.Services.AddDbContext<FitSyncDbContext>(
         )
 );
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-{
-    var configuration = ConfigurationOptions.Parse(
-        builder.Configuration.GetConnectionString("Redis") ?? string.Empty
-    );
-    configuration.AbortOnConnectFail = false;
-    return ConnectionMultiplexer.Connect(configuration);
-});
-builder.Services.AddRateLimiter();
+builder.Services.AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty);
 
 // Configuration
 builder

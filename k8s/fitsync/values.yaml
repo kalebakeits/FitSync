@@ -30,6 +30,7 @@ shared:
   maxParallelUsers: 4 # Max users processed in parallel
   maxParallelActivities: 10 # Max activities per user in parallel
   maxSequentialCredentialFailures: 5
+  fetcherHeartbeatThresholdMinutes: 5 # Minutes before API marks fetcher heartbeat unhealthy
   appUrl: "https://fitsync.kaleba.app"
 
 imageRegistry: kalebaserver:5000
@@ -115,6 +116,7 @@ zwiftFetcher:
 
   config:
     instanceId: "zwift-fetcher-k8s"
+    fetchIntervalMinutes: 60 # Fetch each user every 1 hour
     zwift:
       authUrl: "https://secure.zwift.com/auth/realms/zwift/protocol/openid-connect/token"
       baseUrl: "https://us-or-rly101.zwift.com"
@@ -146,6 +148,7 @@ wahooFetcher:
     instanceId: "wahoo-fetcher-k8s"
     baseUrl: "https://api.wahooligan.com"
     lookbackDays: 28
+    fetchIntervalMinutes: 360 # Fetch each user every 6 hours (webhook is primary delivery)
     # clientId and clientSecret are stored in k8s secret: fitsync-wahoo-secret
     rateLimits:
       - windowMinutes: 5
@@ -177,7 +180,7 @@ garminUploader:
     orphanThresholdMinutes: 2
     rateLimits:
       - windowMinutes: 1
-        cap: 10
+        cap: 50
 
   resources:
     requests:
@@ -185,7 +188,7 @@ garminUploader:
       cpu: "200m"
     limits:
       memory: "1Gi"
-      cpu: "1000m"
+      cpu: "4000m"
 
 # Purger configuration
 purger:
