@@ -58,7 +58,7 @@ public class WahooApiService(
             Dictionary<string, string?> parameters = new()
             {
                 ["page"] = page.ToString(),
-                ["per_page"] = "30",
+                ["per_page"] = "200",
                 ["order"] = "descending",
                 ["sort"] = "starts",
             };
@@ -90,7 +90,7 @@ public class WahooApiService(
 
             allWorkouts.AddRange(inWindow);
 
-            bool hasMore = pageResult.Workouts.Count == 30 && pageResult.Workouts.Last().Starts >= cutoff;
+            bool hasMore = pageResult.Workouts.Count == 200 && pageResult.Workouts.Last().Starts >= cutoff;
             if (!hasMore) break;
             page++;
         }

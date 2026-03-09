@@ -6,12 +6,7 @@ public static class FitModificationFeatureExtensions
 {
     public static IServiceCollection AddFitModification(this IServiceCollection services)
     {
-        services.AddScoped<IFitFileDecoder, FitFileDecoder>();
-        services.AddScoped<IFitFileEncoder, FitFileEncoder>();
-        services.AddScoped<IDeviceInfoModifier, DeviceInfoModifier>();
-        services.AddScoped<IFitModifier, FitModifier>();
-        services.AddScoped<IWahooFitModifier, WahooFitModifier>();
-        services.AddScoped<IFitModifierFactory, FitModifierFactory>();
+        services.AddScoped<IFitModifier, FitBinaryPatcher>();
 
         return services;
     }

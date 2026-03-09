@@ -59,6 +59,10 @@ spec:
         - name: config
           mountPath: /app/appsettings.Production.json
           subPath: appsettings.Production.json
+        securityContext:
+          capabilities:
+            add:
+            - SYS_PTRACE
         resources:
           {{- toYaml .Values.garminUploader.resources | nindent 10 }}
       volumes:

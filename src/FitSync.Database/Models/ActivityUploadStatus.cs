@@ -43,5 +43,8 @@ public class ActivityUploadStatus
     [Column("last_error_at")]
     public DateTime? LastErrorAt { get; set; }
 
+    [Column("updated_at")]
+    public DateTime UpdatedAt { get; set; }
+
     public Activity Activity { get; set; } = null!;
 }

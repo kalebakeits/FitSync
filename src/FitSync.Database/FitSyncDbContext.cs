@@ -91,6 +91,10 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
                     fetcherConfig.CreatedAt = DateTime.UtcNow;
                 fetcherConfig.UpdatedAt = DateTime.UtcNow;
             }
+            else if (entry.Entity is ActivityUploadStatus uploadStatus)
+            {
+                uploadStatus.UpdatedAt = DateTime.UtcNow;
+            }
             else if (entry.Entity is Session session)
             {
                 if (entry.State == EntityState.Added)

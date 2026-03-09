@@ -38,6 +38,13 @@ builder.Services.AddDbContext<FitSyncDbContext>(
         )
 );
 
+builder.Services.AddDbContextFactory<FitSyncDbContext>(
+    options =>
+        options.UseNpgsql(
+            builder.Configuration.GetSection("ConnectionStrings").GetValue<string>("FitSync")
+        )
+);
+
 // Global variables
 builder.Services.AddGlobalVariables(
     uploaderConfig.InstanceId,

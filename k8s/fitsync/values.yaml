@@ -180,7 +180,7 @@ garminUploader:
     orphanThresholdMinutes: 2
     rateLimits:
       - windowMinutes: 1
-        cap: 10
+        cap: 50
 
   resources:
     requests:
@@ -188,7 +188,7 @@ garminUploader:
       cpu: "200m"
     limits:
       memory: "1Gi"
-      cpu: "1000m"
+      cpu: "4000m"
 
 # Purger configuration
 purger:
