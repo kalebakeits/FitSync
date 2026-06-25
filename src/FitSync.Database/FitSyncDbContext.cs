@@ -14,31 +14,16 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
     public DbSet<Integration> Integrations { get; set; } = null!;
     public DbSet<FetcherConfig> FetcherConfigs { get; set; } = null!;
     public DbSet<UserDestinationConfig> UserDestinationConfigs { get; set; } = null!;
+    public DbSet<Workout> Workouts { get; set; } = null!;
+    public DbSet<ScheduledWorkout> ScheduledWorkouts { get; set; } = null!;
+    public DbSet<TrainingProfile> TrainingProfiles { get; set; } = null!;
+    public DbSet<ApiToken> ApiTokens { get; set; } = null!;
+    public DbSet<OAuthClient> OAuthClients { get; set; } = null!;
+    public DbSet<OAuthCode> OAuthCodes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<UserDestinationConfig>(entity =>
-        {
-            entity.HasKey(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType });
-
-            entity.HasIndex(e => new { e.UserId, e.SourceServiceType, e.DestinationServiceType })
-                  .IsUnique();
-
-            entity.HasOne(e => e.User)
-                  .WithMany()
-                  .HasForeignKey(e => e.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<ActivityUploadStatus>(entity =>
-        {
-            entity.HasKey(e => new { e.ActivityId, e.DestinationServiceType });
-
-            entity.HasOne(e => e.Activity)
-                  .WithMany(a => a.UploadStatuses)
-                  .HasForeignKey(e => e.ActivityId)
-                  .OnDelete(DeleteBehavior.Cascade);
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(FitSyncDbContext).Assembly);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -95,10 +80,37 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
             {
                 uploadStatus.UpdatedAt = DateTime.UtcNow;
             }
+            else if (entry.Entity is Workout workout)
+            {
+                if (entry.State == EntityState.Added)
+                    workout.CreatedAt = DateTime.UtcNow;
+                workout.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is TrainingProfile profile)
+            {
+                if (entry.State == EntityState.Added)
+                    profile.CreatedAt = DateTime.UtcNow;
+                profile.UpdatedAt = DateTime.UtcNow;
+            }
             else if (entry.Entity is Session session)
             {
                 if (entry.State == EntityState.Added)
                     session.CreatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is ApiToken apiToken)
+            {
+                if (entry.State == EntityState.Added)
+                    apiToken.CreatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is OAuthClient oauthClient)
+            {
+                if (entry.State == EntityState.Added)
+                    oauthClient.CreatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is OAuthCode oauthCode)
+            {
+                if (entry.State == EntityState.Added)
+                    oauthCode.CreatedAt = DateTime.UtcNow;
             }
         }
     }

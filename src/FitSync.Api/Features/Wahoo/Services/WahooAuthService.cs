@@ -22,16 +22,17 @@ public class WahooAuthService(
     )
     {
         string tokenUrl = $"{this.options.Value.BaseUrl.TrimEnd('/')}/oauth/token";
-        FormUrlEncodedContent content = new(
-            new Dictionary<string, string>
-            {
-                ["client_id"] = this.options.Value.ClientId,
-                ["client_secret"] = this.options.Value.ClientSecret,
-                ["redirect_uri"] = this.options.Value.RedirectUri,
-                ["grant_type"] = "authorization_code",
-                ["code"] = code
-            }
-        );
+        FormUrlEncodedContent content =
+            new(
+                new Dictionary<string, string>
+                {
+                    ["client_id"] = this.options.Value.ClientId,
+                    ["client_secret"] = this.options.Value.ClientSecret,
+                    ["redirect_uri"] = this.options.Value.RedirectUri,
+                    ["grant_type"] = "authorization_code",
+                    ["code"] = code
+                }
+            );
         HttpResponseMessage response = await this.httpClient.PostAsync(
             tokenUrl,
             content,
@@ -56,15 +57,16 @@ public class WahooAuthService(
     )
     {
         string tokenUrl = $"{this.options.Value.BaseUrl.TrimEnd('/')}/oauth/token";
-        FormUrlEncodedContent content = new(
-            new Dictionary<string, string>
-            {
-                ["client_id"] = this.options.Value.ClientId,
-                ["client_secret"] = this.options.Value.ClientSecret,
-                ["grant_type"] = "refresh_token",
-                ["refresh_token"] = refreshToken
-            }
-        );
+        FormUrlEncodedContent content =
+            new(
+                new Dictionary<string, string>
+                {
+                    ["client_id"] = this.options.Value.ClientId,
+                    ["client_secret"] = this.options.Value.ClientSecret,
+                    ["grant_type"] = "refresh_token",
+                    ["refresh_token"] = refreshToken
+                }
+            );
         HttpResponseMessage response = await this.httpClient.PostAsync(
             tokenUrl,
             content,

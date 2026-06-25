@@ -40,7 +40,10 @@ public class RateLimiter(IConnectionMultiplexer redis, ILogger<RateLimiter> logg
             }
         }
 
-        this.logger.LogDebug("{Service} rate limits not reached. Get more users king...", serviceType);
+        this.logger.LogDebug(
+            "{Service} rate limits not reached. Get more users king...",
+            serviceType
+        );
         return false;
     }
 

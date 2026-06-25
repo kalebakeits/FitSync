@@ -84,7 +84,9 @@ public class UserQueuerService(
             return false;
         }
 
-        DateTime nextFetchTime = DateTime.UtcNow.AddMinutes(this.options.Value.FetchIntervalMinutes);
+        DateTime nextFetchTime = DateTime.UtcNow.AddMinutes(
+            this.options.Value.FetchIntervalMinutes
+        );
         DateTime now = DateTime.UtcNow;
 
         foreach (FetcherConfig config in claimed)

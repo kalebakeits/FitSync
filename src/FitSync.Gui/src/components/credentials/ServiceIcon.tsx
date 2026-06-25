@@ -6,20 +6,25 @@ interface ServiceIconProps {
   size?: number;
 }
 
-export default function ServiceIcon({
-  serviceType,
-  size = 40,
-}: ServiceIconProps) {
-  const getIcon = () => {
-    switch (serviceType.toLowerCase()) {
-      case "zwift":
-        return <DirectionsBike sx={{ fontSize: size, color: "#FC6719" }} />;
-      case "garmin":
-        return <Watch sx={{ fontSize: size, color: "#007DBC" }} />;
-      default:
-        return <DirectionsBike sx={{ fontSize: size }} />;
+const SERVICE_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
+  zwift: { color: "#FC6719", icon: null },
+  garmin: { color: "#007DBC", icon: null },
+  wahoo: { color: "#E61F26", icon: null },
+};
+
+export default function ServiceIcon({ serviceType, size = 40 }: ServiceIconProps) {
+  const key = serviceType.toLowerCase();
+  const color = SERVICE_CONFIG[key]?.color ?? "#757575";
+  const iconSize = size * 0.55;
+
+  const icon = (() => {
+    switch (key) {
+      case "zwift": return <DirectionsBike sx={{ fontSize: iconSize, color }} />;
+      case "garmin": return <Watch sx={{ fontSize: iconSize, color }} />;
+      case "wahoo": return <DirectionsBike sx={{ fontSize: iconSize, color }} />;
+      default: return <DirectionsBike sx={{ fontSize: iconSize, color }} />;
     }
-  };
+  })();
 
   return (
     <Box
@@ -34,7 +39,7 @@ export default function ServiceIcon({
         flexShrink: 0,
       }}
     >
-      {getIcon()}
+      {icon}
     </Box>
   );
 }

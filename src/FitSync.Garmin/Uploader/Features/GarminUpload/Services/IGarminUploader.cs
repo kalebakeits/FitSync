@@ -1,7 +1,7 @@
 namespace FitSync.Garmin.Uploader.Features.GarminUpload;
 
 using FitSync.Database.Models;
-using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
+using FitSync.Garmin.Shared.GarminClient.DTOs;
 
 public interface IGarminUploader
 {

@@ -51,29 +51,29 @@ else
 fi
 
 echo ""
-echo "Waiting for postgres to be ready..."
-kubectl wait --for=condition=ready pod -l app=postgres -n "$NAMESPACE" --timeout=300s
-
-echo ""
 echo "Waiting for kafka to be ready..."
 kubectl wait --for=condition=ready pod -l app=kafka -n "$NAMESPACE" --timeout=300s
 
 echo ""
-echo "Restarting deployments to pull new images..."
+echo "Restarting API to pull new image and run migrations..."
 kubectl rollout restart deployment api -n "$NAMESPACE"
-kubectl rollout restart deployment gui -n "$NAMESPACE"
+
+echo "Waiting for API migration and deployment to be ready..."
+kubectl rollout status deployment api -n "$NAMESPACE" --timeout=300s
+
+echo "Restarting remaining deployments to pull new images..."
 kubectl rollout restart deployment zwift-fetcher -n "$NAMESPACE"
 kubectl rollout restart deployment garmin-uploader -n "$NAMESPACE"
 kubectl rollout restart deployment wahoo-fetcher -n "$NAMESPACE"
 kubectl rollout restart deployment purger -n "$NAMESPACE"
+kubectl rollout restart deployment gui -n "$NAMESPACE"
 
 echo "Waiting for deployments to be ready..."
-kubectl rollout status deployment api -n "$NAMESPACE" --timeout=300s
-kubectl rollout status deployment gui -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment zwift-fetcher -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment garmin-uploader -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment wahoo-fetcher -n "$NAMESPACE" --timeout=300s
 kubectl rollout status deployment purger -n "$NAMESPACE" --timeout=300s
+kubectl rollout status deployment gui -n "$NAMESPACE" --timeout=300s
 
 echo ""
 echo "Deployment complete."

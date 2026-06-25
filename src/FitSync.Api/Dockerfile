@@ -8,6 +8,7 @@ COPY src/FitSync.Database/FitSync.Database.csproj FitSync.Database/
 COPY src/FitSync.Garmin/Shared/FitSync.Garmin.Shared.csproj FitSync.Garmin/Shared/
 COPY src/FitSync.Wahoo/Shared/FitSync.Wahoo.Shared.csproj FitSync.Wahoo/Shared/
 COPY src/FitSync.Zwift/Shared/FitSync.Zwift.Shared.csproj FitSync.Zwift/Shared/
+COPY src/FitSync.SourceGenerators/FitSync.SourceGenerators.csproj FitSync.SourceGenerators/
 
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
     dotnet restore FitSync.Api/FitSync.Api.csproj
@@ -18,6 +19,8 @@ COPY src/FitSync.Database/ FitSync.Database/
 COPY src/FitSync.Garmin/Shared/ FitSync.Garmin/Shared/
 COPY src/FitSync.Wahoo/Shared/ FitSync.Wahoo/Shared/
 COPY src/FitSync.Zwift/Shared/ FitSync.Zwift/Shared/
+COPY src/FitSync.SourceGenerators/ FitSync.SourceGenerators/
+COPY assets/ /assets/
 
 WORKDIR /src/FitSync.Api
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \

@@ -9,12 +9,10 @@ public enum FetcherStatusReason
     SomeDestinationsUnhealthy,
 }
 
-public class FetcherStatusResponse
-{
-    public required string ServiceType { get; set; }
-
+public record FetcherStatusResponse(
+    string ServiceType,
     /// <summary>"green" | "amber" | "red" | "grey"</summary>
-    public required string Status { get; set; }
-    public required FetcherStatusReason Reason { get; set; }
-    public required List<DestinationStatusEntry> Destinations { get; set; }
-}
+    string Status,
+    FetcherStatusReason Reason,
+    List<DestinationStatusEntry> Destinations
+);

@@ -19,6 +19,8 @@
     </PackageReference>
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
+    <PackageReference Include="Dunet" Version="1.16.2" />
+    <PackageReference Include="Garmin.FIT.Sdk" Version="21.202.0" />
   </ItemGroup>
 
   <ItemGroup>

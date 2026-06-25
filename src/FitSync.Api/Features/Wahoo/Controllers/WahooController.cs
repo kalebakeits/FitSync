@@ -28,7 +28,10 @@ public class WahooController(
     {
         Guid userId = this.currentUserService.GetUserId();
         string authorizeUrl = this.connectionService.BuildAuthorizeUrl(userId);
-        this.logger.LogInformation("Redirecting user {UserId} to Wahoo OAuth authorize endpoint.", userId);
+        this.logger.LogInformation(
+            "Redirecting user {UserId} to Wahoo OAuth authorize endpoint.",
+            userId
+        );
         return this.Redirect(authorizeUrl);
     }
 

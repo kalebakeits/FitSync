@@ -16,15 +16,14 @@ namespace FitSync.Database.Migrations
                 table: "activity_upload_statuses",
                 type: "timestamp with time zone",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "updated_at",
-                table: "activity_upload_statuses");
+            migrationBuilder.DropColumn(name: "updated_at", table: "activity_upload_statuses");
         }
     }
 }

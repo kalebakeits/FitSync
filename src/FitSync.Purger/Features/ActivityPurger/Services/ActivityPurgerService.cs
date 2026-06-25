@@ -27,12 +27,19 @@ public class ActivityPurgerService(
         if (this.options.Value.EnableDataRetentionPurge)
             totalExecuted += await this.PurgeByDataRetentionAsync(ct);
         else
-            this.logger.LogInformation("Data retention purge is disabled. The living are safe — tonight.");
+            this.logger.LogInformation(
+                "Data retention purge is disabled. The living are safe — tonight."
+            );
 
         if (totalExecuted == 0)
-            this.logger.LogInformation("The Purge is complete. No targets found. God bless FitSync.");
+            this.logger.LogInformation(
+                "The Purge is complete. No targets found. God bless FitSync."
+            );
         else
-            this.logger.LogWarning("The Purge is complete. {Total} executed. God bless FitSync.", totalExecuted);
+            this.logger.LogWarning(
+                "The Purge is complete. {Total} executed. God bless FitSync.",
+                totalExecuted
+            );
     }
 
     private async Task<int> PurgeSoftDeletedAsync(CancellationToken ct)
@@ -54,8 +61,9 @@ public class ActivityPurgerService(
                 lookbackDays
             );
 
-            int deleted = await this.dbContext.Activities
-                .Where(a => a.Source == sourceType && a.IsDeleted && a.DeletedAt < cutoff)
+            int deleted = await this.dbContext.Activities.Where(
+                a => a.Source == sourceType && a.IsDeleted && a.DeletedAt < cutoff
+            )
                 .ExecuteDeleteAsync(ct);
 
             if (deleted > 0)
@@ -65,7 +73,10 @@ public class ActivityPurgerService(
                     sourceType
                 );
             else
-                this.logger.LogInformation("No {Source} targets found. Their time has not yet come.", sourceType);
+                this.logger.LogInformation(
+                    "No {Source} targets found. Their time has not yet come.",
+                    sourceType
+                );
 
             total += deleted;
         }
@@ -83,12 +94,14 @@ public class ActivityPurgerService(
             cutoff
         );
 
-        int deleted = await this.dbContext.Activities
-            .Where(a => a.ActivityDate < cutoff)
+        int deleted = await this.dbContext.Activities.Where(a => a.ActivityDate < cutoff)
             .ExecuteDeleteAsync(ct);
 
         if (deleted > 0)
-            this.logger.LogWarning("{Count} executed. The database is lighter. God bless FitSync.", deleted);
+            this.logger.LogWarning(
+                "{Count} executed. The database is lighter. God bless FitSync.",
+                deleted
+            );
         else
             this.logger.LogInformation("No targets found. The database is already pure.");
 

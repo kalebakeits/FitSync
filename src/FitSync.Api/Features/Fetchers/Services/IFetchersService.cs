@@ -4,4 +4,3 @@ public interface IFetchersService
 {
     Task TriggerFetchAsync(Guid userId);
 }
-

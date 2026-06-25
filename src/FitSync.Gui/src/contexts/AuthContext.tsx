@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     getApiAuthCurrentUser()
-      .then((res) => setUser({ userId: res.userId.toString(), username: res.username }))
+      .then((res) => setUser({ userId: res.userId!.toString(), username: res.username! }))
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);

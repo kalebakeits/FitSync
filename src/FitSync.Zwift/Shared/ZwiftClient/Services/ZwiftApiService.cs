@@ -2,18 +2,18 @@ namespace FitSync.Zwift.Shared.ZwiftClient.Services;
 
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
 using FitSync.Shared.Features.RateLimiting;
-using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 using FitSync.Zwift.Shared.AuthData;
+using FitSync.Zwift.Shared.Configuration;
+using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using FitSync.Zwift.Shared.Configuration;
 
 public class ZwiftApiService(
     HttpClient httpClient,

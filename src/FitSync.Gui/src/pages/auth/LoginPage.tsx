@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TextField, Button, Typography, Alert, Box } from "@mui/material";
@@ -11,7 +11,9 @@ import { loginSchema, type LoginFormData } from "../../schemas/auth";
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showVerificationLink, setShowVerificationLink] = useState(false);
+  const nextUrl = searchParams.get("next");
 
   const {
     register,
@@ -29,8 +31,12 @@ export default function LoginPage() {
   const loginMutation = usePostApiAuthLogin({
     mutation: {
       onSuccess: (data) => {
-        login(data.userId, data.username);
-        navigate("/dashboard");
+        login(data.userId!, data.username!);
+        if (nextUrl && (nextUrl.startsWith("/api/oauth/") || nextUrl.startsWith("/oauth/") && !nextUrl.startsWith("/oauth/consent"))) {
+          window.location.href = nextUrl;
+        } else {
+          navigate(nextUrl ?? "/dashboard");
+        }
       },
       onError: (error: any) => {
         const status = error?.response?.status;

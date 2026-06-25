@@ -25,8 +25,9 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             offset
         );
 
-        IQueryable<Activity> query = this.context.Activities
-            .Where(a => a.UserId == userId && !a.IsDeleted);
+        IQueryable<Activity> query = this.context.Activities.Where(
+            a => a.UserId == userId && !a.IsDeleted
+        );
 
         int total = await query.CountAsync();
 
@@ -44,17 +45,9 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             userId
         );
 
-        List<ActivityResponse> items = activities
-            .Select(a => MapToResponse(a))
-            .ToList();
+        List<ActivityResponse> items = activities.Select(a => MapToResponse(a)).ToList();
 
-        return new PaginatedActivitiesResponse
-        {
-            Items = items,
-            Total = total,
-            Limit = limit,
-            Offset = offset
-        };
+        return new PaginatedActivitiesResponse(items, total, limit, offset);
     }
 
     public async Task<ActivityResponse> GetActivityByIdAsync(Guid userId, Guid activityId)
@@ -65,8 +58,7 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
             activityId
         );
 
-        Activity? activity = await this.context.Activities
-            .Include(a => a.UploadStatuses)
+        Activity? activity = await this.context.Activities.Include(a => a.UploadStatuses)
             .FirstOrDefaultAsync(a => a.Id == activityId && a.UserId == userId && !a.IsDeleted);
 
         if (activity == null)
@@ -123,23 +115,25 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
     }
 
     private static ActivityResponse MapToResponse(Activity a) =>
-        new()
-        {
-            Id = a.Id,
-            ExternalActivityId = a.ExternalActivityId,
-            Source = a.Source,
-            OriginalFileName = a.OriginalFileName,
-            FileSizeBytes = a.FileSizeBytes,
-            ActivityDate = a.ActivityDate,
-            ActivityName = a.ActivityName,
-            CreatedAt = a.CreatedAt,
-            UpdatedAt = a.UpdatedAt,
-            UploadStatuses = a.UploadStatuses.Select(u => new UploadStatusEntry
-            {
-                DestinationServiceType = u.DestinationServiceType,
-                Status = u.Status,
-                LastError = u.LastError,
-                RetryCount = u.RetryCount,
-            }).ToList(),
-        };
+        new(
+            a.Id,
+            a.ExternalActivityId,
+            a.Source,
+            a.OriginalFileName,
+            a.FileSizeBytes,
+            a.ActivityDate,
+            a.ActivityName,
+            a.CreatedAt,
+            a.UpdatedAt,
+            a.UploadStatuses.Select(
+                u =>
+                    new UploadStatusEntry(
+                        u.DestinationServiceType,
+                        u.Status,
+                        u.LastError,
+                        u.RetryCount
+                    )
+            )
+                .ToList()
+        );
 }

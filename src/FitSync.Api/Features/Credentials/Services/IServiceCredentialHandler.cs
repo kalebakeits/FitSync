@@ -11,6 +11,12 @@ public interface IServiceCredentialHandler
     bool IsUploader { get; }
     string? GetDisplayName(Integration integration);
     object BuildAuthData(CreateCredentialRequest request);
-    Task OnCredentialCreatedAsync(Integration integration, CancellationToken cancellationToken = default);
-    Task OnCredentialDeletedAsync(Integration integration, CancellationToken cancellationToken = default);
+    Task OnCredentialCreatedAsync(
+        Integration integration,
+        CancellationToken cancellationToken = default
+    );
+    Task OnCredentialDeletedAsync(
+        Integration integration,
+        CancellationToken cancellationToken = default
+    );
 }

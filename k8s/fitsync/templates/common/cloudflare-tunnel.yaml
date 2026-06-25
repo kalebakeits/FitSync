@@ -1,5 +1,25 @@
 {{- if .Values.cloudflare.enabled }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  config.yaml: |
+    tunnel: d4b81c49-8a03-403c-86dd-f681796fbfd4
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    ingress:
+      - hostname: fitsync.kaleba.app
+        path: ^/oauth/consent
+        service: http://gui.fitsync.svc.cluster.local:80
+      - hostname: fitsync.kaleba.app
+        path: ^/(api|oauth|connect|mcp|\.well-known)
+        service: http://api.fitsync.svc.cluster.local:8080
+      - hostname: fitsync.kaleba.app
+        service: http://gui.fitsync.svc.cluster.local:80
+      - service: http_status:404
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,15 +41,16 @@ spec:
         args:
         - tunnel
         - --no-autoupdate
+        - --config
+        - /etc/cloudflared/config/config.yaml
         - run
-        - --token
-        - $(TUNNEL_TOKEN)
-        env:
-        - name: TUNNEL_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: cloudflare-tunnel
-              key: token
+        volumeMounts:
+        - name: config
+          mountPath: /etc/cloudflared/config
+          readOnly: true
+        - name: creds
+          mountPath: /etc/cloudflared/creds
+          readOnly: true
         livenessProbe:
           exec:
             command:
@@ -38,4 +59,11 @@ spec:
             - "pgrep cloudflared"
           initialDelaySeconds: 30
           periodSeconds: 30
+      volumes:
+      - name: config
+        configMap:
+          name: cloudflared-config
+      - name: creds
+        secret:
+          secretName: cloudflare-tunnel-creds
 {{- end }}

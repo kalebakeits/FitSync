@@ -17,7 +17,9 @@ public class ServiceCredentialHandlerFactory(
         if (this.handlerMap.TryGetValue(serviceType, out IServiceCredentialHandler? handler))
             return handler;
 
-        throw new InvalidOperationException($"No credential handler registered for service type: {serviceType}");
+        throw new InvalidOperationException(
+            $"No credential handler registered for service type: {serviceType}"
+        );
     }
 
     public IServiceCredentialHandler? Get(string serviceType)

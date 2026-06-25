@@ -3,10 +3,10 @@ namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
+using FitSync.Garmin.Shared.GarminClient.DTOs;
 using FitSync.Garmin.Uploader.Configuration;
 using FitSync.Garmin.Uploader.Features.FitModification.Services;
 using FitSync.Garmin.Uploader.Features.GarminUpload;
-using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -53,7 +53,8 @@ public class ActivityProcessor(
         bool claimed = await this.TryClaimAsync(
             activityId,
             instanceId,
-            u => (u.ClaimedBy != null && u.ClaimedAt < orphanCutoff)
+            u =>
+                (u.ClaimedBy != null && u.ClaimedAt < orphanCutoff)
                 || (u.ClaimedBy == null && u.UpdatedAt < orphanCutoff),
             cancellationToken
         );
@@ -109,7 +110,9 @@ public class ActivityProcessor(
                 activity.UserId
             );
 
-            byte[] modifiedFit = this.fitModifier.ModifyDeviceInfo(activity.FitFileData ?? Array.Empty<byte>());
+            byte[] modifiedFit = this.fitModifier.ModifyDeviceInfo(
+                activity.FitFileData ?? Array.Empty<byte>()
+            );
 
             uploadResult = await this.garminUploader.UploadActivityAsync(
                 modifiedFit,

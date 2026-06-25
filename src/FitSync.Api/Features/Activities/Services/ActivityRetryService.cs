@@ -26,19 +26,22 @@ public class ActivityRetryService(
 
     public async Task RetryFailedAsync(Guid userId, Guid activityId, CancellationToken ct = default)
     {
-        Activity? activity = await this.context.Activities
-            .FirstOrDefaultAsync(a => a.Id == activityId && a.UserId == userId && !a.IsDeleted, ct);
+        Activity? activity = await this.context.Activities.FirstOrDefaultAsync(
+            a => a.Id == activityId && a.UserId == userId && !a.IsDeleted,
+            ct
+        );
 
         if (activity == null)
             throw new NotFoundException("Activity not found.");
 
-        int updated = await this.context.ActivityUploadStatuses
-            .Where(u => u.ActivityId == activityId && retryableStatuses.Contains(u.Status))
+        int updated = await this.context.ActivityUploadStatuses.Where(
+            u => u.ActivityId == activityId && retryableStatuses.Contains(u.Status)
+        )
             .ExecuteUpdateAsync(
-                u => u
-                    .SetProperty(x => x.Status, ActivityStatus.Pending)
-                    .SetProperty(x => x.ClaimedBy, (string?)null)
-                    .SetProperty(x => x.ClaimedAt, (DateTime?)null),
+                u =>
+                    u.SetProperty(x => x.Status, ActivityStatus.Pending)
+                        .SetProperty(x => x.ClaimedBy, (string?)null)
+                        .SetProperty(x => x.ClaimedAt, (DateTime?)null),
                 ct
             );
 
@@ -67,8 +70,10 @@ public class ActivityRetryService(
         CancellationToken ct = default
     )
     {
-        Activity? activity = await this.context.Activities
-            .FirstOrDefaultAsync(a => a.Id == activityId && a.UserId == userId && !a.IsDeleted, ct);
+        Activity? activity = await this.context.Activities.FirstOrDefaultAsync(
+            a => a.Id == activityId && a.UserId == userId && !a.IsDeleted,
+            ct
+        );
 
         if (activity == null)
             throw new NotFoundException("Activity not found.");
@@ -99,11 +104,13 @@ public class ActivityRetryService(
             return;
         }
 
-        this.context.ActivityUploadStatuses.Add(new ActivityUploadStatus
-        {
-            ActivityId = activityId,
-            DestinationServiceType = destinationServiceType,
-        });
+        this.context.ActivityUploadStatuses.Add(
+            new ActivityUploadStatus
+            {
+                ActivityId = activityId,
+                DestinationServiceType = destinationServiceType,
+            }
+        );
 
         await this.context.SaveChangesAsync(ct);
         await this.activityPublisher.PublishActivityFetchedAsync(activity, ct);

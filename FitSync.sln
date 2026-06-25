@@ -37,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{FA5DE5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FitSync.Zwift.Shared", "src\FitSync.Zwift\Shared\FitSync.Zwift.Shared.csproj", "{5D68536C-EBB9-4517-B968-E6DE6FDBD8CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FitSync.SourceGenerators", "src\FitSync.SourceGenerators\FitSync.SourceGenerators.csproj", "{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,6 +181,18 @@ Global
 		{5D68536C-EBB9-4517-B968-E6DE6FDBD8CE}.Release|x64.Build.0 = Release|Any CPU
 		{5D68536C-EBB9-4517-B968-E6DE6FDBD8CE}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D68536C-EBB9-4517-B968-E6DE6FDBD8CE}.Release|x86.Build.0 = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|x64.Build.0 = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Debug|x86.Build.0 = Debug|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|x64.ActiveCfg = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|x64.Build.0 = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|x86.ActiveCfg = Release|Any CPU
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,5 +214,6 @@ Global
 		{D3F36767-C15A-6872-10A2-0F7E5B207D8D} = {99F133DE-6FCB-422A-854D-ED8662CD4B83}
 		{FA5DE57E-331C-8ED4-F610-1774BC4BBD86} = {D3F36767-C15A-6872-10A2-0F7E5B207D8D}
 		{5D68536C-EBB9-4517-B968-E6DE6FDBD8CE} = {FA5DE57E-331C-8ED4-F610-1774BC4BBD86}
+		{38A2F3A0-CE4E-4CF0-93EC-2FB8E02A0CAA} = {99F133DE-6FCB-422A-854D-ED8662CD4B83}
 	EndGlobalSection
 EndGlobal

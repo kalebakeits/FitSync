@@ -5,18 +5,18 @@
  * OpenAPI spec version: 1.0
  */
 export interface ActivityResponse {
-  id: string;
-  externalActivityId: string;
-  source: string;
+  id?: string;
+  externalActivityId?: string;
+  source?: string;
   /** @nullable */
   originalFileName?: string | null;
   /** @nullable */
   fileSizeBytes?: number | null;
-  activityDate: string;
+  activityDate?: string;
   /** @nullable */
   activityName?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   uploadStatuses?: UploadStatusEntry[];
 }
 
@@ -34,14 +34,22 @@ export const ActivityStatus = {
   ServiceUnavailable: 'ServiceUnavailable',
 } as const;
 
+export interface ApiTokenResponse {
+  id?: string;
+  name?: string;
+  createdAt?: string;
+  /** @nullable */
+  lastUsedAt?: string | null;
+}
+
 export interface AuthSuccessResponse {
-  userId: string;
-  username: string;
+  userId?: string;
+  username?: string;
 }
 
 export interface AvailableServiceResponse {
-  serviceType: string;
-  authType: string;
+  serviceType?: string;
+  authType?: string;
   /** @nullable */
   connectUrl?: string | null;
   isFetcher?: boolean;
@@ -49,57 +57,60 @@ export interface AvailableServiceResponse {
 }
 
 export interface ConfirmPasswordResetRequest {
-  /** @minLength 1 */
-  token: string;
-  /**
-   * @minLength 8
-   * @maxLength 100
-   */
-  newPassword: string;
+  token?: string;
+  newPassword?: string;
 }
 
 export interface ConnectionResponse {
-  serviceType: string;
-  authType: string;
-  connected: boolean;
-  enabled: boolean;
+  serviceType?: string;
+  authType?: string;
+  connected?: boolean;
+  enabled?: boolean;
   /** @nullable */
   displayName?: string | null;
-  updatedAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateApiTokenRequest {
+  name?: string;
+}
+
+export interface CreateApiTokenResponse {
+  id?: string;
+  name?: string;
+  token?: string;
+  createdAt?: string;
 }
 
 export interface CreateCredentialRequest {
-  /** @minLength 1 */
-  serviceType: string;
-  /** @minLength 1 */
-  username: string;
-  /** @minLength 1 */
-  password: string;
+  serviceType?: string;
+  username?: string;
+  password?: string;
 }
 
 export interface CredentialResponse {
-  serviceType: string;
-  username: string;
-  createdAt: string;
-  updatedAt: string;
-  enabled: boolean;
+  serviceType?: string;
+  username?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  enabled?: boolean;
 }
 
 export interface CurrentUserResponse {
-  userId: string;
-  username: string;
-  email: string;
-  isVerified: boolean;
-  isEmailVerified: boolean;
+  userId?: string;
+  username?: string;
+  email?: string;
+  isVerified?: boolean;
+  isEmailVerified?: boolean;
 }
 
 export interface DestinationMappingResponse {
-  sourceServiceType: string;
-  destinationServiceTypes: string[];
+  sourceServiceType?: string;
+  destinationServiceTypes?: string[];
 }
 
 export interface DestinationStatusEntry {
-  serviceType: string;
+  serviceType?: string;
   healthy?: boolean;
   connected?: boolean;
 }
@@ -117,81 +128,120 @@ export const FetcherStatusReason = {
 } as const;
 
 export interface FetcherStatusResponse {
-  serviceType: string;
-  status: string;
-  reason: FetcherStatusReason;
-  destinations: DestinationStatusEntry[];
+  serviceType?: string;
+  status?: string;
+  reason?: FetcherStatusReason;
+  destinations?: DestinationStatusEntry[];
+}
+
+export interface JsonNode {
+  options?: JsonNodeOptions;
+  parent?: JsonNode;
+  root?: JsonNode;
+}
+
+export interface JsonNodeOptions {
+  propertyNameCaseInsensitive?: boolean;
 }
 
 export interface LoginRequest {
-  /** @minLength 1 */
-  identifier: string;
-  /** @minLength 1 */
-  password: string;
+  identifier?: string;
+  password?: string;
+}
+
+export interface MoveScheduledWorkoutRequest {
+  scheduledDate?: string;
 }
 
 export interface PaginatedActivitiesResponse {
-  items: ActivityResponse[];
-  total: number;
-  limit: number;
-  offset: number;
+  items?: ActivityResponse[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface PaginatedWorkoutsResponse {
+  items?: WorkoutResponse[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface PublishWorkoutRequest {
+  serviceType?: string;
+  scheduledDate?: string;
 }
 
 export interface PushToDestinationRequest {
-  destinationServiceType: string;
+  destinationServiceType?: string;
 }
 
 export interface RegisterRequest {
-  /**
-   * @minLength 3
-   * @maxLength 50
-   */
-  username: string;
-  /** @minLength 1 */
-  email: string;
-  /**
-   * @minLength 8
-   * @maxLength 100
-   */
-  password: string;
+  username?: string;
+  email?: string;
+  password?: string;
 }
 
 export interface RequestPasswordResetRequest {
-  /** @minLength 1 */
-  email: string;
+  email?: string;
 }
 
 export interface ResendVerificationRequest {
-  /** @minLength 1 */
-  email: string;
+  email?: string;
+}
+
+export interface ScheduledWorkoutResponse {
+  id?: string;
+  workoutId?: string;
+  workoutName?: string;
+  sport?: number;
+  serviceType?: string;
+  scheduledDate?: string;
+  createdAt?: string;
+}
+
+export interface TrainingProfileResponse {
+  /** @nullable */
+  ftpWatts?: number | null;
+  /** @nullable */
+  cyclingThresholdHr?: number | null;
+  /** @nullable */
+  cyclingMaxHr?: number | null;
+  /** @nullable */
+  runningThresholdHr?: number | null;
+  /** @nullable */
+  runningMaxHr?: number | null;
+  /** @nullable */
+  runningThresholdPaceSeconds?: number | null;
+  /** @nullable */
+  poolLengthMetres?: number | null;
+  /** @nullable */
+  swimThresholdHr?: number | null;
+  /** @nullable */
+  swimCssSeconds?: number | null;
 }
 
 export interface UpdateEmailRequest {
-  /** @minLength 1 */
-  email: string;
+  email?: string;
 }
 
 export interface UpdatePasswordRequest {
-  /** @minLength 1 */
-  currentPassword: string;
-  /**
-   * @minLength 8
-   * @maxLength 100
-   */
-  newPassword: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 export interface UpdateUsernameRequest {
-  /**
-   * @minLength 3
-   * @maxLength 50
-   */
-  username: string;
+  username?: string;
+}
+
+export interface UpdateWorkoutRequest {
+  name?: string;
+  tags?: string[];
 }
 
 export interface UploadStatusEntry {
-  destinationServiceType: string;
-  status: ActivityStatus;
+  destinationServiceType?: string;
+  status?: ActivityStatus;
   /** @nullable */
   lastError?: string | null;
   retryCount?: number;
@@ -203,12 +253,56 @@ export interface UpsertDestinationMappingsRequest {
   destinationServiceTypes: string[];
 }
 
-export interface VerifyAccountRequest {
-  /** @minLength 1 */
-  token: string;
+export interface UpsertTrainingProfileRequest {
+  /** @nullable */
+  ftpWatts?: number | null;
+  /** @nullable */
+  cyclingThresholdHr?: number | null;
+  /** @nullable */
+  cyclingMaxHr?: number | null;
+  /** @nullable */
+  runningThresholdHr?: number | null;
+  /** @nullable */
+  runningMaxHr?: number | null;
+  /** @nullable */
+  runningThresholdPaceSeconds?: number | null;
+  /** @nullable */
+  poolLengthMetres?: number | null;
+  /** @nullable */
+  swimThresholdHr?: number | null;
+  /** @nullable */
+  swimCssSeconds?: number | null;
 }
 
+export interface VerifyAccountRequest {
+  token?: string;
+}
+
+export interface WorkoutResponse {
+  id?: string;
+  name?: string;
+  tags?: string[];
+  sport?: number;
+  schema?: JsonNode;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface WorkoutSchema { [key: string]: unknown }
+
 export type GetApiActivitiesParams = {
+limit?: number;
+offset?: number;
+};
+
+export type GetApiScheduledWorkoutsParams = {
+from?: string;
+to?: string;
+};
+
+export type GetApiWorkoutsParams = {
+search?: string;
+tags?: string[];
 limit?: number;
 offset?: number;
 };

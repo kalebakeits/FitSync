@@ -50,11 +50,16 @@ public class ActivityPurgerWorker(
         }
         catch (OperationCanceledException)
         {
-            this.logger.LogInformation("The Purge was interrupted. The survivors go free — this time.");
+            this.logger.LogInformation(
+                "The Purge was interrupted. The survivors go free — this time."
+            );
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "The Purge encountered an error. Order will be restored next interval.");
+            this.logger.LogError(
+                ex,
+                "The Purge encountered an error. Order will be restored next interval."
+            );
         }
     }
 }

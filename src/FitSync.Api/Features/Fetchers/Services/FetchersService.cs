@@ -12,8 +12,7 @@ public class FetchersService(FitSyncDbContext context, ILogger<FetchersService> 
 
     public async Task TriggerFetchAsync(Guid userId)
     {
-        List<FetcherConfig> configs = await this.context.FetcherConfigs
-            .Include(f => f.Integration)
+        List<FetcherConfig> configs = await this.context.FetcherConfigs.Include(f => f.Integration)
             .Where(f => f.Integration.UserId == userId)
             .ToListAsync();
 

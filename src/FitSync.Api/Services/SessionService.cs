@@ -98,9 +98,7 @@ public class SessionService(FitSyncDbContext context, ILogger<SessionService> lo
     {
         this.logger.LogInformation("Invalidating all sessions for user: {UserId}", userId);
 
-        int count = await this.context.Sessions
-            .Where(s => s.UserId == userId)
-            .ExecuteDeleteAsync();
+        int count = await this.context.Sessions.Where(s => s.UserId == userId).ExecuteDeleteAsync();
 
         this.logger.LogInformation(
             "Invalidated {Count} sessions for user: {UserId}",

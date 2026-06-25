@@ -50,7 +50,7 @@ export default function UpdateUsernameForm() {
   };
 
   return (
-    <Box component="form" onSubmit={form.handleSubmit(onSubmit)} noValidate>
+    <Box component="form" onSubmit={form.handleSubmit(onSubmit)} noValidate sx={{ width: "100%" }}>
       <Typography variant="subtitle2" gutterBottom>
         Update Username
       </Typography>

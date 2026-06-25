@@ -56,7 +56,7 @@ export default function PushToDestinationModal({
   const handleConfirm = () => {
     if (!selected) return;
     pushMutation.mutate({
-      id: activity.id,
+      id: activity.id!,
       data: { destinationServiceType: selected },
     });
   };

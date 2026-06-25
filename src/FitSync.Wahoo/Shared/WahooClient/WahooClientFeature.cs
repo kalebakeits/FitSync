@@ -26,7 +26,10 @@ public static class WahooClientFeature
             .ValidateOnStart();
 
         services.AddHttpClient<IWahooAuthService, WahooAuthService>();
-        services.AddHttpClient<IWahooApiService, WahooApiService>();
+        services.AddScoped<IWahooWorkoutDurationCalculator, WahooWorkoutDurationCalculator>();
+        services.AddScoped<IWahooRequestFactory, WahooRequestFactory>();
+        services.AddHttpClient<IWahooHttpSender, WahooHttpSender>();
+        services.AddScoped<IWahooApiService, WahooApiService>();
         services.AddWahooActivityProcessor();
         services.AddScoped<IWahooClient, WahooClient>();
 

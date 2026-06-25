@@ -28,9 +28,7 @@ public class AuthController(
         AuthResponse response = await this.authService.RegisterAsync(request);
 
         this.logger.LogInformation("User registered successfully: {UserId}", response.UserId);
-        return Ok(
-            new AuthSuccessResponse { UserId = response.UserId, Username = response.Username }
-        );
+        return Ok(new AuthSuccessResponse(response.UserId, response.Username));
     }
 
     [HttpPost("login")]
@@ -54,9 +52,7 @@ public class AuthController(
         );
 
         this.logger.LogInformation("User logged in successfully: {UserId}", response.UserId);
-        return Ok(
-            new AuthSuccessResponse { UserId = response.UserId, Username = response.Username }
-        );
+        return Ok(new AuthSuccessResponse(response.UserId, response.Username));
     }
 
     [HttpPost("verify")]

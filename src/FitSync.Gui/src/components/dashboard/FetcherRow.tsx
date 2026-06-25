@@ -15,7 +15,7 @@ function toFetcherStatus(status?: string): FetcherStatus {
   return "red";
 }
 
-const reasonLabels: Partial<Record<FetcherStatusResponse["reason"], string>> = {
+const reasonLabels: Partial<Record<NonNullable<FetcherStatusResponse["reason"]>, string>> = {
   FetcherUnhealthy: "Fetcher error",
   NoDestinations: "No destinations",
   AllDestinationsUnhealthy: "All destinations unhealthy",
@@ -36,7 +36,7 @@ interface FetcherRowProps {
 
 export default function FetcherRow({ fetcher }: FetcherRowProps) {
   const status = toFetcherStatus(fetcher.status);
-  const reasonLabel = reasonLabels[fetcher.reason] || "Unknown Status";
+  const reasonLabel = (fetcher.reason ? reasonLabels[fetcher.reason] : undefined) || "Unknown Status";
 
   return (
     <Box

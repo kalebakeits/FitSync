@@ -59,12 +59,14 @@ public class FetcherStatusService(
             -this.appConfiguration.Value.FetcherHeartbeatThresholdMinutes
         );
 
-        List<Integration> integrations = await this.context.Integrations
-            .Where(i => i.UserId == userId)
+        List<Integration> integrations = await this.context.Integrations.Where(
+            i => i.UserId == userId
+        )
             .ToListAsync(cancellationToken);
 
-        List<UserDestinationConfig> mappings = await this.context.UserDestinationConfigs
-            .Where(c => c.UserId == userId)
+        List<UserDestinationConfig> mappings = await this.context.UserDestinationConfigs.Where(
+            c => c.UserId == userId
+        )
             .ToListAsync(cancellationToken);
 
         List<ServiceType> fetcherServiceTypes = integrations
@@ -73,7 +75,8 @@ public class FetcherStatusService(
             .Select(i => this.heartbeatServiceTypeMap[i.ServiceType])
             .ToList();
 
-        HashSet<ServiceType> aliveServiceTypes = [
+        HashSet<ServiceType> aliveServiceTypes =
+        [
             ..await this.context.ServiceHeartbeats
                 .Where(h => fetcherServiceTypes.Contains(h.ServiceType) && h.LastHeartbeatAt > heartbeatCutoff)
                 .Select(h => h.ServiceType)
@@ -82,7 +85,16 @@ public class FetcherStatusService(
 
         return integrations
             .Where(i => this.serviceTypeResolver.IsFetcher(i.ServiceType))
-            .Select(fetcher => this.BuildStatus(fetcher, integrations, mappings, maxFailures, aliveServiceTypes))
+            .Select(
+                fetcher =>
+                    this.BuildStatus(
+                        fetcher,
+                        integrations,
+                        mappings,
+                        maxFailures,
+                        aliveServiceTypes
+                    )
+            )
             .ToList();
     }
 
@@ -94,17 +106,19 @@ public class FetcherStatusService(
         HashSet<ServiceType> aliveServiceTypes
     )
     {
-        bool fetcherAlive = !this.heartbeatServiceTypeMap.TryGetValue(fetcher.ServiceType, out ServiceType heartbeatType)
-            || aliveServiceTypes.Contains(heartbeatType);
+        bool fetcherAlive =
+            !this.heartbeatServiceTypeMap.TryGetValue(
+                fetcher.ServiceType,
+                out ServiceType heartbeatType
+            ) || aliveServiceTypes.Contains(heartbeatType);
 
         if (!fetcherAlive || fetcher.FailureCount >= maxFailures)
-            return new FetcherStatusResponse
-            {
-                ServiceType = fetcher.ServiceType,
-                Status = "red",
-                Reason = FetcherStatusReason.FetcherUnhealthy,
-                Destinations = [],
-            };
+            return new FetcherStatusResponse(
+                fetcher.ServiceType,
+                "red",
+                FetcherStatusReason.FetcherUnhealthy,
+                []
+            );
 
         List<string> mappedDests = mappings
             .Where(m => m.SourceServiceType == fetcher.ServiceType)
@@ -112,43 +126,39 @@ public class FetcherStatusService(
             .ToList();
 
         if (mappedDests.Count == 0)
-            return new FetcherStatusResponse
-            {
-                ServiceType = fetcher.ServiceType,
-                Status = "grey",
-                Reason = FetcherStatusReason.NoDestinations,
-                Destinations = [],
-            };
+            return new FetcherStatusResponse(
+                fetcher.ServiceType,
+                "grey",
+                FetcherStatusReason.NoDestinations,
+                []
+            );
 
         List<DestinationStatusEntry> destinations = mappedDests
             .Select(dest => this.BuildDestinationEntry(dest, allIntegrations, maxFailures))
             .ToList();
 
         if (destinations.All(d => d.Healthy))
-            return new FetcherStatusResponse
-            {
-                ServiceType = fetcher.ServiceType,
-                Status = "green",
-                Reason = FetcherStatusReason.None,
-                Destinations = destinations,
-            };
+            return new FetcherStatusResponse(
+                fetcher.ServiceType,
+                "green",
+                FetcherStatusReason.None,
+                destinations
+            );
 
         if (destinations.All(d => !d.Healthy))
-            return new FetcherStatusResponse
-            {
-                ServiceType = fetcher.ServiceType,
-                Status = "red",
-                Reason = FetcherStatusReason.AllDestinationsUnhealthy,
-                Destinations = destinations,
-            };
+            return new FetcherStatusResponse(
+                fetcher.ServiceType,
+                "red",
+                FetcherStatusReason.AllDestinationsUnhealthy,
+                destinations
+            );
 
-        return new FetcherStatusResponse
-        {
-            ServiceType = fetcher.ServiceType,
-            Status = "amber",
-            Reason = FetcherStatusReason.SomeDestinationsUnhealthy,
-            Destinations = destinations,
-        };
+        return new FetcherStatusResponse(
+            fetcher.ServiceType,
+            "amber",
+            FetcherStatusReason.SomeDestinationsUnhealthy,
+            destinations
+        );
     }
 
     private DestinationStatusEntry BuildDestinationEntry(
@@ -159,11 +169,10 @@ public class FetcherStatusService(
     {
         Integration? dest = allIntegrations.FirstOrDefault(i => i.ServiceType == destServiceType);
 
-        return new DestinationStatusEntry
-        {
-            ServiceType = destServiceType,
-            Connected = dest != null,
-            Healthy = dest != null && dest.FailureCount < maxFailures,
-        };
+        return new DestinationStatusEntry(
+            destServiceType,
+            dest != null && dest.FailureCount < maxFailures,
+            dest != null
+        );
     }
 }

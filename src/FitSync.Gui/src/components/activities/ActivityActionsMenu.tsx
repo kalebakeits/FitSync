@@ -23,7 +23,7 @@ export default function ActivityActionsMenu({
   const [pushOpen, setPushOpen] = useState(false);
 
   const hasFailed = activity.uploadStatuses?.some((u) =>
-    FAILED_STATUSES.has(u.status),
+    FAILED_STATUSES.has(u.status!),
   );
 
   const handleOpen = (e: React.MouseEvent<HTMLElement>) =>

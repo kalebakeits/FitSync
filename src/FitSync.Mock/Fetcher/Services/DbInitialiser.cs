@@ -39,17 +39,20 @@ public class DbInitialiser(
         this.logger.LogInformation("Migrations completed successfully");
         this.logger.LogInformation("Seeding database");
 
-        using var transaction = await this.fitSyncDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        using var transaction = await this.fitSyncDbContext.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable
+        );
 
-        User mockUser = new()
-        {
-            Username = "default",
-            Email = defaultEmail,
-            EmailHash = defaultEmail.SHA256Hashed(),
-            PasswordHash = BCrypt.HashPassword(SharedPassword),
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-        };
+        User mockUser =
+            new()
+            {
+                Username = "default",
+                Email = defaultEmail,
+                EmailHash = defaultEmail.SHA256Hashed(),
+                PasswordHash = BCrypt.HashPassword(SharedPassword),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
 
         mockUser.Encrypt(this.encryptionService);
         await this.fitSyncDbContext.Users.AddAsync(mockUser);
@@ -62,21 +65,23 @@ public class DbInitialiser(
 
         if (!garminExists)
         {
-            Integration garminIntegration = new()
-            {
-                Id = Guid.NewGuid(),
-                UserId = mockUser.Id,
-                ServiceType = ServiceTypes.Garmin,
-                FailureCount = 0,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+            Integration garminIntegration =
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = mockUser.Id,
+                    ServiceType = ServiceTypes.Garmin,
+                    FailureCount = 0,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            GarminAuthData authData = new()
-            {
-                Username = this.options.Value.GarminConnectEmail ?? defaultEmail,
-                Password = this.options.Value.GarminConnectPassword ?? SharedPassword,
-            };
+            GarminAuthData authData =
+                new()
+                {
+                    Username = this.options.Value.GarminConnectEmail ?? defaultEmail,
+                    Password = this.options.Value.GarminConnectPassword ?? SharedPassword,
+                };
 
             garminIntegration.SetAuthData(authData, this.encryptionService);
             await this.fitSyncDbContext.Integrations.AddAsync(garminIntegration);
@@ -87,6 +92,8 @@ public class DbInitialiser(
         await transaction.CommitAsync();
         this.logger.LogInformation("Seeded database successfully");
         this.healthCheck.MarkAsHealthy();
-        this.logger.LogInformation("Database initialization complete - health check marked as healthy");
+        this.logger.LogInformation(
+            "Database initialization complete - health check marked as healthy"
+        );
     }
 }

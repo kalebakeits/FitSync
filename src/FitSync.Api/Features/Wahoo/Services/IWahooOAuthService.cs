@@ -12,5 +12,8 @@ public interface IWahooOAuthService
         CancellationToken cancellationToken = default
     );
 
-    Task<long> GetWahooUserIdAsync(string accessToken, CancellationToken cancellationToken = default);
+    Task<long> GetWahooUserIdAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default
+    );
 }

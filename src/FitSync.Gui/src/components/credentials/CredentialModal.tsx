@@ -106,11 +106,17 @@ export default function CredentialModal({
               required
               disabled={!!editingCredential}
             >
-              {servicesToShow.map((service) => (
-                <MenuItem key={service.serviceType} value={service.serviceType}>
-                  {service.serviceType}
+              {servicesToShow.length === 0 ? (
+                <MenuItem disabled value="">
+                  No options
                 </MenuItem>
-              ))}
+              ) : (
+                servicesToShow.map((service) => (
+                  <MenuItem key={service.serviceType} value={service.serviceType}>
+                    {service.serviceType}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 

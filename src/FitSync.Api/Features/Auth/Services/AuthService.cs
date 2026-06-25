@@ -98,12 +98,7 @@ public class AuthService(
         );
 
         // Don't create session for unverified users - they need to verify first
-        return new AuthResponse
-        {
-            SessionId = string.Empty,
-            UserId = user.Id,
-            Username = user.Username
-        };
+        return new AuthResponse(string.Empty, user.Id, user.Username);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -171,12 +166,7 @@ public class AuthService(
         // Create session
         string sessionId = await this.sessionService.CreateSessionAsync(user.Id);
 
-        return new AuthResponse
-        {
-            SessionId = sessionId,
-            UserId = user.Id,
-            Username = user.Username
-        };
+        return new AuthResponse(sessionId, user.Id, user.Username);
     }
 
     public async Task VerifyAccountAsync(string token)
@@ -331,14 +321,13 @@ public class AuthService(
 
         string email = user.Decrypt(this.encryptionService);
 
-        return new CurrentUserResponse
-        {
-            UserId = user.Id,
-            Username = user.Username,
-            Email = email,
-            IsVerified = user.IsVerified,
-            IsEmailVerified = user.IsVerified // For now, same as IsVerified
-        };
+        return new CurrentUserResponse(
+            user.Id,
+            user.Username,
+            email,
+            user.IsVerified,
+            user.IsVerified // For now, same as IsVerified
+        );
     }
 
     private static string GenerateSecureToken()

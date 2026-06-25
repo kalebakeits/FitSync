@@ -1,21 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Box,
-  Typography,
-  AppBar,
-  Toolbar,
-  Button,
-  IconButton,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import { Brightness4, Brightness7, Logout, HelpOutline, Settings } from "@mui/icons-material";
+import { Box, Typography } from "@mui/material";
+import { useTheme, useMediaQuery } from "@mui/material";
+import { HelpOutline } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
 import { useAuth } from "../../contexts/AuthContext";
-import { useAppTheme } from "../../contexts/ThemeContext";
+import AppLayout from "../../components/layout/AppLayout";
 import ActivitiesPanel from "../../components/activities/ActivitiesPanel";
-import ProfileSettingsModal from "../../components/profile/ProfileSettingsModal";
 import SyncStatusIndicator from "../../components/dashboard/SyncStatusIndicator";
 import FetcherStatusPanel from "../../components/dashboard/FetcherStatusPanel";
 import SyncHelpModal from "../../components/notices/SyncHelpModal";
@@ -23,75 +14,45 @@ import Footer from "../../components/Footer";
 import { useGetApiConnectionsStatus } from "../../api/generated/connections/connections";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-  const { mode, toggleTheme } = useAppTheme();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const theme = useTheme();
   const isLandscape = useMediaQuery(theme.breakpoints.up("md"));
   const [helpOpen, setHelpOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsTab, setSettingsTab] = useState(0);
+  const navigate = useNavigate();
 
   const { data: fetchers = [] } = useGetApiConnectionsStatus({ query: { refetchInterval: 10000 } });
 
-  const openSettingsAt = (tab: number) => {
-    setSettingsTab(tab);
-    setSettingsOpen(true);
-  };
-
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="static" elevation={2}>
-        <Toolbar>
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: "bold", letterSpacing: 0.5 }}>
-            FitSync
-          </Typography>
-          <IconButton color="inherit" onClick={() => setHelpOpen(true)}>
-            <HelpOutline />
-          </IconButton>
-          <IconButton color="inherit" onClick={() => openSettingsAt(0)}>
-            <Settings />
-          </IconButton>
-          <IconButton color="inherit" onClick={toggleTheme}>
-            {mode === "dark" ? <Brightness7 /> : <Brightness4 />}
-          </IconButton>
-          <Button color="inherit" startIcon={<Logout />} onClick={() => { logout(); navigate("/login"); }} />
-        </Toolbar>
-      </AppBar>
-
-      <Container maxWidth="xl" sx={{ py: 3, flexGrow: 1 }}>
+    <AppLayout>
+      <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100%", p: 3, width: "100%" }}>
         <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Typography variant="subtitle1" color="text.secondary">
             Welcome back, {user?.username}
           </Typography>
-          <SyncStatusIndicator fetchers={fetchers} />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <IconButton onClick={() => setHelpOpen(true)}>
+              <HelpOutline />
+            </IconButton>
+            <SyncStatusIndicator fetchers={fetchers} />
+          </Box>
         </Box>
 
         <SyncHelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
-        <ProfileSettingsModal
-          key={settingsTab}
-          open={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-          initialTab={settingsTab}
-        />
 
         {isLandscape ? (
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <FetcherStatusPanel onOpenSettings={() => openSettingsAt(2)} />
-            </Box>
-            <Box>
-              <ActivitiesPanel />
-            </Box>
+            <FetcherStatusPanel onOpenSettings={() => navigate("/settings?tab=integrations")} />
+            <ActivitiesPanel />
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            <FetcherStatusPanel onOpenSettings={() => openSettingsAt(2)} />
+            <FetcherStatusPanel onOpenSettings={() => navigate("/settings?tab=integrations")} />
             <ActivitiesPanel />
           </Box>
         )}
-      </Container>
-      <Footer />
-    </Box>
+
+        <Footer />
+      </Box>
+    </AppLayout>
   );
 }

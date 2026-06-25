@@ -13,6 +13,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.3.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
@@ -21,11 +22,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="..\..\assets\workout-generation-prompt.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FitSync.Database\FitSync.Database.csproj" />
     <ProjectReference Include="..\FitSync.Shared\FitSync.Shared.csproj" />
     <ProjectReference Include="..\FitSync.Garmin\Shared\FitSync.Garmin.Shared.csproj" />
     <ProjectReference Include="..\FitSync.Wahoo\Shared\FitSync.Wahoo.Shared.csproj" />
     <ProjectReference Include="..\FitSync.Zwift\Shared\FitSync.Zwift.Shared.csproj" />
+    <ProjectReference Include="..\FitSync.SourceGenerators\FitSync.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

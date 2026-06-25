@@ -42,8 +42,8 @@ imagePullPolicy: Always
 
 # PostgreSQL configuration
 postgres:
-  image: postgres:16
-  storage: 2Gi
+  host: localhost
+  port: 5432
   database: FitSync
   username: postgres
 
