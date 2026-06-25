@@ -32,16 +32,19 @@ public class OrphanedActivityReclaimer(
             ActivityStatus.Claimed,
         ];
 
-        await using FitSyncDbContext dbContext = await this.dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using FitSyncDbContext dbContext = await this.dbContextFactory.CreateDbContextAsync(
+            cancellationToken
+        );
 
         IQueryable<ActivityUploadStatus> orphanedActivities =
             dbContext.ActivityUploadStatuses.Where(
-                u => u.DestinationServiceType == ServiceTypes.Garmin
-                && incompleteStatuses.Contains(u.Status)
-                && (
-                    (u.ClaimedBy != null && u.ClaimedAt < cutoff)
-                    || (u.ClaimedBy == null && u.UpdatedAt < cutoff)
-                )
+                u =>
+                    u.DestinationServiceType == ServiceTypes.Garmin
+                    && incompleteStatuses.Contains(u.Status)
+                    && (
+                        (u.ClaimedBy != null && u.ClaimedAt < cutoff)
+                        || (u.ClaimedBy == null && u.UpdatedAt < cutoff)
+                    )
             );
 
         int orphanCount = await orphanedActivities.CountAsync(cancellationToken);
@@ -57,7 +60,12 @@ public class OrphanedActivityReclaimer(
             orphanCount
         );
 
-        await foreach (Guid activityId in orphanedActivities.Select(a => a.ActivityId).AsAsyncEnumerable().WithCancellation(cancellationToken))
+        await foreach (
+            Guid activityId in orphanedActivities
+                .Select(a => a.ActivityId)
+                .AsAsyncEnumerable()
+                .WithCancellation(cancellationToken)
+        )
         {
             this.logger.LogDebug("Trying to adopt orphan - Activity: {ActivityId}.", activityId);
             await this.activityProcessor.ReclaimAndProcessActivityAsync(

@@ -10,5 +10,8 @@ public interface IWahooActivityProcessor
         CancellationToken cancellationToken = default
     );
 
-    Task<byte[]> DownloadFitFileAsync(string fileUrl, CancellationToken cancellationToken = default);
+    Task<byte[]> DownloadFitFileAsync(
+        string fileUrl,
+        CancellationToken cancellationToken = default
+    );
 }

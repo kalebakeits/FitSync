@@ -11,6 +11,7 @@ import {
   usePutApiConnectionsMappings,
 } from "../../api/generated/connections/connections";
 import {
+  getGetApiCredentialsAvailableQueryKey,
   getGetApiCredentialsQueryKey,
   useGetApiCredentialsAll,
   useGetApiCredentialsAvailable,
@@ -55,6 +56,7 @@ export default function IntegrationsTab() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetApiConnectionsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetApiCredentialsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetApiCredentialsAvailableQueryKey() });
         invalidateStatus();
       },
     },

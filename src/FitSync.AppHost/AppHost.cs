@@ -97,9 +97,14 @@ IResourceBuilder<ProjectResource> api = builder
     .AddProject<FitSync_Api>("api")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
+    .WithReference(redis)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
     .WithEnvironment("DataProtectionOptions__DataProtectionKey", dataProtectionKey)
     .WithEnvironment("EmailConfiguration__SmtpPassword", smtpPassword)
+    .WithEnvironment(
+        "Workouts__StoragePath",
+        Path.Combine(Path.GetTempPath(), "fitsync-workout-files")
+    )
     .WaitFor(mockFetcher);
 
 // GUI (React + Vite)

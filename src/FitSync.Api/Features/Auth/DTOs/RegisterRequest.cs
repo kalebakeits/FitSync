@@ -2,17 +2,8 @@ namespace FitSync.Api.Features.Auth.DTOs;
 
 using System.ComponentModel.DataAnnotations;
 
-public class RegisterRequest
-{
-    [Required]
-    [StringLength(50, MinimumLength = 3)]
-    public required string Username { get; set; }
-
-    [Required]
-    [EmailAddress]
-    public required string Email { get; set; }
-
-    [Required]
-    [StringLength(100, MinimumLength = 8)]
-    public required string Password { get; set; }
-}
+public record RegisterRequest(
+    [Required] [StringLength(50, MinimumLength = 3)] string Username,
+    [Required] [EmailAddress] string Email,
+    [Required] [StringLength(100, MinimumLength = 8)] string Password
+);

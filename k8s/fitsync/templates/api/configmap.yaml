@@ -34,5 +34,8 @@ data:
         "BaseUrl": "{{ .Values.api.wahoo.baseUrl }}",
         "RedirectUri": "{{ .Values.api.wahoo.redirectUri }}",
         "FrontendUrl": "{{ .Values.api.wahoo.frontendUrl }}"
+      },
+      "ConnectionStrings": {
+        "Redis": "{{ .Values.redis.host }}:6379"
       }
     }

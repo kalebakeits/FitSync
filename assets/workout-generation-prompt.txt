@@ -1,0 +1,118 @@
+Output a FIT workout schema as JSON. Return only JSON, no explanation.
+
+SCHEMA
+------
+kind: "default" | "poolSwim"
+
+default:
+  { "kind":"default", "name":string, "sport":Sport, "subSport":SubSport|null, "skipLastRest":bool, "items":WorkoutItem[] }
+
+poolSwim (pool swimming only):
+  { "kind":"poolSwim", "name":string, "sport":5, "subSport":17, "skipLastRest":bool, "poolLength":float, "poolLengthUnit":DisplayMeasure, "items":WorkoutItem[] }
+
+WORKOUT ITEMS
+-------------
+step:
+  { "kind":"step", "durationType":WktStepDuration, "durationValue":uint|null, "targetType":WktStepTarget, "targetZone":int|null, "targetLow":uint|null, "targetHigh":uint|null, "intensity":Intensity, "name":string|null }
+  - Prefer targetZone (1-7 for power, 1-5 for HR) over targetLow/targetHigh — zones scale with the user's fitness; raw values only work at current FTP/HR.
+  - targetZone and targetLow/targetHigh are mutually exclusive; set the unused one to null.
+
+swimStep (poolSwim only):
+  { "kind":"swimStep", "distance":float, "swimStroke":SwimStroke, "equipment":WorkoutEquipment|null, "intensity":Intensity, "name":string|null }
+
+repeat:
+  { "kind":"repeat", "repeatCount":uint, "steps":WorkoutItem[] }
+
+ENUMS (use numeric value)
+-------------------------
+Sport:
+  Generic=0, Running=1, Cycling=2, Transition=3, FitnessEquipment=4, Swimming=5,
+  Basketball=6, Soccer=7, Tennis=8, AmericanFootball=9, Training=10, Walking=11,
+  CrossCountrySkiing=12, AlpineSkiing=13, Snowboarding=14, Rowing=15, Mountaineering=16,
+  Hiking=17, Multisport=18, Paddling=19, Flying=20, EBiking=21, Motorcycling=22,
+  Boating=23, Driving=24, Golf=25, HangGliding=26, HorsebackRiding=27, Hunting=28,
+  Fishing=29, InlineSkating=30, RockClimbing=31, Sailing=32, IceSkating=33, SkyDiving=34,
+  Snowshoeing=35, Snowmobiling=36, StandUpPaddleboarding=37, Surfing=38, Wakeboarding=39,
+  WaterSkiing=40, Kayaking=41, Rafting=42, Windsurfing=43, Kitesurfing=44, Tactical=45,
+  Jumpmaster=46, Boxing=47, FloorClimbing=48, Baseball=49, Diving=53, Shooting=56,
+  WinterSport=58, Grinding=59, Hiit=62, VideoGaming=63, Racket=64, WheelchairPushWalk=65,
+  WheelchairPushRun=66, Meditation=67, ParaSport=68, DiscGolf=69, TeamSport=70,
+  Cricket=71, Rugby=72, Hockey=73, Lacrosse=74, Volleyball=75, WaterTubing=76,
+  Wakesurfing=77, WaterSport=78, Archery=79, MixedMartialArts=80, MotorSports=81,
+  Snorkeling=82, Dance=83, JumpRope=84, PoolApnea=85, Mobility=86, Geocaching=87,
+  Canoeing=88
+
+SubSport:
+  Generic=0, Treadmill=1, Street=2, Trail=3, Track=4, Spin=5, IndoorCycling=6, Road=7,
+  Mountain=8, Downhill=9, Recumbent=10, Cyclocross=11, HandCycling=12, TrackCycling=13,
+  IndoorRowing=14, Elliptical=15, StairClimbing=16, LapSwimming=17, OpenWater=18,
+  FlexibilityTraining=19, StrengthTraining=20, WarmUp=21, Match=22, Exercise=23,
+  Challenge=24, IndoorSkiing=25, CardioTraining=26, IndoorWalking=27, EBikeFitness=28,
+  Bmx=29, CasualWalking=30, SpeedWalking=31, BikeToRunTransition=32, RunToBikeTransition=33,
+  SwimToBikeTransition=34, Atv=35, Motocross=36, Backcountry=37, Resort=38, RcDrone=39,
+  Wingsuit=40, Whitewater=41, SkateSkiing=42, Yoga=43, Pilates=44, IndoorRunning=45,
+  GravelCycling=46, EBikeMountain=47, Commuting=48, MixedSurface=49, Navigate=50,
+  TrackMe=51, Map=52, SingleGasDiving=53, MultiGasDiving=54, GaugeDiving=55,
+  ApneaDiving=56, ApneaHunting=57, VirtualActivity=58, Obstacle=59, Breathing=62,
+  CcrDiving=63, SailRace=65, Expedition=66, Ultra=67, IndoorClimbing=68, Bouldering=69,
+  Hiit=70, IndoorGrinding=71, Amrap=73, Emom=74, Tabata=75, Esport=77, Triathlon=78,
+  Duathlon=79, Brick=80, SwimRun=81, AdventureRace=82, Pickleball=84, Padel=85,
+  IndoorWheelchairWalk=86, IndoorWheelchairRun=87, IndoorHandCycling=88,
+  DynamicApnea=121, Enduro=123, Rucking=124, Rally=125, PoolTriathlon=126, EBikeEnduro=127
+  (null if not applicable)
+
+Intensity:
+  Active=0, Rest=1, Warmup=2, Cooldown=3, Recovery=4, Interval=5, Other=6
+
+WktStepDuration:
+  Time=0, Distance=1, HrLessThan=2, HrGreaterThan=3, Calories=4, Open=5,
+  RepeatUntilStepsCmplt=6, RepeatUntilTime=7, RepeatUntilDistance=8, RepeatUntilCalories=9,
+  RepeatUntilHrLessThan=10, RepeatUntilHrGreaterThan=11, RepeatUntilPowerLessThan=12,
+  RepeatUntilPowerGreaterThan=13, PowerLessThan=14, PowerGreaterThan=15,
+  TrainingPeaksTss=16, Power3sLessThan=19, Power10sLessThan=20, Power30sLessThan=21,
+  Power3sGreaterThan=22, Power10sGreaterThan=23, Power30sGreaterThan=24,
+  PowerLapLessThan=25, PowerLapGreaterThan=26, Reps=29, TimeOnly=31
+
+WktStepTarget:
+  Speed=0, HeartRate=1, Open=2, Cadence=3, Power=4, Grade=5, Resistance=6,
+  Power3s=7, Power10s=8, Power30s=9, PowerLap=10, SwimStroke=11, SpeedLap=12, HeartRateLap=13
+
+SwimStroke:
+  Freestyle=0, Backstroke=1, Breaststroke=2, Butterfly=3, Drill=4, Mixed=5, IM=6, IMByRound=7, Rimo=8
+
+WorkoutEquipment:
+  None=0, SwimFins=1, SwimKickboard=2, SwimPaddles=3, SwimPullBuoy=4, SwimSnorkel=5
+
+DisplayMeasure:
+  Metric=0, Statute=1, Nautical=2
+
+PACE & CSS
+----------
+For running, the user may have a "threshold pace" (seconds per km) and for swimming a "critical swim speed" (seconds per 100m).
+When pace/CSS zones are available, speed targets use the user's threshold pace to define zones:
+  Zone 1 (Recovery):  35-100% slower than threshold pace
+  Zone 2 (Easy):      15-34% slower
+  Zone 3 (Tempo):     1-14% slower
+  Zone 4 (Threshold): 0-5% faster to threshold
+  Zone 5 (VO2Max):    6-20% faster
+For swimming the same zone model applies based on CSS (seconds per 100m).
+Prefer targetZone (1-5 for pace) over raw targetLow/targetHigh for speed targets.
+For pool workouts default to using distance targets over time targets ensuring their pool length is respected.
+
+UNITS
+-----
+Time durationValue:      milliseconds (20min = 1200000)
+Distance durationValue:  centimeters (400m = 40000, 5km = 500000)
+swimStep distance:        meters
+HeartRate targetLow/High: raw BPM (e.g. 135)
+Power targetLow/High:     raw watts (e.g. 175)
+Speed targetLow/High:     m/s (e.g. 5.556)
+Cadence targetLow/High:   raw RPM
+
+RULES
+-----
+- Open water swim: kind="default", sport=5, subSport=18
+- Virtual/indoor cycling: sport=2, subSport=58
+- Pool swim: kind="poolSwim", sport=5, subSport=17
+- swimStep only valid inside poolSwim; use step for all other sports
+- skipLastRest=true omits trailing rest step

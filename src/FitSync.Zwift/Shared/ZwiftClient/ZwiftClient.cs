@@ -2,8 +2,8 @@ namespace FitSync.Zwift.Shared.ZwiftClient;
 
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Fetcher.DTOs;
-using FitSync.Zwift.Shared.ZwiftClient.Services;
 using FitSync.Zwift.Shared.ZwiftClient;
+using FitSync.Zwift.Shared.ZwiftClient.Services;
 using Microsoft.Extensions.Logging;
 
 public class ZwiftClient(

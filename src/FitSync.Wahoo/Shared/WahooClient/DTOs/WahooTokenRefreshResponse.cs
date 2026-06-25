@@ -2,14 +2,8 @@ namespace FitSync.Wahoo.Shared.WahooClient.DTOs;
 
 using System.Text.Json.Serialization;
 
-public sealed class WahooTokenRefreshResponse
-{
-    [JsonPropertyName("access_token")]
-    public required string AccessToken { get; set; }
-
-    [JsonPropertyName("refresh_token")]
-    public required string RefreshToken { get; set; }
-
-    [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; set; }
-}
+public record WahooTokenRefreshResponse(
+    [property: JsonPropertyName("access_token")] string AccessToken,
+    [property: JsonPropertyName("refresh_token")] string RefreshToken,
+    [property: JsonPropertyName("expires_in")] int ExpiresIn
+);

@@ -5,12 +5,12 @@ using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
-using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 using FitSync.Zwift.Shared.AuthData;
+using FitSync.Zwift.Shared.Configuration;
+using FitSync.Zwift.Shared.ZwiftClient.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using FitSync.Zwift.Shared.Configuration;
 
 public class ZwiftAuthService(
     HttpClient httpClient,

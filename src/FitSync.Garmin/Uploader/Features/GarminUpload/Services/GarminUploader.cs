@@ -5,8 +5,9 @@ using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Garmin.Shared.AuthData;
+using FitSync.Garmin.Shared.GarminClient.DTOs;
+using FitSync.Garmin.Shared.GarminClient.Services;
 using FitSync.Garmin.Uploader.Configuration;
-using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
 using FitSync.Shared.Features.RateLimiting;
@@ -58,26 +59,46 @@ public class GarminUploader(
             return UploadResult.Failed($"Authentication failed: {ex.Message}");
         }
 
-        if (await this.rateLimiter.RateLimitedReachedAsync(ServiceType.GarminUploader, this.options.Value.RateLimits, cancellationToken))
+        if (
+            await this.rateLimiter.RateLimitedReachedAsync(
+                ServiceType.GarminUploader,
+                this.options.Value.RateLimits,
+                cancellationToken
+            )
+        )
             return UploadResult.RateLimited();
 
         GarminAuthData authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
-        UploadResult result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);
+        UploadResult result = await this.apiClient.UploadActivityAsync(
+            fitFileData,
+            authData.OAuth2AccessToken!,
+            cancellationToken
+        );
 
         if (!result.Success && result.StatusCode == HttpStatusCode.Unauthorized)
         {
-            this.logger.LogWarning("Garmin upload got 401 for user {UserId}, attempting token refresh.", user.Id);
+            this.logger.LogWarning(
+                "Garmin upload got 401 for user {UserId}, attempting token refresh.",
+                user.Id
+            );
             bool refreshed = await this.authService.TryRefreshAsync(integration, cancellationToken);
 
             if (!refreshed)
             {
                 this.logger.LogError("Token refresh failed for user {UserId}.", user.Id);
-                return UploadResult.Failed("Token refresh failed after 401.", HttpStatusCode.Unauthorized);
+                return UploadResult.Failed(
+                    "Token refresh failed after 401.",
+                    HttpStatusCode.Unauthorized
+                );
             }
 
             await this.fitSyncDbContext.Entry(integration).ReloadAsync(cancellationToken);
             authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
-            result = await this.apiClient.UploadActivityAsync(fitFileData, authData.OAuth2AccessToken!, cancellationToken);
+            result = await this.apiClient.UploadActivityAsync(
+                fitFileData,
+                authData.OAuth2AccessToken!,
+                cancellationToken
+            );
         }
 
         if (result.Success)

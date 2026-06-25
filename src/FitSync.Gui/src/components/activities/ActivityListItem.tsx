@@ -28,8 +28,8 @@ export default function ActivityListItem({
         (onRetry || onDelete) && (
           <ActivityActionsMenu
             activity={activity}
-            onRetry={() => onRetry?.(activity.id)}
-            onDelete={() => onDelete?.(activity.id)}
+            onRetry={() => onRetry?.(activity.id!)}
+            onDelete={() => onDelete?.(activity.id!)}
           />
         )
       }
@@ -55,7 +55,7 @@ export default function ActivityListItem({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
             <Typography variant="body2" color="text.secondary">
               Source: {activity.source} •{" "}
-              {new Date(activity.activityDate).toLocaleDateString()}
+              {new Date(activity.activityDate!).toLocaleDateString()}
             </Typography>
             <UploadStatusChips uploadStatuses={activity.uploadStatuses ?? []} />
           </Box>

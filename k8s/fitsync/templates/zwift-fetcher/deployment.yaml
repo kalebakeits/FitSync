@@ -20,7 +20,7 @@ spec:
           - sh
           - -c
           - |
-            until pg_isready -h postgres -p 5432 -U {{ .Values.postgres.username }}; do
+            until pg_isready -h {{ .Values.postgres.host }} -p {{ .Values.postgres.port }} -U {{ .Values.postgres.username }}; do
               echo "Waiting for postgres..."
               sleep 2
             done
@@ -49,7 +49,7 @@ spec:
               name: fitsync-secrets
               key: postgres-password
         - name: ConnectionStrings__FitSync
-          value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+          value: "Host={{ .Values.postgres.host }};Port={{ .Values.postgres.port }};Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
         - name: DataProtectionOptions__DataProtectionKey
           valueFrom:
             secretKeyRef:

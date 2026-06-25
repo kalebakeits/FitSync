@@ -20,7 +20,7 @@ spec:
           - sh
           - -c
           - |
-            until pg_isready -h postgres -p 5432 -U {{ .Values.postgres.username }}; do
+            until pg_isready -h {{ .Values.postgres.host }} -p {{ .Values.postgres.port }} -U {{ .Values.postgres.username }}; do
               echo "Waiting for postgres..."
               sleep 2
             done
@@ -36,7 +36,7 @@ spec:
               key: postgres-password
         args:
           - "--connection"
-          - "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+          - "Host={{ .Values.postgres.host }};Port={{ .Values.postgres.port }};Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
       containers:
       - name: api
         image: {{ .Values.imageRegistry }}/{{ .Values.api.image }}:{{ .Values.api.tag }}
@@ -75,9 +75,23 @@ spec:
               name: fitsync-wahoo-secret
               key: webhook-token
         - name: ConnectionStrings__FitSync
-          value: "Host=postgres;Port=5432;Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
+          value: "Host={{ .Values.postgres.host }};Port={{ .Values.postgres.port }};Database={{ .Values.postgres.database }};Username={{ .Values.postgres.username }};Password=$(POSTGRES_PASSWORD)"
         - name: ConnectionStrings__kafka
           value: "kafka:9092"
+        - name: Whoop__Auth__Key
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-whoop-secret
+              key: auth-key
+        - name: Whoop__Auth__Value
+          valueFrom:
+            secretKeyRef:
+              name: fitsync-whoop-secret
+              key: auth-value
+        - name: Whoop__BlobPath
+          value: "/data/whoop-blobs"
+        - name: Workouts__StoragePath
+          value: "/data/workout-files"
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -85,9 +99,19 @@ spec:
         - name: config
           mountPath: /app/appsettings.Production.json
           subPath: appsettings.Production.json
+        - name: whoop-blobs
+          mountPath: /data/whoop-blobs
+        - name: workout-files
+          mountPath: /data/workout-files
         resources:
           {{- toYaml .Values.api.resources | nindent 10 }}
       volumes:
       - name: config
         configMap:
           name: api-config
+      - name: whoop-blobs
+        persistentVolumeClaim:
+          claimName: whoop-blobs-pvc
+      - name: workout-files
+        persistentVolumeClaim:
+          claimName: workout-files-pvc

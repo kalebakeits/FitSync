@@ -4,7 +4,7 @@ using System.Net;
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
-using FitSync.Garmin.Uploader.Features.GarminUpload.DTOs;
+using FitSync.Garmin.Shared.GarminClient.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 public class UploadResultHandler(

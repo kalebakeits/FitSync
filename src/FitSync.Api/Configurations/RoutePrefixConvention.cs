@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public class RoutePrefixConvention(string prefix) : IApplicationModelConvention
 {
-    private readonly AttributeRouteModel prefixRoute = new(new Microsoft.AspNetCore.Mvc.RouteAttribute(prefix));
+    private readonly AttributeRouteModel prefixRoute =
+        new(new Microsoft.AspNetCore.Mvc.RouteAttribute(prefix));
 
     public void Apply(ApplicationModel application)
     {

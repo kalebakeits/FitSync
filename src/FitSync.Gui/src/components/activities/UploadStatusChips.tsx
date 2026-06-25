@@ -3,7 +3,7 @@ import type { UploadStatusEntry } from "../../api/generated/fitSyncApi.schemas";
 
 const MAX_VISIBLE = 2;
 
-type UploadStatusValue = UploadStatusEntry["status"];
+type UploadStatusValue = NonNullable<UploadStatusEntry["status"]>;
 
 function getChipColor(
   status: UploadStatusValue,
@@ -36,13 +36,13 @@ export default function UploadStatusChips({
   return (
     <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", alignItems: "center" }}>
       {visible.map((u) => {
-        const chipLabel = `${u.destinationServiceType}: ${getStatusLabel(u.status)}`;
-        const tooltipTitle = u.lastError ?? getStatusLabel(u.status);
+        const chipLabel = `${u.destinationServiceType}: ${getStatusLabel(u.status!)}`;
+        const tooltipTitle = u.lastError ?? getStatusLabel(u.status!);
         return (
           <Tooltip key={u.destinationServiceType} title={tooltipTitle}>
             <Chip
               label={chipLabel}
-              color={getChipColor(u.status)}
+              color={getChipColor(u.status!)}
               size="small"
             />
           </Tooltip>
@@ -51,7 +51,7 @@ export default function UploadStatusChips({
       {overflow.length > 0 && (
         <Tooltip
           title={overflow
-            .map((u) => `${u.destinationServiceType}: ${getStatusLabel(u.status)}`)
+            .map((u) => `${u.destinationServiceType}: ${getStatusLabel(u.status!)}`)
             .join(", ")}
         >
           <Chip label={`+${overflow.length}`} size="small" />

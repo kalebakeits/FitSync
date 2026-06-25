@@ -4,10 +4,8 @@ using FitSync.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-public class DestinationGate(
-    FitSyncDbContext dbContext,
-    ILogger<DestinationGate> logger
-) : IDestinationGate
+public class DestinationGate(FitSyncDbContext dbContext, ILogger<DestinationGate> logger)
+    : IDestinationGate
 {
     private readonly FitSyncDbContext dbContext = dbContext;
     private readonly ILogger<DestinationGate> logger = logger;
@@ -21,8 +19,9 @@ public class DestinationGate(
         if (userIds.Count == 0)
             return [];
 
-        var mappings = await this.dbContext.UserDestinationConfigs
-            .Where(c => userIds.Contains(c.UserId) && c.SourceServiceType == sourceServiceType)
+        var mappings = await this.dbContext.UserDestinationConfigs.Where(
+            c => userIds.Contains(c.UserId) && c.SourceServiceType == sourceServiceType
+        )
             .Select(c => new { c.UserId, c.DestinationServiceType })
             .ToListAsync(cancellationToken);
 
@@ -36,10 +35,14 @@ public class DestinationGate(
             return [];
         }
 
-        List<string> destServiceTypes = mappings.Select(m => m.DestinationServiceType).Distinct().ToList();
+        List<string> destServiceTypes = mappings
+            .Select(m => m.DestinationServiceType)
+            .Distinct()
+            .ToList();
 
-        var connectedIntegrations = await this.dbContext.Integrations
-            .Where(i => userIds.Contains(i.UserId) && destServiceTypes.Contains(i.ServiceType))
+        var connectedIntegrations = await this.dbContext.Integrations.Where(
+            i => userIds.Contains(i.UserId) && destServiceTypes.Contains(i.ServiceType)
+        )
             .Select(i => new { i.UserId, i.ServiceType })
             .ToListAsync(cancellationToken);
 
@@ -52,9 +55,11 @@ public class DestinationGate(
             .ToHashSet();
 
         return userIds
-            .Where(userId =>
-                userMappings.TryGetValue(userId, out HashSet<string>? dests)
-                && dests.Any(dest => connected.Contains((userId, dest))))
+            .Where(
+                userId =>
+                    userMappings.TryGetValue(userId, out HashSet<string>? dests)
+                    && dests.Any(dest => connected.Contains((userId, dest)))
+            )
             .ToList();
     }
 }

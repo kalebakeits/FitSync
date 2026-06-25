@@ -5,7 +5,10 @@ using StackExchange.Redis;
 
 public static class RateLimitingFeature
 {
-    public static IServiceCollection AddRateLimiting(this IServiceCollection services, string redisConnectionString)
+    public static IServiceCollection AddRateLimiting(
+        this IServiceCollection services,
+        string redisConnectionString
+    )
     {
         services.AddSingleton<IConnectionMultiplexer>(_ =>
         {

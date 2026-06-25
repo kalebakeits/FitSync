@@ -3,9 +3,9 @@ namespace FitSync.Wahoo.Shared.WahooClient.Services;
 using System.Net.Http.Json;
 using FitSync.Database;
 using FitSync.Database.Models;
-using FitSync.Wahoo.Shared.AuthData;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
+using FitSync.Wahoo.Shared.AuthData;
 using FitSync.Wahoo.Shared.Configuration;
 using FitSync.Wahoo.Shared.WahooClient.DTOs;
 using Microsoft.Extensions.Logging;
@@ -50,20 +50,29 @@ public class WahooAuthService(
     {
         string tokenUrl = $"{this.options.Value.BaseUrl.TrimEnd('/')}/oauth/token";
 
-        FormUrlEncodedContent content = new(new Dictionary<string, string>
-        {
-            ["client_id"] = this.options.Value.ClientId,
-            ["client_secret"] = this.options.Value.ClientSecret,
-            ["grant_type"] = "refresh_token",
-            ["refresh_token"] = authData.RefreshToken,
-        });
+        FormUrlEncodedContent content =
+            new(
+                new Dictionary<string, string>
+                {
+                    ["client_id"] = this.options.Value.ClientId,
+                    ["client_secret"] = this.options.Value.ClientSecret,
+                    ["grant_type"] = "refresh_token",
+                    ["refresh_token"] = authData.RefreshToken,
+                }
+            );
 
-        HttpResponseMessage response = await this.httpClient.PostAsync(tokenUrl, content, cancellationToken);
+        HttpResponseMessage response = await this.httpClient.PostAsync(
+            tokenUrl,
+            content,
+            cancellationToken
+        );
         response.EnsureSuccessStatusCode();
 
         WahooTokenRefreshResponse token =
             await response.Content.ReadFromJsonAsync<WahooTokenRefreshResponse>(cancellationToken)
-            ?? throw new InvalidOperationException("Wahoo token refresh response could not be parsed.");
+            ?? throw new InvalidOperationException(
+                "Wahoo token refresh response could not be parsed."
+            );
 
         authData.AccessToken = token.AccessToken;
         authData.RefreshToken = token.RefreshToken;

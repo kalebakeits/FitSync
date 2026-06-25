@@ -23,7 +23,9 @@ builder.Services.AddDbContext<FitSyncDbContext>(
         )
 );
 
-builder.Services.AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty);
+builder.Services.AddRateLimiting(
+    builder.Configuration.GetConnectionString("Redis") ?? string.Empty
+);
 
 // Configuration
 builder

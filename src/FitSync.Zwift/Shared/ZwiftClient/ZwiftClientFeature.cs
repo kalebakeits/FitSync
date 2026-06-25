@@ -1,7 +1,7 @@
 namespace FitSync.Zwift.Shared.ZwiftClient;
 
-using FitSync.Zwift.Shared.ZwiftClient.Services;
 using FitSync.Zwift.Shared.ZwiftClient;
+using FitSync.Zwift.Shared.ZwiftClient.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>

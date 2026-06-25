@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Confluent.Kafka;
 using FitSync.Api.Configurations;
 using FitSync.Api.Features.Account;
@@ -6,18 +7,27 @@ using FitSync.Api.Features.Auth;
 using FitSync.Api.Features.Connections;
 using FitSync.Api.Features.Credentials;
 using FitSync.Api.Features.Fetchers;
+using FitSync.Api.Features.Garmin;
+using FitSync.Api.Features.Mcp;
+using FitSync.Api.Features.OAuth;
 using FitSync.Api.Features.Profile;
+using FitSync.Api.Features.Tokens;
+using FitSync.Api.Features.TrainingProfile;
 using FitSync.Api.Features.Wahoo;
+using FitSync.Api.Features.WorkoutPublishing;
+using FitSync.Api.Features.Workouts;
 using FitSync.Api.Middleware;
 using FitSync.Api.Services;
 using FitSync.Database;
 using FitSync.Shared.Features.Email;
 using FitSync.Shared.Features.Email.Services;
 using FitSync.Shared.Features.Encryption;
+using FitSync.Shared.Features.RateLimiting;
+using FitSync.Shared.Features.WorkoutBuilder;
+using FitSync.Shared.Features.WorkoutPublisher;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -69,6 +79,7 @@ builder.Services.AddDbContext<FitSyncDbContext>(
 builder
     .Services.AddSwaggerGen(o => o.SupportNonNullableReferenceTypes())
     .AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
+    .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty)
     .AddEmailService()
     .AddHttpContextAccessor()
     .AddScoped<ISessionService, SessionService>()
@@ -79,9 +90,20 @@ builder
     .AddCredentialsFeature()
     .AddConnectionsFeature()
     .AddActivitiesFeature()
+    .AddWorkoutBuilderFeature()
+    .AddWorkoutsFeature()
+    .AddWorkoutPublisherFeature()
+    .AddWorkoutPublishingFeature()
+    .AddTrainingProfileFeature()
     .AddFetchersFeature()
     .AddWahooFeature(() => builder.Configuration.GetSection("WahooOptions"))
-    .AddEndpointsApiExplorer()
+    .AddGarminFeature()
+    .AddTokensFeature()
+    .AddOAuthFeature()
+    .AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .Services.AddEndpointsApiExplorer()
     .AddAuthorization()
     .AddControllers(o => o.Conventions.Add(new RoutePrefixConvention("api")))
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -125,9 +147,11 @@ app.UseMiddleware<GlobalExceptionMiddleware>()
     .UseCors()
     .UseHttpsRedirection()
     .UseSerilogRequestLogging()
+    .UseMiddleware<ApiKeyAuthenticationMiddleware>()
     .UseMiddleware<SessionAuthenticationMiddleware>()
     .UseAuthentication()
     .UseAuthorization();
 app.MapControllers();
+app.MapMcp("/mcp");
 
 app.Run();

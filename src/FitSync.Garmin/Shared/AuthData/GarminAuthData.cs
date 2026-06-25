@@ -12,6 +12,5 @@ public class GarminAuthData
     public bool HasValidOAuth2Token() =>
         OAuth2AccessToken != null && OAuth2ExpiresAt > DateTime.UtcNow.AddMinutes(5);
 
-    public bool HasOAuth1Token() =>
-        OAuth1Token != null && OAuth1TokenSecret != null;
+    public bool HasOAuth1Token() => OAuth1Token != null && OAuth1TokenSecret != null;
 }

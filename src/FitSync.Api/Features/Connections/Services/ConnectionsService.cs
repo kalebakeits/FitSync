@@ -28,8 +28,9 @@ public class ConnectionsService(
         CancellationToken cancellationToken = default
     )
     {
-        List<Integration> integrations = await this.context.Integrations
-            .Where(i => i.UserId == userId)
+        List<Integration> integrations = await this.context.Integrations.Where(
+            i => i.UserId == userId
+        )
             .ToListAsync(cancellationToken);
 
         return integrations.Select(i => this.MapToResponse(i)).ToList();
@@ -41,8 +42,7 @@ public class ConnectionsService(
         CancellationToken cancellationToken = default
     )
     {
-        Integration? integration = await this.context.Integrations
-            .Include(i => i.FetcherConfig)
+        Integration? integration = await this.context.Integrations.Include(i => i.FetcherConfig)
             .FirstOrDefaultAsync(
                 i => i.UserId == userId && i.ServiceType == serviceType,
                 cancellationToken
@@ -51,8 +51,9 @@ public class ConnectionsService(
         if (integration == null)
             return;
 
-        int removed = await this.context.UserDestinationConfigs
-            .Where(c => c.UserId == userId && c.DestinationServiceType == serviceType)
+        int removed = await this.context.UserDestinationConfigs.Where(
+            c => c.UserId == userId && c.DestinationServiceType == serviceType
+        )
             .ExecuteDeleteAsync(cancellationToken);
 
         if (removed > 0)
@@ -65,27 +66,30 @@ public class ConnectionsService(
 
         this.context.Integrations.Remove(integration);
         await this.context.SaveChangesAsync(cancellationToken);
-        this.logger.LogInformation("Disconnected {ServiceType} for user {UserId}.", serviceType, userId);
+        this.logger.LogInformation(
+            "Disconnected {ServiceType} for user {UserId}.",
+            serviceType,
+            userId
+        );
     }
 
     private ConnectionResponse MapToResponse(Integration integration)
     {
-        bool enabled = integration.FailureCount
-            < this.appConfiguration.Value.MaxSequentialCredentialFailures;
+        bool enabled =
+            integration.FailureCount < this.appConfiguration.Value.MaxSequentialCredentialFailures;
 
         string authType = this.oauthHandlerMap.ContainsKey(integration.ServiceType)
             ? "oauth"
             : "credentials";
 
-        return new ConnectionResponse
-        {
-            ServiceType = integration.ServiceType,
-            AuthType = authType,
-            Connected = true,
-            Enabled = enabled,
-            DisplayName = this.ResolveDisplayName(integration),
-            UpdatedAt = integration.UpdatedAt,
-        };
+        return new ConnectionResponse(
+            integration.ServiceType,
+            authType,
+            true,
+            enabled,
+            this.ResolveDisplayName(integration),
+            integration.UpdatedAt
+        );
     }
 
     private string? ResolveDisplayName(Integration integration)
@@ -94,7 +98,10 @@ public class ConnectionsService(
         if (credHandler != null)
             return credHandler.GetDisplayName(integration);
 
-        this.oauthHandlerMap.TryGetValue(integration.ServiceType, out IOAuthServiceHandler? oauthHandler);
+        this.oauthHandlerMap.TryGetValue(
+            integration.ServiceType,
+            out IOAuthServiceHandler? oauthHandler
+        );
         return oauthHandler?.GetDisplayName(integration);
     }
 }

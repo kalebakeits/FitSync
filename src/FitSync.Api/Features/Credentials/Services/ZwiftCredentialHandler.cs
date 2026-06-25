@@ -19,7 +19,8 @@ public class ZwiftCredentialHandler(
     private readonly ILogger<ZwiftCredentialHandler> logger = logger;
 
     public string ServiceType => ServiceTypes.Zwift;
-    public Database.Enums.ServiceType? HeartbeatServiceType => Database.Enums.ServiceType.ZwiftFetcher;
+    public Database.Enums.ServiceType? HeartbeatServiceType =>
+        Database.Enums.ServiceType.ZwiftFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => false;
     public string AuthType => "credentials";
@@ -54,7 +55,10 @@ public class ZwiftCredentialHandler(
         );
 
         await this.context.SaveChangesAsync(cancellationToken);
-        this.logger.LogInformation("Created FetcherConfig for Zwift integration {Id}.", integration.Id);
+        this.logger.LogInformation(
+            "Created FetcherConfig for Zwift integration {Id}.",
+            integration.Id
+        );
     }
 
     public async Task OnCredentialDeletedAsync(
@@ -72,6 +76,9 @@ public class ZwiftCredentialHandler(
 
         this.context.FetcherConfigs.Remove(config);
         await this.context.SaveChangesAsync(cancellationToken);
-        this.logger.LogInformation("Deleted FetcherConfig for Zwift integration {Id}.", integration.Id);
+        this.logger.LogInformation(
+            "Deleted FetcherConfig for Zwift integration {Id}.",
+            integration.Id
+        );
     }
 }

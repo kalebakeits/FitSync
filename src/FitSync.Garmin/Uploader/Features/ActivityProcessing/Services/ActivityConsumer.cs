@@ -1,7 +1,7 @@
 namespace FitSync.Garmin.Uploader.Features.ActivityProcessing.Services;
 
-using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Garmin.Uploader.Features.Kafka.Services;
+using FitSync.Shared.Features.GlobalVariables.DTOs;
 using Microsoft.Extensions.Logging;
 
 public class ActivityConsumer(
