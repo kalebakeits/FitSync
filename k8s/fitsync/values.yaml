@@ -2,10 +2,6 @@
 global:
   namespace: fitsync
 
-# Cloudflare Tunnel configuration
-cloudflare:
-  enabled: true
-
 # ============================================================================
 # SHARED CONFIGURATION (used across multiple services)
 # ============================================================================
