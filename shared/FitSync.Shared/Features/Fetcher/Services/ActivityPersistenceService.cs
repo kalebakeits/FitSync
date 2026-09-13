@@ -62,7 +62,10 @@ public class ActivityPersistenceService(
 
         List<UserDestinationConfig> destinations =
             await this.dbContext.UserDestinationConfigs.Where(
-                c => c.UserId == userId && c.SourceServiceType == fetchedActivity.Source
+                c =>
+                    c.UserId == userId
+                    && c.SourceServiceType == fetchedActivity.Source
+                    && c.DestinationServiceType != fetchedActivity.Source
             )
                 .ToListAsync(cancellationToken);
 

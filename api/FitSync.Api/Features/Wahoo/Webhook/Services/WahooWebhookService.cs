@@ -103,7 +103,10 @@ public class WahooWebhookService(
 
             List<UserDestinationConfig> destinations =
                 await this.dbContext.UserDestinationConfigs.Where(
-                    c => c.UserId == integration.UserId && c.SourceServiceType == ServiceTypes.Wahoo
+                    c =>
+                        c.UserId == integration.UserId
+                        && c.SourceServiceType == ServiceTypes.Wahoo
+                        && c.DestinationServiceType != ServiceTypes.Wahoo
                 )
                     .ToListAsync(cancellationToken);
 

@@ -5,6 +5,7 @@ using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
+using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Shared.Features.Heartbeat;
 using FitSync.Shared.Features.RateLimiting;
 using FitSync.Wahoo.Configuration;
@@ -29,11 +30,15 @@ WahooFetcherOptions fetcherConfig =
     builder.Configuration.GetSection("WahooFetcherOptions").Get<WahooFetcherOptions>()
     ?? throw new ArgumentException("Configuration section 'WahooFetcherOptions' is required.");
 
+IReadOnlyList<HeartbeatRole> heartbeatRoles = fetcherConfig.Enabled
+    ? [new HeartbeatRole(fetcherConfig.InstanceId, ServiceType.WahooFetcher)]
+    : [];
+
 builder.Services.AddGlobalVariables(
+    heartbeatRoles,
     fetcherConfig.InstanceId,
     Environment.MachineName,
     fetcherConfig.HeartbeatIntervalMinutes,
-    ServiceType.WahooFetcher,
     ServiceTypes.Wahoo
 );
 

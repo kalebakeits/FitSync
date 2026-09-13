@@ -9,6 +9,18 @@ using FitSync.Shared.Features.Fetcher;
 public class FetcherOptions
 {
     /// <summary>
+    /// Gets or sets a value indicating whether this service should run its fetcher at all. When
+    /// false the fetcher is never registered, so no worker loop is mounted.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the uploader service types whose live heartbeat is required before fetching
+    /// continues. Left unset it gates on the Garmin uploader alone.
+    /// </summary>
+    public List<ServiceType>? UploaderServiceTypes { get; set; }
+
+    /// <summary>
     /// Gets or sets the polling interval for the <see cref="FetcherWorker"/> in minutes.
     /// </summary>
     public required int PollIntervalMinutes { get; set; }

@@ -13,9 +13,18 @@ public static class FetcherFeature
     )
         where TFetcherClient : class, IFetcherClient
     {
+        IConfigurationSection configSection = getConfigSection();
+
+        // Options are bound (and validated) only for an enabled fetcher: a half that is switched
+        // off should not need its own configuration to be present, let alone be able to fail
+        // startup over it.
+        bool fetcherEnabled = configSection.GetValue("Enabled", true);
+        if (!fetcherEnabled)
+            return services;
+
         services
             .AddOptions<FetcherOptions>()
-            .Bind(getConfigSection())
+            .Bind(configSection)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

@@ -18,10 +18,15 @@ data:
         "redis": "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
       },
       "GarminUploaderOptions": {
+        "Enabled": {{ .Values.garmin.config.uploaderEnabled | toJson }},
         "InstanceId": "{{ .Values.garmin.config.instanceId }}",
         "HeartbeatIntervalMinutes": {{ .Values.garmin.config.heartbeatIntervalMinutes }},
         "MaxRetries": {{ .Values.garmin.config.maxRetries }},
         "OrphanThresholdMinutes": {{ .Values.garmin.config.orphanThresholdMinutes }},
         "RateLimits": {{ .Values.garmin.config.rateLimits | toJson }}
+      },
+      "GarminFetcherOptions": {
+        "Enabled": {{ .Values.garmin.config.fetcherEnabled | toJson }},
+        "UploaderServiceTypes": {{ .Values.shared.uploaderServiceTypes | toJson }}
       }
     }

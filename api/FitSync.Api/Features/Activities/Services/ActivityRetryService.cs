@@ -34,8 +34,12 @@ public class ActivityRetryService(
         if (activity == null)
             throw new NotFoundException("Activity not found.");
 
+        // Rows predating the source != destination rule are excluded rather than retried.
         int updated = await this.context.ActivityUploadStatuses.Where(
-            u => u.ActivityId == activityId && retryableStatuses.Contains(u.Status)
+            u =>
+                u.ActivityId == activityId
+                && retryableStatuses.Contains(u.Status)
+                && u.DestinationServiceType != activity.Source
         )
             .ExecuteUpdateAsync(
                 u =>
@@ -77,6 +81,11 @@ public class ActivityRetryService(
 
         if (activity == null)
             throw new NotFoundException("Activity not found.");
+
+        if (destinationServiceType == activity.Source)
+            throw new BadRequestException(
+                "An activity cannot be uploaded to the service it was fetched from."
+            );
 
         bool configured = await this.context.UserDestinationConfigs.AnyAsync(
             c =>

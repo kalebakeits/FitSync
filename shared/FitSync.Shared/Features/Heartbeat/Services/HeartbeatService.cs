@@ -1,51 +1,30 @@
 namespace FitSync.Shared.Features.Heartbeat.Services;
 
-using FitSync.Database;
-using FitSync.Database.Enums;
-using FitSync.Database.Models;
 using FitSync.Shared.Features.GlobalVariables.DTOs;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 public class HeartbeatService(
     GlobalVariables globalVariables,
-    FitSyncDbContext fitSyncDbContext,
+    IRoleHeartbeatWriter roleHeartbeatWriter,
     ILogger<HeartbeatService> logger
 ) : IHeartbeatService
 {
-    private readonly FitSyncDbContext fitSyncDbContext = fitSyncDbContext;
+    private readonly GlobalVariables globalVariables = globalVariables;
+    private readonly IRoleHeartbeatWriter roleHeartbeatWriter = roleHeartbeatWriter;
     private readonly ILogger<HeartbeatService> logger = logger;
-    private readonly string hostname = globalVariables.HostName;
-    private readonly string instanceId = globalVariables.Instance;
-    private readonly ServiceType serviceType = globalVariables.ServiceType;
 
     public async Task UpsertHeartbeatAsync(CancellationToken cancellationToken)
     {
-        this.logger.LogDebug("Attempting heartbeat for {Instance}", instanceId);
-        ServiceHeartbeat? heartbeat = await fitSyncDbContext.ServiceHeartbeats.FirstOrDefaultAsync(
-            h => h.InstanceId == this.instanceId,
-            cancellationToken
+        this.logger.LogDebug(
+            "Attempting heartbeat for {RoleCount} roles",
+            this.globalVariables.Roles.Count
         );
 
-        if (heartbeat == null)
+        foreach (HeartbeatRole role in this.globalVariables.Roles)
         {
-            this.logger.LogDebug(
-                "Hearbeat entry for {Instance} not found. Creating new entry.",
-                this.instanceId
-            );
-            heartbeat = new()
-            {
-                InstanceId = this.instanceId,
-                Hostname = hostname,
-                ServiceType = serviceType
-            };
-            this.fitSyncDbContext.Add(heartbeat);
+            await this.roleHeartbeatWriter.WriteAsync(role, cancellationToken);
         }
 
-        heartbeat.LastHeartbeatAt = DateTime.UtcNow;
-        heartbeat.UpdatedAt = DateTime.UtcNow;
-
-        await fitSyncDbContext.SaveChangesAsync(cancellationToken);
-        this.logger.LogDebug("Updated heartbeat");
+        this.logger.LogDebug("Updated heartbeats");
     }
 }

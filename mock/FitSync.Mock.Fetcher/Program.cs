@@ -7,6 +7,7 @@ using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
+using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Shared.Features.Heartbeat;
 using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -44,11 +45,17 @@ builder.Services.AddEncryptionService(
 );
 
 // Global variables
+List<HeartbeatRole> heartbeatRoles = [];
+if (mockConfig.RunFetcher)
+{
+    heartbeatRoles.Add(new HeartbeatRole(mockConfig.InstanceId, ServiceType.MockFetcher));
+}
+
 builder.Services.AddGlobalVariables(
+    heartbeatRoles,
     mockConfig.InstanceId,
     Environment.MachineName,
     mockConfig.HeartbeatIntervalMinutes,
-    ServiceType.MockFetcher,
     ServiceTypes.Zwift
 );
 

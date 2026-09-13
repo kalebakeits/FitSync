@@ -18,6 +18,8 @@ data:
         "redis": "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
       },
       "ZwiftFetcherOptions": {
+        "Enabled": {{ .Values.zwift.config.fetcherEnabled | toJson }},
+        "UploaderServiceTypes": {{ .Values.shared.uploaderServiceTypes | toJson }},
         "InstanceId": "{{ .Values.zwift.config.instanceId }}",
         "HeartbeatIntervalMinutes": {{ .Values.shared.heartbeatIntervalMinutes }},
         "PollIntervalMinutes": {{ .Values.shared.pollIntervalMinutes }},

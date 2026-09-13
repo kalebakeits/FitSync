@@ -21,6 +21,15 @@ public class HeartbeatWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (globalVariables.Roles.Count == 0)
+        {
+            this.logger.LogWarning(
+                "{WorkerName} has no enabled roles, so it will not heartbeat.",
+                name
+            );
+            return;
+        }
+
         this.logger.LogInformation("{WorkernName} is starting...", name);
         int heartbeatIntervalMinutes = globalVariables.HeartbeatIntervalMinutes;
         while (!stoppingToken.IsCancellationRequested)

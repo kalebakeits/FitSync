@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FitSync.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FitSync.Database.Migrations
 {
     [DbContext(typeof(FitSyncDbContext))]
-    partial class FitSyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913211145_CompositeHeartbeatIdentity")]
+    partial class CompositeHeartbeatIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

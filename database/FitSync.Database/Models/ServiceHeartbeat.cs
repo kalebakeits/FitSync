@@ -6,7 +6,7 @@ using FitSync.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 [Table("service_heartbeats")]
-[Index(nameof(InstanceId), IsUnique = true)]
+[Index(nameof(InstanceId), nameof(ServiceType), IsUnique = true)]
 [Index(nameof(ServiceType), Name = "idx_service_heartbeats_service_type")]
 [Index(
     nameof(ServiceType),
