@@ -34,7 +34,7 @@ public class GarminHttpSender(
             .AllowAnyHttpStatus()
             .GetAsync(cancellationToken: cancellationToken);
 
-        if (response.StatusCode != (int)HttpStatusCode.Unauthorized)
+        if (response.StatusCode != Convert.ToInt32(HttpStatusCode.Unauthorized))
             return response;
 
         this.logger.LogWarning(

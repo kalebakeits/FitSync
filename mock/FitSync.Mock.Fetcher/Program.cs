@@ -3,12 +3,14 @@ using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Mock.Fetcher.Configuration;
 using FitSync.Mock.Fetcher.Services;
+using FitSync.Shared.Configuration;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.Kafka;
 using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,7 +37,7 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-var mockConfig =
+MockFetcherOptions mockConfig =
     builder.Configuration.GetSection("MockFetcherOptions").Get<MockFetcherOptions>()
     ?? throw new ArgumentException("Configuration section 'MockFetcherOptions' is required.");
 
@@ -45,22 +47,21 @@ builder.Services.AddEncryptionService(
 );
 
 // Global variables
-List<HeartbeatRole> heartbeatRoles = [];
-if (mockConfig.RunFetcher)
-{
-    heartbeatRoles.Add(new HeartbeatRole(mockConfig.InstanceId, ServiceType.MockFetcher));
-}
+IReadOnlyList<HeartbeatRole> heartbeatRoles = mockConfig.RunFetcher
+    ? [new HeartbeatRole(InstanceIdentity.Derive(mockConfig.InstanceId), ServiceType.MockFetcher)]
+    : [];
 
 builder.Services.AddGlobalVariables(
     heartbeatRoles,
-    mockConfig.InstanceId,
+    InstanceIdentity.Derive(mockConfig.InstanceId),
     Environment.MachineName,
     mockConfig.HeartbeatIntervalMinutes,
-    ServiceTypes.Zwift
+    ServiceTypes.Mock
 );
 
 // Kafka producer
 builder.AddKafkaProducer<string, string>("kafka");
+builder.Services.AddKafkaTopicInitializer();
 
 // Health check for DB initialization
 DbInitializerHealthCheck healthCheck = new();
@@ -76,6 +77,10 @@ if (mockConfig.RunFetcher)
 {
     services
         .AddFetcher<MockFetcherClient>(() => builder.Configuration.GetSection("MockFetcherOptions"))
+        // Bind is itself a Configure, so it runs first and this rewrites the value it bound.
+        .Configure<FetcherOptions>(options =>
+            options.InstanceId = InstanceIdentity.Derive(options.InstanceId)
+        )
         .AddHeartbeat();
 }
 
@@ -107,5 +112,7 @@ using (IServiceScope scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred during database setup");
     }
 }
+
+await app.EnsureKafkaTopicsAsync();
 
 await app.RunAsync();

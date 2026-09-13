@@ -61,11 +61,9 @@ public class GarminFitDownloader(
 
         // Garmin answers 404, and 500 for manually created activities, when an
         // activity has no associated FIT file.
-        if (
-            response.StatusCode
-            is (int)HttpStatusCode.NotFound
-                or (int)HttpStatusCode.InternalServerError
-        )
+        int notFound = Convert.ToInt32(HttpStatusCode.NotFound);
+        int internalServerError = Convert.ToInt32(HttpStatusCode.InternalServerError);
+        if (response.StatusCode == notFound || response.StatusCode == internalServerError)
         {
             throw new InvalidOperationException(
                 $"Garmin has no FIT file for activity {activityId} ({response.StatusCode})."

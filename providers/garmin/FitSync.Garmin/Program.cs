@@ -10,12 +10,14 @@ using FitSync.Garmin.Features.Kafka;
 using FitSync.Garmin.Features.OrphanedWork;
 using FitSync.Garmin.Shared.Configuration;
 using FitSync.Garmin.Shared.GarminClient;
+using FitSync.Shared.Configuration;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.Kafka;
 using FitSync.Shared.Features.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,17 +68,27 @@ builder.Services.AddDbContextFactory<FitSyncDbContext>(
 List<HeartbeatRole> heartbeatRoles = [];
 if (uploaderConfig.Enabled)
 {
-    heartbeatRoles.Add(new HeartbeatRole(uploaderConfig.InstanceId, ServiceType.GarminUploader));
+    heartbeatRoles.Add(
+        new HeartbeatRole(
+            InstanceIdentity.Derive(uploaderConfig.InstanceId),
+            ServiceType.GarminUploader
+        )
+    );
 }
 
 if (fetcherConfig.Enabled)
 {
-    heartbeatRoles.Add(new HeartbeatRole(fetcherConfig.InstanceId, ServiceType.GarminFetcher));
+    heartbeatRoles.Add(
+        new HeartbeatRole(
+            InstanceIdentity.Derive(fetcherConfig.InstanceId),
+            ServiceType.GarminFetcher
+        )
+    );
 }
 
 builder.Services.AddGlobalVariables(
     heartbeatRoles,
-    uploaderConfig.InstanceId,
+    InstanceIdentity.Derive(uploaderConfig.InstanceId),
     Environment.MachineName,
     uploaderConfig.Enabled
         ? uploaderConfig.HeartbeatIntervalMinutes
@@ -105,7 +117,8 @@ services
     .AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
     .AddHeartbeat()
     .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty)
-    .AddGarminClient();
+    .AddGarminClient()
+    .AddKafkaTopicInitializer();
 
 // The uploader half is left out of the container when disabled; AddFetcher does the same for the
 // fetcher off GarminFetcherOptions:Enabled.
@@ -119,10 +132,17 @@ if (uploaderConfig.Enabled)
         .AddOrphanedWorkReclaimer();
 }
 
-services.AddFetcher<GarminActivityClient>(
-    () => builder.Configuration.GetSection("GarminFetcherOptions")
-);
+// Bind is itself a Configure, so it runs first and this rewrites the value it bound.
+services
+    .AddFetcher<GarminActivityClient>(
+        () => builder.Configuration.GetSection("GarminFetcherOptions")
+    )
+    .Configure<FetcherOptions>(options =>
+        options.InstanceId = InstanceIdentity.Derive(options.InstanceId)
+    );
 
 IHost host = builder.Build();
+
+await host.EnsureKafkaTopicsAsync();
 
 await host.RunAsync();

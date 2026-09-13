@@ -1,18 +1,20 @@
 using FitSync.Database;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
+using FitSync.Shared.Configuration;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
 using FitSync.Shared.Features.Fetcher;
 using FitSync.Shared.Features.GlobalVariables;
 using FitSync.Shared.Features.GlobalVariables.DTOs;
 using FitSync.Shared.Features.Heartbeat;
+using FitSync.Shared.Features.Kafka;
 using FitSync.Shared.Features.RateLimiting;
 using FitSync.Zwift.Shared.Configuration;
 using FitSync.Zwift.Shared.ZwiftClient;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add Serilog
 builder.AddSerilog();
@@ -33,17 +35,17 @@ builder.Services.AddDbContext<FitSyncDbContext>(
 );
 
 // Global variables
-var fetcherConfig =
+ZwiftFetcherOptions fetcherConfig =
     builder.Configuration.GetSection("ZwiftFetcherOptions").Get<ZwiftFetcherOptions>()
     ?? throw new ArgumentException("Configuration section 'ZwiftFetcherOptions' is required.");
 
 IReadOnlyList<HeartbeatRole> heartbeatRoles = fetcherConfig.Enabled
-    ? [new HeartbeatRole(fetcherConfig.InstanceId, ServiceType.ZwiftFetcher)]
+    ? [new HeartbeatRole(InstanceIdentity.Derive(fetcherConfig.InstanceId), ServiceType.ZwiftFetcher)]
     : [];
 
 builder.Services.AddGlobalVariables(
     heartbeatRoles,
-    fetcherConfig.InstanceId,
+    InstanceIdentity.Derive(fetcherConfig.InstanceId),
     Environment.MachineName,
     fetcherConfig.HeartbeatIntervalMinutes,
     ServiceTypes.Zwift
@@ -56,10 +58,17 @@ builder.AddKafkaProducer<string, string>("kafka");
 builder
     .Services.AddEncryptionService(() => builder.Configuration.GetSection("DataProtectionOptions"))
     .AddFetcher<ZwiftClient>(() => builder.Configuration.GetSection("ZwiftFetcherOptions"))
+    // Bind is itself a Configure, so it runs first and this rewrites the value it bound.
+    .Configure<FetcherOptions>(options =>
+        options.InstanceId = InstanceIdentity.Derive(options.InstanceId)
+    )
     .AddZwiftClient()
     .AddHeartbeat()
-    .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty);
+    .AddRateLimiting(builder.Configuration.GetConnectionString("Redis") ?? string.Empty)
+    .AddKafkaTopicInitializer();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
+
+await app.EnsureKafkaTopicsAsync();
 
 app.Run();

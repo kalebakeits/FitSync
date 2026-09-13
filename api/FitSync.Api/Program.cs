@@ -22,6 +22,7 @@ using FitSync.Database;
 using FitSync.Shared.Features.Email;
 using FitSync.Shared.Features.Email.Services;
 using FitSync.Shared.Features.Encryption;
+using FitSync.Shared.Features.Kafka;
 using FitSync.Shared.Features.RateLimiting;
 using FitSync.Shared.Features.WorkoutBuilder;
 using FitSync.Shared.Features.WorkoutPublisher;
@@ -69,6 +70,8 @@ builder.Services.AddSingleton<IProducer<string, string>>(_ =>
         };
     return new ProducerBuilder<string, string>(config).Build();
 });
+
+builder.Services.AddKafkaTopicInitializer();
 
 // Add DbContext
 builder.Services.AddDbContext<FitSyncDbContext>(
@@ -135,7 +138,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -153,5 +156,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>()
     .UseAuthorization();
 app.MapControllers();
 app.MapMcp("/mcp");
+
+await app.EnsureKafkaTopicsAsync();
 
 app.Run();
