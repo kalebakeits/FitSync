@@ -4,6 +4,7 @@ import type {
   AvailableServiceResponse,
   ConnectionResponse,
 } from "../../api/generated/fitSyncApi.schemas";
+import { getSelectableDestinations } from "../../utils/destinations";
 import DestinationToggle from "./DestinationToggle";
 
 interface FetcherDestinationCardProps {
@@ -23,7 +24,10 @@ export default function FetcherDestinationCard({
   isPending,
   onToggle,
 }: FetcherDestinationCardProps) {
-  const hasDestinations = enabledDestinations.length > 0;
+  const destinations = getSelectableDestinations(uploaders, fetcherServiceType);
+  const hasDestinations = destinations.some((u) =>
+    enabledDestinations.includes(u.serviceType ?? ""),
+  );
 
   return (
     <Box
@@ -47,7 +51,7 @@ export default function FetcherDestinationCard({
           />
         )}
       </Box>
-      {uploaders.map((u) => (
+      {destinations.map((u) => (
         <DestinationToggle
           key={u.serviceType}
           serviceType={u.serviceType ?? ""}
