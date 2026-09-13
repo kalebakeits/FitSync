@@ -17,9 +17,9 @@ scripts=(
     scripts/images/migrate.sh
     scripts/images/api.sh
     scripts/images/gui.sh
-    scripts/images/zwift-fetcher.sh
-    scripts/images/garmin-uploader.sh
-    scripts/images/wahoo-fetcher.sh
+    scripts/images/zwift.sh
+    scripts/images/garmin.sh
+    scripts/images/wahoo.sh
     scripts/images/purger.sh
 )
 

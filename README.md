@@ -9,9 +9,10 @@ Automatically syncs Zwift activities to Garmin Connect so they actually count to
 ## Running Locally 💻
 
 **Prerequisites**: .NET 10.0 SDK
+
 ```bash
 cd FitSync
-dotnet run --project src/FitSync.AppHost
+dotnet run --project apphost/FitSync.AppHost
 ```
 
 **Default credentials**: `default` / `default1`
@@ -26,7 +27,8 @@ The mock fetcher runs by default and processes test `.fit` files for the default
 
 You can log in and change the Garmin credentials to test against a real Connect account.
 
-Alternatively configure `src/FitSync.Mock/Fetcher/appsettings.json` to auto-populate on startup:
+Alternatively configure `mock/FitSync.Mock.Fetcher/appsettings.json` to auto-populate on startup:
+
 ```json
 "MockFetcherOptions": {
   "RunFetcher": false,
@@ -35,19 +37,19 @@ Alternatively configure `src/FitSync.Mock/Fetcher/appsettings.json` to auto-popu
 }
 ```
 
-*Use a test account if you do this.*
+_Use a test account if you do this._
 
 ## Architecture 🏗️
 
-| Service | Description |
-|---|---|
-| `FitSync.Api` | REST API |
-| `FitSync.Gui` | React frontend |
-| `FitSync.Zwift/Fetcher` | Polls Zwift for new activities |
-| `FitSync.Wahoo/Fetcher` | Receives Wahoo webhook events |
-| `FitSync.Garmin/Uploader` | Uploads activities to Garmin Connect |
-| `FitSync.Mock/Fetcher` | Dev-only fetcher using local `.fit` test files |
-| `FitSync.Database` | EF Core migrations |
+| Service                           | Description                                    |
+| --------------------------------- | ---------------------------------------------- |
+| `FitSync.Api`                     | REST API                                       |
+| `FitSync.Gui`                     | React frontend                                 |
+| `providers/zwift/FitSync.Zwift`   | Polls Zwift for new activities                 |
+| `providers/wahoo/FitSync.Wahoo`   | Receives Wahoo webhook events                  |
+| `providers/garmin/FitSync.Garmin` | Uploads activities to Garmin Connect           |
+| `mock/FitSync.Mock.Fetcher`       | Dev-only fetcher using local `.fit` test files |
+| `FitSync.Database`                | EF Core migrations                             |
 
 Sources route to N destinations via user-configured mappings (`user_destination_configs`). Kafka for activity queuing, PostgreSQL for persistence, Kubernetes + Helm for deployment.
 
@@ -60,12 +62,12 @@ Each service has its own build script so they can run in parallel:
 REGISTRY=localhost:5000 TAG=latest ./scripts/build.sh
 
 # Or build individually
-./scripts/build/api.sh
-./scripts/build/zwift-fetcher.sh
-./scripts/build/wahoo-fetcher.sh
-./scripts/build/garmin-uploader.sh
-./scripts/build/gui.sh
-./scripts/build/migrate.sh
+./scripts/images/api.sh
+./scripts/images/zwift.sh
+./scripts/images/wahoo.sh
+./scripts/images/garmin.sh
+./scripts/images/gui.sh
+./scripts/images/migrate.sh
 
 # Deploy to Kubernetes
 ./scripts/deploy.sh

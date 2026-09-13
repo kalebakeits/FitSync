@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zwift-fetcher-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  appsettings.Production.json: |
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "{{ .Values.logging.level.default }}",
+          "Microsoft.Hosting.Lifetime": "{{ .Values.logging.level.microsoft }}",
+          "Microsoft.EntityFrameworkCore": "{{ .Values.logging.level.entityFramework }}"
+        }
+      },
+      "ConnectionStrings": {
+        "kafka": "{{ .Values.kafka.bootstrapServers }}",
+        "redis": "{{ .Values.redis.host }}:{{ .Values.redis.port }}"
+      },
+      "ZwiftFetcherOptions": {
+        "InstanceId": "{{ .Values.zwift.config.instanceId }}",
+        "HeartbeatIntervalMinutes": {{ .Values.shared.heartbeatIntervalMinutes }},
+        "PollIntervalMinutes": {{ .Values.shared.pollIntervalMinutes }},
+        "FetchIntervalMinutes": {{ .Values.zwift.config.fetchIntervalMinutes }},
+        "LookbackDays": {{ .Values.shared.lookbackDays }},
+        "DeadThresholdMinutes": {{ .Values.shared.deadThresholdMinutes }},
+        "MaxPendingActivities": {{ .Values.shared.maxPendingActivities }},
+        "MaxParallelUsers": {{ .Values.shared.maxParallelUsers }},
+        "MaxParallelActivities": {{ .Values.shared.maxParallelActivities }},
+        "MaxSequentialCredentialFailures": {{ .Values.shared.maxSequentialCredentialFailures }},
+        "AuthUrl": "{{ .Values.zwift.config.zwift.authUrl }}",
+        "BaseUrl": "{{ .Values.zwift.config.zwift.baseUrl }}",
+        "ClientId": "{{ .Values.zwift.config.zwift.clientId }}",
+        "ClientSecret": "{{ .Values.zwift.config.zwift.clientSecret }}",
+        "ZwiftApiRateLimits": {{ .Values.zwift.config.zwift.zwiftApiRateLimits | toJson }},
+        "AmazonS3RateLimits": {{ .Values.zwift.config.zwift.amazonS3RateLimits | toJson }}
+      },
+      "AllowedHosts": "*"
+    }

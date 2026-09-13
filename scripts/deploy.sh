@@ -36,9 +36,9 @@ HELM_ARGS=(
     --set migration.tag="$TAG"
     --set api.tag="$TAG"
     --set gui.tag="$TAG"
-    --set zwiftFetcher.tag="$TAG"
-    --set garminUploader.tag="$TAG"
-    --set wahooFetcher.tag="$TAG"
+    --set zwift.tag="$TAG"
+    --set garmin.tag="$TAG"
+    --set wahoo.tag="$TAG"
     --set purger.tag="$TAG"
 )
 

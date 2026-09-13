@@ -103,10 +103,10 @@ gui:
       memory: "256Mi"
       cpu: "500m"
 
-# ZwiftFetcher configuration
-zwiftFetcher:
+# Zwift fetcher configuration
+zwift:
   enabled: true
-  image: fitsync-zwift-fetcher
+  image: fitsync-zwift
   tag: latest
   replicas: 1
 
@@ -133,10 +133,10 @@ zwiftFetcher:
       memory: "1Gi"
       cpu: "1000m"
 
-# WahooFetcher configuration
-wahooFetcher:
+# Wahoo fetcher configuration
+wahoo:
   enabled: true
-  image: fitsync-wahoo-fetcher
+  image: fitsync-wahoo
   tag: latest
   replicas: 1
 
@@ -162,10 +162,10 @@ wahooFetcher:
       memory: "1Gi"
       cpu: "1000m"
 
-# GarminUploader configuration
-garminUploader:
+# Garmin uploader configuration
+garmin:
   enabled: true
-  image: fitsync-garmin-uploader
+  image: fitsync-garmin
   tag: latest
   replicas: 1
 
