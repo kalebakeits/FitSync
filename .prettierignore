@@ -1,0 +1,31 @@
+# Prettier is run by the pre-commit hook and by `npm run format`, from the repo
+# root. Anything listed here is skipped everywhere.
+
+# Dependencies and build output (also in .gitignore).
+node_modules/
+bin/
+obj/
+dist/
+build/
+.aspire/
+
+# Version control.
+.git/
+
+# Minified assets — already compact, reformatting them is pure noise.
+*.min.js
+*.min.css
+
+# Generated code. The orval client is regenerated from the API's swagger.json;
+# CLAUDE.md is explicit that these files are never edited by hand.
+gui/FitSync.Gui/src/api/generated/
+gui/FitSync.Gui/swagger.json
+
+# Helm chart templates are Go templates ({{ .Values.x }}), which are not valid
+# YAML — prettier fails to parse them, and a parse error blocks the commit.
+# Chart.yaml and values.yaml are ordinary YAML and are still formatted.
+k8s/**/templates/
+
+# Lockfiles are written and owned by npm.
+package-lock.json
+gui/FitSync.Gui/package-lock.json

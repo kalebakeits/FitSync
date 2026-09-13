@@ -1,0 +1,3 @@
+# Formats the staged files: `dotnet format` for C#, prettier for the web side.
+# Task definitions live in lint-staged.config.mjs.
+npx lint-staged

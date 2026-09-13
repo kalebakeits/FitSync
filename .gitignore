@@ -38,6 +38,9 @@ yarn-debug.log*
 yarn-error.log*
 **/dist/
 
+# Husky regenerates this on `npm install` (via the `prepare` script).
+.husky/_/
+
 # IDE
 .idea/
 *.iml

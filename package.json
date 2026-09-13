@@ -1,8 +1,26 @@
 {
+  "name": "fitsync",
+  "private": true,
+  "version": "0.0.0",
+  "description": "FitSync monorepo root. Owns the git hooks and the shared formatting tooling; the Gui keeps its own package.json.",
+  "scripts": {
+    "prepare": "husky",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:cs": "dotnet format whitespace FitSync.sln",
+    "lint:commit": "commitlint --edit"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.5"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "3.6.2"
   }
 }
