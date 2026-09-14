@@ -1,5 +1,6 @@
 namespace FitSync.Wahoo.Shared.WahooClient.Services;
 
+using System.Net;
 using System.Net.Http.Json;
 using FitSync.Database.Enums;
 using FitSync.Database.Models;
@@ -229,6 +230,43 @@ public class WahooApiService(
             "Rescheduled Wahoo workout {WorkoutId} to {Date} for user {UserId}.",
             workoutId,
             newDate,
+            integration.UserId
+        );
+    }
+
+    public async Task DeleteWorkoutAsync(
+        Integration integration,
+        long workoutId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        this.logger.LogInformation(
+            "Deleting Wahoo workout {WorkoutId} for user {UserId}.",
+            workoutId,
+            integration.UserId
+        );
+
+        try
+        {
+            await this.sender.SendAsync(
+                integration,
+                () => this.requestFactory.BuildDeleteWorkoutRequest(integration, workoutId),
+                cancellationToken
+            );
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            this.logger.LogInformation(
+                "Wahoo workout {WorkoutId} already removed (404 — treated as success) for user {UserId}.",
+                workoutId,
+                integration.UserId
+            );
+            return;
+        }
+
+        this.logger.LogInformation(
+            "Deleted Wahoo workout {WorkoutId} for user {UserId}.",
+            workoutId,
             integration.UserId
         );
     }

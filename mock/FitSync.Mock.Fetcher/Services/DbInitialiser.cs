@@ -6,6 +6,7 @@ using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Garmin.Shared.AuthData;
 using FitSync.Mock.Fetcher.Configuration;
+using FitSync.Mock.Fetcher.Services.WorkoutSeeding;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption.Extensions;
 using FitSync.Shared.Features.Encryption.Services;
@@ -17,7 +18,8 @@ public class DbInitialiser(
     IEncryptionService encryptionService,
     ILogger<DbInitialiser> logger,
     IOptions<MockFetcherOptions> options,
-    DbInitializerHealthCheck healthCheck
+    DbInitializerHealthCheck healthCheck,
+    IWorkoutSeeder workoutSeeder
 )
 {
     private readonly FitSyncDbContext fitSyncDbContext = fitSyncDbContext;
@@ -25,6 +27,7 @@ public class DbInitialiser(
     private readonly ILogger<DbInitialiser> logger = logger;
     private readonly IOptions<MockFetcherOptions> options = options;
     private readonly DbInitializerHealthCheck healthCheck = healthCheck;
+    private readonly IWorkoutSeeder workoutSeeder = workoutSeeder;
 
     private const string SharedPassword = "default1";
 
@@ -58,6 +61,15 @@ public class DbInitialiser(
         await this.fitSyncDbContext.Users.AddAsync(mockUser);
         await this.fitSyncDbContext.SaveChangesAsync();
         this.logger.LogInformation("Added mock fetcher user: default");
+
+        (int seededWorkouts, int seededScheduledWorkouts) = await this.workoutSeeder.SeedAsync(
+            mockUser.Id
+        );
+        this.logger.LogInformation(
+            "Workout seeding complete - {WorkoutCount} workouts, {ScheduledCount} scheduled workouts",
+            seededWorkouts,
+            seededScheduledWorkouts
+        );
 
         bool garminExists = await this.fitSyncDbContext.Integrations.AnyAsync(
             i => i.UserId == mockUser.Id && i.ServiceType == ServiceTypes.Garmin

@@ -6,9 +6,13 @@ using Projects;
 string connectionString =
     "Host=localhost;Port=5432;Database=FitSync;Username=postgres;Password=postgres";
 string dataProtectionKey = "dev-encryption-key-change-in-production-12345";
-string smtpPassword = "dev-smtp-password";
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
+
+// Injected below as an environment variable, which outranks the API's own
+// appsettings.Development.json — so the real value has to come from here.
+string smtpPassword =
+    builder.Configuration["EmailConfiguration:SmtpPassword"] ?? "dev-smtp-password";
 
 // PostgreSQL Database with a fixed host port
 IResourceBuilder<ParameterResource> username = builder.AddParameter(

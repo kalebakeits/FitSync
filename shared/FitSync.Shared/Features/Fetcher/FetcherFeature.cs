@@ -1,6 +1,7 @@
 namespace FitSync.Shared.Features.Fetcher;
 
 using FitSync.Shared.Configuration;
+using FitSync.Shared.Features.ActivityIngest;
 using FitSync.Shared.Features.Fetcher.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,8 @@ public static class FetcherFeature
         bool fetcherEnabled = configSection.GetValue("Enabled", true);
         if (!fetcherEnabled)
             return services;
+
+        services.AddActivityIngestFeature();
 
         services
             .AddOptions<FetcherOptions>()

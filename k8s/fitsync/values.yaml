@@ -41,6 +41,7 @@ imagePullPolicy: Always
 
 # PostgreSQL configuration
 postgres:
+  # Overridden by POSTGRES_HOST in the deploy environment (see scripts/deploy.sh).
   host: localhost
   port: 5432
   database: FitSync

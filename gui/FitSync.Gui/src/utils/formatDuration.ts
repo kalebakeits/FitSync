@@ -16,6 +16,11 @@ export function formatDuration(
   return "Open";
 }
 
+export function formatDistanceMetres(metres: number): string {
+  if (metres >= 1000) return `${(metres / 1000).toFixed(1)}km`;
+  return `${Math.round(metres)}m`;
+}
+
 export function formatTotalDuration(ms: number): string {
   if (ms <= 0) return "";
   const totalMins = Math.round(ms / 60000);

@@ -39,6 +39,7 @@ public class WorkoutPublishingController(
             workoutId,
             request.ServiceType,
             request.ScheduledDate,
+            request.ScheduledWorkoutId,
             cancellationToken
         );
 

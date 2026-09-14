@@ -3,6 +3,7 @@ using FitSync.Database.Enums;
 using FitSync.Database.Models;
 using FitSync.Mock.Fetcher.Configuration;
 using FitSync.Mock.Fetcher.Services;
+using FitSync.Mock.Fetcher.Services.WorkoutSeeding;
 using FitSync.Shared.Configuration;
 using FitSync.Shared.Extensions;
 using FitSync.Shared.Features.Encryption;
@@ -70,6 +71,7 @@ builder.Services.AddHealthChecks().AddCheck("db-initializer", healthCheck);
 
 // Features
 IServiceCollection services = builder.Services;
+services.AddWorkoutSeeding();
 services.AddScoped<DbInitialiser>();
 services.AddHostedService<UserVerificationWorker>();
 

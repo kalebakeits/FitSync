@@ -125,4 +125,30 @@ public class WahooClient(
             integration.UserId
         );
     }
+
+    public async Task DeleteAsync(
+        Integration integration,
+        string serviceMetadata,
+        CancellationToken cancellationToken = default
+    )
+    {
+        this.logger.LogInformation(
+            "WahooClient deleting scheduled workout for user {UserId}.",
+            integration.UserId
+        );
+
+        System.Text.Json.JsonElement meta =
+            System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(
+                serviceMetadata
+            );
+        long workoutId = meta.GetProperty("workoutId").GetInt64();
+
+        await this.apiService.DeleteWorkoutAsync(integration, workoutId, cancellationToken);
+
+        this.logger.LogInformation(
+            "WahooClient deleted workoutId={WorkoutId} for user {UserId}.",
+            workoutId,
+            integration.UserId
+        );
+    }
 }

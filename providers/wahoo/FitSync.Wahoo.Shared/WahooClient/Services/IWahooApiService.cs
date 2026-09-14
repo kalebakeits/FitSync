@@ -41,4 +41,10 @@ public interface IWahooApiService
         DateOnly newDate,
         CancellationToken cancellationToken = default
     );
+
+    Task DeleteWorkoutAsync(
+        Integration integration,
+        long workoutId,
+        CancellationToken cancellationToken = default
+    );
 }

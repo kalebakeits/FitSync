@@ -5,7 +5,9 @@ public record ScheduledWorkoutResponse(
     Guid WorkoutId,
     string WorkoutName,
     int Sport,
-    string? ServiceType,
     DateOnly ScheduledDate,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    int? PlannedDurationSeconds,
+    Guid? LinkedActivityId,
+    List<ScheduledWorkoutPublicationResponse> Publications
 );

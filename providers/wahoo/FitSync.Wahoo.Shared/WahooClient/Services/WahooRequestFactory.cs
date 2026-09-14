@@ -125,4 +125,16 @@ public class WahooRequestFactory(
         );
         return request;
     }
+
+    public HttpRequestMessage BuildDeleteWorkoutRequest(Integration integration, long workoutId)
+    {
+        WahooAuthData authData = integration.GetAuthData<WahooAuthData>(this.encryptionService);
+        string url = $"{this.options.Value.BaseUrl.TrimEnd('/')}/v1/workouts/{workoutId}";
+        HttpRequestMessage request = new(HttpMethod.Delete, url);
+        request.Headers.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            authData.AccessToken
+        );
+        return request;
+    }
 }

@@ -18,7 +18,7 @@ namespace FitSync.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0-rc.2.25502.107")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -43,6 +43,14 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("activity_name");
 
+                    b.Property<int?>("AvgHeartRate")
+                        .HasColumnType("integer")
+                        .HasColumnName("avg_heart_rate");
+
+                    b.Property<int?>("AvgPower")
+                        .HasColumnType("integer")
+                        .HasColumnName("avg_power");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -50,6 +58,14 @@ namespace FitSync.Database.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
+
+                    b.Property<double?>("DistanceMeters")
+                        .HasColumnType("double precision")
+                        .HasColumnName("distance_meters");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_seconds");
 
                     b.Property<string>("ExternalActivityId")
                         .IsRequired()
@@ -74,11 +90,19 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("original_file_name");
 
+                    b.Property<Guid?>("ScheduledWorkoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scheduled_workout_id");
+
                     b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("source");
+
+                    b.Property<int?>("Sport")
+                        .HasColumnType("integer")
+                        .HasColumnName("sport");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -89,6 +113,8 @@ namespace FitSync.Database.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ScheduledWorkoutId");
 
                     b.HasIndex("UserId", "ExternalActivityId", "Source")
                         .IsUnique();
@@ -198,6 +224,45 @@ namespace FitSync.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("api_tokens");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.AutoPublishSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("service_type");
+
+                    b.Property<string>("SportCategory")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("sport_category");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ServiceType", "SportCategory")
+                        .IsUnique();
+
+                    b.ToTable("auto_publish_settings");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.FetcherConfig", b =>
@@ -430,18 +495,21 @@ namespace FitSync.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTime?>("PendingPublishAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pending_publish_at");
+
+                    b.Property<int?>("PlannedDurationSeconds")
+                        .HasColumnType("integer")
+                        .HasColumnName("planned_duration_seconds");
+
+                    b.Property<DateTime?>("PublishClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("publish_claimed_at");
+
                     b.Property<DateOnly>("ScheduledDate")
                         .HasColumnType("date")
                         .HasColumnName("scheduled_date");
-
-                    b.Property<string>("ServiceMetadata")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("service_metadata");
-
-                    b.Property<string>("ServiceType")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("service_type");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -458,6 +526,51 @@ namespace FitSync.Database.Migrations
                     b.HasIndex("WorkoutId");
 
                     b.ToTable("scheduled_workouts");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ScheduledWorkoutPublication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt_count");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text")
+                        .HasColumnName("last_error");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid>("ScheduledWorkoutId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scheduled_workout_id");
+
+                    b.Property<string>("ServiceMetadata")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("service_metadata");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("service_type");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScheduledWorkoutId", "ServiceType")
+                        .IsUnique();
+
+                    b.ToTable("scheduled_workout_publications");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.ServiceHeartbeat", b =>
@@ -754,11 +867,18 @@ namespace FitSync.Database.Migrations
 
             modelBuilder.Entity("FitSync.Database.Models.Activity", b =>
                 {
+                    b.HasOne("FitSync.Database.Models.ScheduledWorkout", "ScheduledWorkout")
+                        .WithMany()
+                        .HasForeignKey("ScheduledWorkoutId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("FitSync.Database.Models.User", "User")
                         .WithMany("Activities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ScheduledWorkout");
 
                     b.Navigation("User");
                 });
@@ -775,6 +895,17 @@ namespace FitSync.Database.Migrations
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.ApiToken", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.AutoPublishSetting", b =>
                 {
                     b.HasOne("FitSync.Database.Models.User", "User")
                         .WithMany()
@@ -856,6 +987,17 @@ namespace FitSync.Database.Migrations
                     b.Navigation("Workout");
                 });
 
+            modelBuilder.Entity("FitSync.Database.Models.ScheduledWorkoutPublication", b =>
+                {
+                    b.HasOne("FitSync.Database.Models.ScheduledWorkout", "ScheduledWorkout")
+                        .WithMany("Publications")
+                        .HasForeignKey("ScheduledWorkoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ScheduledWorkout");
+                });
+
             modelBuilder.Entity("FitSync.Database.Models.Session", b =>
                 {
                     b.HasOne("FitSync.Database.Models.User", "User")
@@ -908,6 +1050,11 @@ namespace FitSync.Database.Migrations
             modelBuilder.Entity("FitSync.Database.Models.Integration", b =>
                 {
                     b.Navigation("FetcherConfig");
+                });
+
+            modelBuilder.Entity("FitSync.Database.Models.ScheduledWorkout", b =>
+                {
+                    b.Navigation("Publications");
                 });
 
             modelBuilder.Entity("FitSync.Database.Models.User", b =>

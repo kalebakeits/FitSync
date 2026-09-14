@@ -15,19 +15,49 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
     public async Task<PaginatedActivitiesResponse> GetActivitiesAsync(
         Guid userId,
         int limit,
-        int offset
+        int offset,
+        DateOnly? from,
+        DateOnly? to
     )
     {
         this.logger.LogInformation(
-            "Getting activities for user: {UserId}, limit: {Limit}, offset: {Offset}",
+            "Getting activities for user: {UserId}, limit: {Limit}, offset: {Offset}, from: {From}, to: {To}",
             userId,
             limit,
-            offset
+            offset,
+            from,
+            to
         );
 
         IQueryable<Activity> query = this.context.Activities.Where(
             a => a.UserId == userId && !a.IsDeleted
         );
+
+        if (from.HasValue && to.HasValue)
+        {
+            DateTime rangeStart = from.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            DateTime rangeEnd = to.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+
+            List<Activity> ranged = await query.Include(a => a.UploadStatuses)
+                .Where(a => a.ActivityDate >= rangeStart && a.ActivityDate <= rangeEnd)
+                .OrderBy(a => a.ActivityDate)
+                .ToListAsync();
+
+            this.logger.LogInformation(
+                "Retrieved {Count} activities for user: {UserId} in range {From} to {To}",
+                ranged.Count,
+                userId,
+                from,
+                to
+            );
+
+            return new PaginatedActivitiesResponse(
+                ranged.Select(a => MapToResponse(a)).ToList(),
+                ranged.Count,
+                ranged.Count,
+                0
+            );
+        }
 
         int total = await query.CountAsync();
 
@@ -134,6 +164,12 @@ public class ActivitiesService(FitSyncDbContext context, ILogger<ActivitiesServi
                         u.RetryCount
                     )
             )
-                .ToList()
+                .ToList(),
+            a.Sport,
+            a.DurationSeconds,
+            a.DistanceMeters,
+            a.AvgHeartRate,
+            a.AvgPower,
+            a.ScheduledWorkoutId
         );
 }

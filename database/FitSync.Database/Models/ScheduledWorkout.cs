@@ -18,16 +18,18 @@ public class ScheduledWorkout
     [Column("workout_id")]
     public Guid WorkoutId { get; set; }
 
-    [MaxLength(50)]
-    [Column("service_type")]
-    public string? ServiceType { get; set; }
-
     [Required]
     [Column("scheduled_date")]
     public DateOnly ScheduledDate { get; set; }
 
-    [Column("service_metadata", TypeName = "jsonb")]
-    public string? ServiceMetadata { get; set; }
+    [Column("planned_duration_seconds")]
+    public int? PlannedDurationSeconds { get; set; }
+
+    [Column("pending_publish_at")]
+    public DateTime? PendingPublishAt { get; set; }
+
+    [Column("publish_claimed_at")]
+    public DateTime? PublishClaimedAt { get; set; }
 
     [Required]
     [Column("created_at")]
@@ -35,4 +37,5 @@ public class ScheduledWorkout
 
     public User User { get; set; } = null!;
     public Workout Workout { get; set; } = null!;
+    public List<ScheduledWorkoutPublication> Publications { get; set; } = [];
 }

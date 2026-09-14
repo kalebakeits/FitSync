@@ -30,4 +30,6 @@ public interface IWahooRequestFactory
         long workoutId,
         DateOnly newDate
     );
+
+    HttpRequestMessage BuildDeleteWorkoutRequest(Integration integration, long workoutId);
 }

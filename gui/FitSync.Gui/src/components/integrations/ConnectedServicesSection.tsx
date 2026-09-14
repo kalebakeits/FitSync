@@ -1,10 +1,13 @@
+import { Fragment } from "react";
 import { Box, Button, List, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import type { ConnectionResponse } from "../../api/generated/fitSyncApi.schemas";
 import CredentialCard from "../credentials/CredentialCard";
+import AutoPublishSettings from "./AutoPublishSettings";
 
 interface ConnectedServicesSectionProps {
   connections: ConnectionResponse[];
+  publishingServiceTypes: string[];
   isProcessing: boolean;
   onAdd: () => void;
   onEdit: (connection: ConnectionResponse) => void;
@@ -13,6 +16,7 @@ interface ConnectedServicesSectionProps {
 
 export default function ConnectedServicesSection({
   connections,
+  publishingServiceTypes,
   isProcessing,
   onAdd,
   onEdit,
@@ -40,16 +44,20 @@ export default function ConnectedServicesSection({
       </Box>
       <List sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {connections.map((c) => (
-          <CredentialCard
-            key={c.serviceType}
-            serviceType={c.serviceType ?? ""}
-            displayName={c.displayName}
-            updatedAt={c.updatedAt ?? ""}
-            enabled={c.enabled ?? true}
-            onEdit={c.authType !== "oauth" ? () => onEdit(c) : undefined}
-            onDisconnect={() => onDisconnect(c.serviceType ?? "")}
-            isProcessing={isProcessing}
-          />
+          <Fragment key={c.serviceType}>
+            <CredentialCard
+              serviceType={c.serviceType ?? ""}
+              displayName={c.displayName}
+              updatedAt={c.updatedAt ?? ""}
+              enabled={c.enabled ?? true}
+              onEdit={c.authType !== "oauth" ? () => onEdit(c) : undefined}
+              onDisconnect={() => onDisconnect(c.serviceType ?? "")}
+              isProcessing={isProcessing}
+            />
+            {publishingServiceTypes.includes(c.serviceType ?? "") && (
+              <AutoPublishSettings serviceType={c.serviceType ?? ""} />
+            )}
+          </Fragment>
         ))}
       </List>
     </Box>

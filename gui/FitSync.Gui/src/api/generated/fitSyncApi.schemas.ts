@@ -18,6 +18,18 @@ export interface ActivityResponse {
   createdAt?: string;
   updatedAt?: string;
   uploadStatuses?: UploadStatusEntry[];
+  /** @nullable */
+  sport?: number | null;
+  /** @nullable */
+  durationSeconds?: number | null;
+  /** @nullable */
+  distanceMeters?: number | null;
+  /** @nullable */
+  avgHeartRate?: number | null;
+  /** @nullable */
+  avgPower?: number | null;
+  /** @nullable */
+  scheduledWorkoutId?: string | null;
 }
 
 export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
@@ -47,6 +59,21 @@ export interface AuthSuccessResponse {
   username?: string;
 }
 
+export interface AutoPublishSettingRequestItem {
+  serviceType?: string;
+  sportCategory?: string;
+}
+
+export interface AutoPublishSettingResponse {
+  id?: string;
+  serviceType?: string;
+  sportCategory?: string;
+}
+
+export interface AutoPublishSettingsRequest {
+  settings?: AutoPublishSettingRequestItem[];
+}
+
 export interface AvailableServiceResponse {
   serviceType?: string;
   authType?: string;
@@ -54,6 +81,7 @@ export interface AvailableServiceResponse {
   connectUrl?: string | null;
   isFetcher?: boolean;
   isUploader?: boolean;
+  supportsWorkoutPublishing?: boolean;
 }
 
 export interface ConfirmPasswordResetRequest {
@@ -102,6 +130,12 @@ export interface CurrentUserResponse {
   email?: string;
   isVerified?: boolean;
   isEmailVerified?: boolean;
+}
+
+export interface DeleteScheduledWorkoutResponse {
+  found?: boolean;
+  deleted?: boolean;
+  publications?: ScheduledWorkoutPublicationDeleteResponse[];
 }
 
 export interface DestinationMappingResponse {
@@ -167,9 +201,22 @@ export interface PaginatedWorkoutsResponse {
   offset?: number;
 }
 
+export type PublicationStatus = typeof PublicationStatus[keyof typeof PublicationStatus];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PublicationStatus = {
+  Pending: 'Pending',
+  Success: 'Success',
+  Failed: 'Failed',
+} as const;
+
 export interface PublishWorkoutRequest {
-  serviceType?: string;
+  /** @nullable */
+  serviceType?: string | null;
   scheduledDate?: string;
+  /** @nullable */
+  scheduledWorkoutId?: string | null;
 }
 
 export interface PushToDestinationRequest {
@@ -190,14 +237,33 @@ export interface ResendVerificationRequest {
   email?: string;
 }
 
+export interface ScheduledWorkoutPublicationDeleteResponse {
+  serviceType?: string;
+  succeeded?: boolean;
+  /** @nullable */
+  error?: string | null;
+}
+
+export interface ScheduledWorkoutPublicationResponse {
+  serviceType?: string;
+  publishedAt?: string;
+  status?: PublicationStatus;
+  /** @nullable */
+  lastError?: string | null;
+}
+
 export interface ScheduledWorkoutResponse {
   id?: string;
   workoutId?: string;
   workoutName?: string;
   sport?: number;
-  serviceType?: string;
   scheduledDate?: string;
   createdAt?: string;
+  /** @nullable */
+  plannedDurationSeconds?: number | null;
+  /** @nullable */
+  linkedActivityId?: string | null;
+  publications?: ScheduledWorkoutPublicationResponse[];
 }
 
 export interface TrainingProfileResponse {
@@ -236,6 +302,8 @@ export interface UpdateUsernameRequest {
 
 export interface UpdateWorkoutRequest {
   name?: string;
+  /** @nullable */
+  description?: string | null;
   tags?: string[];
 }
 
@@ -281,6 +349,8 @@ export interface VerifyAccountRequest {
 export interface WorkoutResponse {
   id?: string;
   name?: string;
+  /** @nullable */
+  description?: string | null;
   tags?: string[];
   sport?: number;
   schema?: JsonNode;
@@ -293,11 +363,17 @@ export interface WorkoutSchema { [key: string]: unknown }
 export type GetApiActivitiesParams = {
 limit?: number;
 offset?: number;
+from?: string;
+to?: string;
 };
 
 export type GetApiScheduledWorkoutsParams = {
 from?: string;
 to?: string;
+};
+
+export type DeleteApiScheduledWorkoutsIdParams = {
+force?: boolean;
 };
 
 export type GetApiWorkoutsParams = {

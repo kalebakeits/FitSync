@@ -5,5 +5,6 @@ public record AvailableServiceResponse(
     string AuthType,
     string? ConnectUrl,
     bool IsFetcher,
-    bool IsUploader
+    bool IsUploader,
+    bool SupportsWorkoutPublishing
 );

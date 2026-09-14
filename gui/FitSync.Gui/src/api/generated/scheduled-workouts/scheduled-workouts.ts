@@ -24,6 +24,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  DeleteApiScheduledWorkoutsIdParams,
+  DeleteScheduledWorkoutResponse,
   GetApiScheduledWorkoutsParams,
   MoveScheduledWorkoutRequest,
   ScheduledWorkoutResponse
@@ -180,11 +182,13 @@ const {mutation: mutationOptions} = options ?
     }
     export const deleteApiScheduledWorkoutsId = (
     id: string,
+    params?: DeleteApiScheduledWorkoutsIdParams,
  ) => {
       
       
-      return customAxiosInstance<void>(
-      {url: `/api/scheduled-workouts/${id}`, method: 'DELETE'
+      return customAxiosInstance<DeleteScheduledWorkoutResponse>(
+      {url: `/api/scheduled-workouts/${id}`, method: 'DELETE',
+        params
     },
       );
     }
@@ -192,8 +196,8 @@ const {mutation: mutationOptions} = options ?
 
 
 export const getDeleteApiScheduledWorkoutsIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string;params?: DeleteApiScheduledWorkoutsIdParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string;params?: DeleteApiScheduledWorkoutsIdParams}, TContext> => {
 
 const mutationKey = ['deleteApiScheduledWorkoutsId'];
 const {mutation: mutationOptions} = options ?
@@ -205,10 +209,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, {id: string;params?: DeleteApiScheduledWorkoutsIdParams}> = (props) => {
+          const {id,params} = props ?? {};
 
-          return  deleteApiScheduledWorkoutsId(id,)
+          return  deleteApiScheduledWorkoutsId(id,params,)
         }
 
         
@@ -221,11 +225,11 @@ const {mutation: mutationOptions} = options ?
     export type DeleteApiScheduledWorkoutsIdMutationError = unknown
 
     export const useDeleteApiScheduledWorkoutsId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>, TError,{id: string;params?: DeleteApiScheduledWorkoutsIdParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteApiScheduledWorkoutsId>>,
         TError,
-        {id: string},
+        {id: string;params?: DeleteApiScheduledWorkoutsIdParams},
         TContext
       > => {
 

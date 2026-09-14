@@ -17,10 +17,16 @@ import {
   getGetApiWorkoutsQueryKey,
 } from "../../api/generated/workouts/workouts";
 import PROMPT from "../../../../../assets/workout-generation-prompt.txt?raw";
+import type { WorkoutSchema } from "../../api/generated/fitSyncApi.schemas";
+import WorkoutSchemaPreview from "./WorkoutSchemaPreview";
 
 interface Props {
   open: boolean;
   onClose: () => void;
+}
+
+function isWorkoutSchema(value: unknown): value is WorkoutSchema {
+  return typeof value === "object" && value !== null;
 }
 
 export default function NewWorkoutModal({ open, onClose }: Props) {
@@ -28,14 +34,19 @@ export default function NewWorkoutModal({ open, onClose }: Props) {
   const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
 
+  const finish = () => {
+    setJson("");
+    mutation.reset();
+    onClose();
+  };
+
   const mutation = usePostApiWorkouts({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: getGetApiWorkoutsQueryKey(),
         });
-        setJson("");
-        onClose();
+        finish();
       },
     },
   });
@@ -46,34 +57,24 @@ export default function NewWorkoutModal({ open, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSubmit = () => {
-    let parsed: unknown;
+  const parsed: { ok: boolean; value: unknown } = (() => {
+    if (!json.trim()) return { ok: false, value: null };
     try {
-      parsed = JSON.parse(json);
+      return { ok: true, value: JSON.parse(json) };
     } catch {
-      return;
-    }
-    mutation.mutate({ data: parsed as Record<string, unknown> });
-  };
-
-  const isValidJson = (() => {
-    if (!json.trim()) return false;
-    try {
-      JSON.parse(json);
-      return true;
-    } catch {
-      return false;
+      return { ok: false, value: null };
     }
   })();
 
-  const handleClose = () => {
-    setJson("");
-    mutation.reset();
-    onClose();
+  const isValidJson = parsed.ok;
+
+  const handleSubmit = () => {
+    if (!isWorkoutSchema(parsed.value)) return;
+    mutation.mutate({ data: parsed.value });
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={finish} maxWidth="md" fullWidth>
       <DialogTitle>New Workout</DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 2 }}>
@@ -110,6 +111,8 @@ export default function NewWorkoutModal({ open, onClose }: Props) {
           }
         />
 
+        {isValidJson && <WorkoutSchemaPreview schema={parsed.value} />}
+
         {mutation.isError && (
           <Alert severity="error" sx={{ mt: 2 }}>
             Failed to create workout.
@@ -117,7 +120,7 @@ export default function NewWorkoutModal({ open, onClose }: Props) {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={finish}>Cancel</Button>
         <Button
           variant="contained"
           onClick={handleSubmit}

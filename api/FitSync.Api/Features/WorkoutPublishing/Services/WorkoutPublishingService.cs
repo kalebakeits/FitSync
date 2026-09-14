@@ -6,17 +6,24 @@ using FitSync.Api.Features.WorkoutPublishing.DTOs;
 using FitSync.Database;
 using FitSync.Database.Models;
 using FitSync.Shared.Features.WorkoutBuilder.DTOs;
+using FitSync.Shared.Features.WorkoutPublisher.DTOs;
 using FitSync.Shared.Features.WorkoutPublisher.Services;
 using Microsoft.EntityFrameworkCore;
 
 public class WorkoutPublishingService(
     FitSyncDbContext dbContext,
-    IWorkoutPublisherService publisherService,
+    IScheduledWorkoutPublishService publishService,
+    IScheduledWorkoutDeleteService deleteService,
+    IScheduledWorkoutResponseFactory responseFactory,
+    IScheduledWorkoutPublishDeferral publishDeferral,
     ILogger<WorkoutPublishingService> logger
 ) : IWorkoutPublishingService
 {
     private readonly FitSyncDbContext dbContext = dbContext;
-    private readonly IWorkoutPublisherService publisherService = publisherService;
+    private readonly IScheduledWorkoutPublishService publishService = publishService;
+    private readonly IScheduledWorkoutDeleteService deleteService = deleteService;
+    private readonly IScheduledWorkoutResponseFactory responseFactory = responseFactory;
+    private readonly IScheduledWorkoutPublishDeferral publishDeferral = publishDeferral;
     private readonly ILogger<WorkoutPublishingService> logger = logger;
 
     public async Task PublishAsync(
@@ -24,6 +31,7 @@ public class WorkoutPublishingService(
         Guid workoutId,
         string? serviceType,
         DateOnly scheduledDate,
+        Guid? scheduledWorkoutId = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -54,12 +62,19 @@ public class WorkoutPublishingService(
         if (schema is null)
             throw new NotFoundException("Workout schema is invalid.");
 
-        await this.publisherService.PublishAsync(
+        DateTime? pendingPublishAt =
+            scheduledWorkoutId is null
+                ? this.publishDeferral.ComputePendingPublishAt(scheduledDate)
+                : null;
+
+        await this.publishService.PublishAsync(
             userId,
             workoutId,
             serviceType,
             schema,
             scheduledDate,
+            scheduledWorkoutId,
+            pendingPublishAt,
             cancellationToken
         );
 
@@ -90,21 +105,7 @@ public class WorkoutPublishingService(
         if (to.HasValue)
             query = query.Where(s => s.ScheduledDate <= to.Value);
 
-        return await query
-            .OrderBy(s => s.ScheduledDate)
-            .Select(
-                s =>
-                    new ScheduledWorkoutResponse(
-                        s.Id,
-                        s.WorkoutId,
-                        s.Workout.Name,
-                        s.Workout.Sport,
-                        s.ServiceType,
-                        s.ScheduledDate,
-                        s.CreatedAt
-                    )
-            )
-            .ToListAsync(cancellationToken);
+        return await this.responseFactory.BuildManyAsync(query, cancellationToken);
     }
 
     public async Task<ScheduledWorkoutResponse> MoveScheduledWorkoutAsync(
@@ -121,7 +122,9 @@ public class WorkoutPublishingService(
             userId
         );
 
-        ScheduledWorkout? scheduled = await this.dbContext.ScheduledWorkouts.Include(s => s.Workout)
+        ScheduledWorkout? scheduled = await this.dbContext
+            .ScheduledWorkouts.Include(s => s.Workout)
+            .Include(s => s.Publications)
             .FirstOrDefaultAsync(
                 s => s.Id == scheduledWorkoutId && s.UserId == userId,
                 cancellationToken
@@ -137,14 +140,9 @@ public class WorkoutPublishingService(
             throw new NotFoundException("Scheduled workout not found.");
         }
 
-        await this.publisherService.RescheduleAsync(
-            userId,
-            scheduledWorkoutId,
-            newDate,
-            cancellationToken
-        );
-
         scheduled.ScheduledDate = newDate;
+        this.publishDeferral.Defer(scheduled);
+
         await this.dbContext.SaveChangesAsync(cancellationToken);
 
         this.logger.LogInformation(
@@ -152,41 +150,57 @@ public class WorkoutPublishingService(
             scheduledWorkoutId,
             newDate
         );
-        return new ScheduledWorkoutResponse(
-            scheduled.Id,
-            scheduled.WorkoutId,
-            scheduled.Workout.Name,
-            scheduled.Workout.Sport,
-            scheduled.ServiceType,
-            scheduled.ScheduledDate,
-            scheduled.CreatedAt
-        );
+        return await this.responseFactory.BuildAsync(scheduled, cancellationToken);
     }
 
-    public async Task DeleteScheduledWorkoutAsync(
+    public async Task<DeleteScheduledWorkoutResponse> DeleteScheduledWorkoutAsync(
         Guid userId,
         Guid scheduledWorkoutId,
+        bool force = false,
         CancellationToken cancellationToken = default
     )
     {
         this.logger.LogInformation(
-            "DeleteScheduledWorkout {ScheduledWorkoutId} for user {UserId}.",
+            "DeleteScheduledWorkout {ScheduledWorkoutId} for user {UserId}. Force: {Force}.",
             scheduledWorkoutId,
-            userId
+            userId,
+            force
         );
 
-        int deleted = await this.dbContext.ScheduledWorkouts.Where(
-            s => s.Id == scheduledWorkoutId && s.UserId == userId
-        )
-            .ExecuteDeleteAsync(cancellationToken);
+        ScheduledWorkoutDeletionResult result = await this.deleteService.DeleteAsync(
+            userId,
+            scheduledWorkoutId,
+            force,
+            cancellationToken
+        );
 
-        if (deleted == 0)
-            this.logger.LogWarning(
-                "ScheduledWorkout {Id} not found for user {UserId}.",
+        if (result.Found && result.Deleted)
+            this.logger.LogInformation(
+                "Deleted scheduled workout {Id} and removed it from all {Total} service(s).",
                 scheduledWorkoutId,
-                userId
+                result.Publications.Count
             );
-        else
-            this.logger.LogInformation("Deleted scheduled workout {Id}.", scheduledWorkoutId);
+        else if (result.Found)
+            this.logger.LogWarning(
+                "Scheduled workout {Id} was kept: {FailedCount} of {Total} service removal(s) failed [{FailedServiceTypes}]. The UI should report which services still hold it.",
+                scheduledWorkoutId,
+                result.Publications.Count(p => !p.Succeeded),
+                result.Publications.Count,
+                string.Join(", ", result.Publications.Where(p => !p.Succeeded).Select(p => p.ServiceType))
+            );
+
+        return new DeleteScheduledWorkoutResponse(
+            result.Found,
+            result.Deleted,
+            result
+                .Publications.Select(p =>
+                    new ScheduledWorkoutPublicationDeleteResponse(
+                        p.ServiceType,
+                        p.Succeeded,
+                        p.Error
+                    )
+                )
+                .ToList()
+        );
     }
 }

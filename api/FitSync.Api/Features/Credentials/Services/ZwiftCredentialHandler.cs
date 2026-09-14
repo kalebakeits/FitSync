@@ -23,6 +23,7 @@ public class ZwiftCredentialHandler(
         Database.Enums.ServiceType.ZwiftFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => false;
+    public bool SupportsWorkoutPublishing => false;
     public string AuthType => "credentials";
     public string? ConnectUrl => null;
 

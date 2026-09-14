@@ -23,6 +23,7 @@ public class GarminCredentialHandler(
         Database.Enums.ServiceType.GarminFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => true;
+    public bool SupportsWorkoutPublishing => true;
     public string AuthType => "credentials";
     public string? ConnectUrl => null;
 

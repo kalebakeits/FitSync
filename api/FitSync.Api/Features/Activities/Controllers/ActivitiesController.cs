@@ -24,20 +24,26 @@ public class ActivitiesController(
     [HttpGet]
     public async Task<ActionResult<PaginatedActivitiesResponse>> GetActivities(
         [FromQuery] int limit = 50,
-        [FromQuery] int offset = 0
+        [FromQuery] int offset = 0,
+        [FromQuery] DateOnly? from = null,
+        [FromQuery] DateOnly? to = null
     )
     {
         this.logger.LogInformation(
-            "GetActivities called with limit: {Limit}, offset: {Offset}",
+            "GetActivities called with limit: {Limit}, offset: {Offset}, from: {From}, to: {To}",
             limit,
-            offset
+            offset,
+            from,
+            to
         );
 
         Guid userId = this.currentUserService.GetUserId();
         PaginatedActivitiesResponse response = await this.activitiesService.GetActivitiesAsync(
             userId,
             limit,
-            offset
+            offset,
+            from,
+            to
         );
 
         this.logger.LogInformation(
@@ -126,4 +132,5 @@ public class ActivitiesController(
         );
         return NoContent();
     }
+
 }

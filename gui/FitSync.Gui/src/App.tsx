@@ -6,7 +6,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Box, CircularProgress } from "@mui/material";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import LoginPage from "./pages/auth/LoginPage";
@@ -15,11 +14,13 @@ import VerifyAccountPage from "./pages/auth/VerifyAccountPage";
 import ResendVerificationPage from "./pages/auth/ResendVerificationPage";
 import RequestPasswordResetPage from "./pages/auth/RequestPasswordResetPage";
 import ConfirmPasswordResetPage from "./pages/auth/ConfirmPasswordResetPage";
-import AppLayout from "./components/layout/AppLayout";
-import DashboardPage from "./pages/dashboard/DashboardPage";
+import ProtectedLayout, {
+  LoadingScreen,
+} from "./components/layout/ProtectedLayout";
+import CalendarPage from "./pages/calendar/CalendarPage";
 import WorkoutsPage from "./pages/workouts/WorkoutsPage";
+import SyncPage from "./pages/sync/SyncPage";
 import OAuthConsentPage from "./pages/oauth/OAuthConsentPage";
-import SchedulePage from "./pages/schedule/SchedulePage";
 import SettingsPage from "./pages/settings/SettingsPage";
 
 const queryClient = new QueryClient({
@@ -30,25 +31,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const LoadingScreen = () => (
-  <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      height: "100vh",
-    }}
-  >
-    <CircularProgress />
-  </Box>
-);
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) return <LoadingScreen />;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-}
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -64,13 +46,22 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
     window.location.href = nextUrl;
     return <LoadingScreen />;
   }
-  return <Navigate to={nextUrl ?? "/dashboard"} />;
+  return <Navigate to={nextUrl ?? "/"} />;
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route element={<ProtectedLayout />}>
+        <Route path="/" element={<CalendarPage />} />
+        <Route path="/workouts" element={<WorkoutsPage />} />
+        <Route path="/sync" element={<SyncPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
+
+      <Route path="/dashboard" element={<Navigate to="/" replace />} />
+      <Route path="/schedule" element={<Navigate to="/" replace />} />
+
       <Route
         path="/login"
         element={
@@ -106,40 +97,6 @@ function AppRoutes() {
       />
       <Route path="/reset-password" element={<ConfirmPasswordResetPage />} />
       <Route path="/oauth/consent" element={<OAuthConsentPage />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/workouts"
-        element={
-          <ProtectedRoute>
-            <WorkoutsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/schedule"
-        element={
-          <ProtectedRoute>
-            <SchedulePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <SettingsPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
     </Routes>
   );
 }

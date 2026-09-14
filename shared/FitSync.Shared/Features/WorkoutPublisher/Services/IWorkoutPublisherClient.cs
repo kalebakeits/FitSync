@@ -21,4 +21,10 @@ public interface IWorkoutPublisherClient
         DateOnly newDate,
         CancellationToken cancellationToken = default
     );
+
+    Task DeleteAsync(
+        Integration integration,
+        string serviceMetadata,
+        CancellationToken cancellationToken = default
+    );
 }

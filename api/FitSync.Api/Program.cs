@@ -4,6 +4,7 @@ using FitSync.Api.Configurations;
 using FitSync.Api.Features.Account;
 using FitSync.Api.Features.Activities;
 using FitSync.Api.Features.Auth;
+using FitSync.Api.Features.AutoPublish;
 using FitSync.Api.Features.Connections;
 using FitSync.Api.Features.Credentials;
 using FitSync.Api.Features.Fetchers;
@@ -50,6 +51,12 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder
+    .Services.AddOptions<WorkoutPublishingOptions>()
+    .BindConfiguration("WorkoutPublishingOptions")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Configure Serilog
 builder.Host.UseSerilog(
     (context, services, configuration) =>
@@ -92,6 +99,7 @@ builder
     .AddProfileFeature()
     .AddCredentialsFeature()
     .AddConnectionsFeature()
+    .AddAutoPublishFeature()
     .AddActivitiesFeature()
     .AddWorkoutBuilderFeature()
     .AddWorkoutsFeature()
