@@ -9,6 +9,7 @@ public interface IServiceCredentialHandler
     Database.Enums.ServiceType? HeartbeatServiceType { get; }
     bool IsFetcher { get; }
     bool IsUploader { get; }
+    bool SupportsWorkoutPublishing { get; }
     string? GetDisplayName(Integration integration);
     object BuildAuthData(CreateCredentialRequest request);
     Task OnCredentialCreatedAsync(

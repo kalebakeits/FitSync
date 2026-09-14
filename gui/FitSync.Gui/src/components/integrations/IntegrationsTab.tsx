@@ -18,6 +18,7 @@ import {
   usePostApiCredentials,
 } from "../../api/generated/credentials/credentials";
 import type { CreateCredentialRequest } from "../../api/generated/fitSyncApi.schemas";
+import { getPublishingServiceTypes } from "../../utils/publishingServices";
 import CredentialModal from "../credentials/CredentialModal";
 import ConnectedServicesSection from "./ConnectedServicesSection";
 import FetcherDestinationCard from "./FetcherDestinationCard";
@@ -124,6 +125,7 @@ export default function IntegrationsTab() {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ConnectedServicesSection
         connections={connections}
+        publishingServiceTypes={getPublishingServiceTypes(allServices)}
         isProcessing={disconnectMutation.isPending}
         onAdd={() => {
           setEditing(null);

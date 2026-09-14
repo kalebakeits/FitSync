@@ -10,5 +10,11 @@ public record ActivityResponse(
     string? ActivityName,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    List<UploadStatusEntry> UploadStatuses
+    List<UploadStatusEntry> UploadStatuses,
+    int? Sport,
+    int? DurationSeconds,
+    double? DistanceMeters,
+    int? AvgHeartRate,
+    int? AvgPower,
+    Guid? ScheduledWorkoutId
 );

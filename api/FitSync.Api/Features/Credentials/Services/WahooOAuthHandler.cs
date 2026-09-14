@@ -14,6 +14,7 @@ public class WahooOAuthHandler(IEncryptionService encryptionService) : IOAuthSer
     public ServiceType? HeartbeatServiceType => Database.Enums.ServiceType.WahooFetcher;
     public bool IsFetcher => true;
     public bool IsUploader => false;
+    public bool SupportsWorkoutPublishing => true;
     public string AuthType => "oauth";
     public string ConnectUrl => "/api/wahoo/connect";
 

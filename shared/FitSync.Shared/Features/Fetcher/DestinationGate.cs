@@ -19,8 +19,12 @@ public class DestinationGate(FitSyncDbContext dbContext, ILogger<DestinationGate
         if (userIds.Count == 0)
             return [];
 
+        // An activity fetched from a provider is never uploaded back to it.
         var mappings = await this.dbContext.UserDestinationConfigs.Where(
-            c => userIds.Contains(c.UserId) && c.SourceServiceType == sourceServiceType
+            c =>
+                userIds.Contains(c.UserId)
+                && c.SourceServiceType == sourceServiceType
+                && c.DestinationServiceType != sourceServiceType
         )
             .Select(c => new { c.UserId, c.DestinationServiceType })
             .ToListAsync(cancellationToken);

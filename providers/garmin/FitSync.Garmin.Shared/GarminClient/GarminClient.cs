@@ -106,4 +106,36 @@ public class GarminClient(
             integration.UserId
         );
     }
+
+    public async Task DeleteAsync(
+        Integration integration,
+        string serviceMetadata,
+        CancellationToken cancellationToken = default
+    )
+    {
+        this.logger.LogInformation(
+            "GarminClient deleting scheduled workout for user {UserId}.",
+            integration.UserId
+        );
+
+        await this.authService.EnsureAuthenticatedAsync(integration, cancellationToken);
+        GarminAuthData authData = integration.GetAuthData<GarminAuthData>(this.encryptionService);
+        string accessToken = authData.OAuth2AccessToken!;
+
+        System.Text.Json.JsonElement meta =
+            JsonSerializer.Deserialize<System.Text.Json.JsonElement>(serviceMetadata);
+        long workoutScheduleId = meta.GetProperty("workoutScheduleId").GetInt64();
+
+        await this.apiClient.DeleteWorkoutScheduleAsync(
+            workoutScheduleId,
+            accessToken,
+            cancellationToken
+        );
+
+        this.logger.LogInformation(
+            "GarminClient deleted scheduleId={ScheduleId} for user {UserId}.",
+            workoutScheduleId,
+            integration.UserId
+        );
+    }
 }

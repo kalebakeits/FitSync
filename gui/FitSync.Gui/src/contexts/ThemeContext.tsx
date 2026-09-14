@@ -5,6 +5,7 @@ import {
   CssBaseline,
 } from "@mui/material";
 import type { ReactNode } from "react";
+import { sportsPalette } from "../theme/sportsPalette";
 
 type ThemeMode = "light" | "dark";
 
@@ -40,6 +41,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           secondary: {
             main: "#8b5cf6",
           },
+          sports: sportsPalette(mode),
         },
       }),
     [mode],

@@ -9,6 +9,7 @@ public interface IWorkoutPublishingService
         Guid workoutId,
         string? serviceType,
         DateOnly scheduledDate,
+        Guid? scheduledWorkoutId = null,
         CancellationToken cancellationToken = default
     );
 
@@ -26,9 +27,10 @@ public interface IWorkoutPublishingService
         CancellationToken cancellationToken = default
     );
 
-    Task DeleteScheduledWorkoutAsync(
+    Task<DeleteScheduledWorkoutResponse> DeleteScheduledWorkoutAsync(
         Guid userId,
         Guid scheduledWorkoutId,
+        bool force = false,
         CancellationToken cancellationToken = default
     );
 }

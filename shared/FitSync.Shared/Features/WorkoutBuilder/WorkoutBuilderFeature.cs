@@ -8,6 +8,7 @@ using FitSync.Shared.Features.WorkoutBuilder.Services.WahooWorkoutBuilder;
 using FitSync.Shared.Features.WorkoutBuilder.Services.SchemaResolver;
 using FitSync.Shared.Features.WorkoutBuilder.Services.Writer;
 using FitSync.Shared.Features.WorkoutBuilder.Services.ZoneResolver;
+using FitSync.Shared.Features.WorkoutSchema.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class WorkoutBuilderFeature
@@ -27,6 +28,7 @@ public static class WorkoutBuilderFeature
             services.AddTransient<PoolSwimMessageBuilder>();
             services.AddTransient<IFitFileEncoder, FitFileEncoder>();
             services.AddTransient<IWorkoutWriter, WorkoutWriter>();
+            services.AddSingleton<IWorkoutDurationCalculator, WorkoutDurationCalculator>();
             services.AddTransient<IWahooWorkoutBuilder, WahooWorkoutBuilder>();
             services.AddTransient<IGarminWorkoutBuilder, GarminWorkoutBuilder>();
             return services;

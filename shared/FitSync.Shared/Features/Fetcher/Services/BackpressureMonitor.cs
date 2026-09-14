@@ -13,6 +13,14 @@ public class BackpressureMonitor(
     IOptions<FetcherOptions> options
 ) : IBackpressureMonitor
 {
+    // The configuration binder appends to a pre-populated collection property rather than
+    // replacing it, so the fallback lives here to let config narrow the gate to a single
+    // provider's uploaders.
+    private static readonly List<ServiceType> DefaultUploaderServiceTypes =
+    [
+        ServiceType.GarminUploader,
+    ];
+
     private readonly FitSyncDbContext dbContext = dbContext;
     private readonly ILogger<BackpressureMonitor> logger = logger;
     private readonly IOptions<FetcherOptions> options = options;
@@ -24,15 +32,22 @@ public class BackpressureMonitor(
         );
         DateTime cutoff = DateTime.UtcNow - uploaderDeadThreshold;
 
-        bool aliveUploaders = await this.dbContext.ServiceHeartbeats.Where(
-            h => h.ServiceType == ServiceType.GarminUploader
-        )
+        List<ServiceType> uploaderServiceTypes =
+            this.options.Value.UploaderServiceTypes is { Count: > 0 } configured
+                ? configured
+                : DefaultUploaderServiceTypes;
+
+        bool aliveUploaders = await this.dbContext.ServiceHeartbeats
+            .Where(h => uploaderServiceTypes.Contains(h.ServiceType))
             .Where(h => h.LastHeartbeatAt > cutoff)
             .AnyAsync(cancellationToken);
 
         if (!aliveUploaders)
         {
-            this.logger.LogWarning("No alive uploaders detected. Pausing fetch.");
+            this.logger.LogWarning(
+                "No alive uploaders of type {UploaderServiceTypes} detected. Pausing fetch.",
+                string.Join(", ", uploaderServiceTypes)
+            );
             return false;
         }
 

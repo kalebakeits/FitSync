@@ -5,6 +5,13 @@ REGISTRY="${REGISTRY:-localhost:5000}"
 TAG="${TAG:-latest}"
 NAMESPACE="fitsync"
 
+if [ -f ".env.deploy" ]; then
+    # shellcheck disable=SC1091
+    . ./.env.deploy
+fi
+
+POSTGRES_HOST="${POSTGRES_HOST:-localhost}"
+
 echo "======================================"
 echo "FitSync K8s Deploy"
 echo "======================================"
@@ -40,6 +47,7 @@ HELM_ARGS=(
     --set garmin.tag="$TAG"
     --set wahoo.tag="$TAG"
     --set purger.tag="$TAG"
+    --set postgres.host="$POSTGRES_HOST"
 )
 
 if helm list -n "$NAMESPACE" | grep -q "fitsync"; then

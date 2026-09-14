@@ -153,6 +153,45 @@ public partial class GarminApiClient(ILogger<GarminApiClient> logger) : IGarminA
         );
     }
 
+    public async Task DeleteWorkoutScheduleAsync(
+        long workoutScheduleId,
+        string accessToken,
+        CancellationToken ct
+    )
+    {
+        this.logger.LogInformation(
+            "Deleting Garmin schedule entry {ScheduleId}.",
+            workoutScheduleId
+        );
+
+        IFlurlResponse response = await $"{ScheduleServiceUrl}/{workoutScheduleId}"
+            .WithOAuthBearerToken(accessToken)
+            .WithHeader("NK", "NT")
+            .WithHeader("origin", Origin)
+            .WithHeader("User-Agent", UserAgent)
+            .AllowAnyHttpStatus()
+            .DeleteAsync(cancellationToken: ct);
+
+        if (response.StatusCode == Convert.ToInt32(HttpStatusCode.NotFound))
+        {
+            this.logger.LogInformation(
+                "Garmin schedule entry {ScheduleId} already removed (404 — treated as success).",
+                workoutScheduleId
+            );
+            return;
+        }
+
+        if (response.StatusCode >= 400)
+        {
+            string body = await response.GetStringAsync();
+            throw new InvalidOperationException(
+                $"Garmin DeleteWorkoutSchedule failed ({response.StatusCode}): {body}"
+            );
+        }
+
+        this.logger.LogInformation("Deleted Garmin schedule entry {ScheduleId}.", workoutScheduleId);
+    }
+
     public async Task<CookieJar> InitCookieJarAsync(CancellationToken ct)
     {
         this.logger.LogInformation("Initializing Garmin SSO cookie jar.");

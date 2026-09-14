@@ -16,6 +16,8 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
     public DbSet<UserDestinationConfig> UserDestinationConfigs { get; set; } = null!;
     public DbSet<Workout> Workouts { get; set; } = null!;
     public DbSet<ScheduledWorkout> ScheduledWorkouts { get; set; } = null!;
+    public DbSet<ScheduledWorkoutPublication> ScheduledWorkoutPublications { get; set; } = null!;
+    public DbSet<AutoPublishSetting> AutoPublishSettings { get; set; } = null!;
     public DbSet<TrainingProfile> TrainingProfiles { get; set; } = null!;
     public DbSet<ApiToken> ApiTokens { get; set; } = null!;
     public DbSet<OAuthClient> OAuthClients { get; set; } = null!;
@@ -91,6 +93,12 @@ public class FitSyncDbContext(DbContextOptions<FitSyncDbContext> options) : DbCo
                 if (entry.State == EntityState.Added)
                     profile.CreatedAt = DateTime.UtcNow;
                 profile.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is AutoPublishSetting autoPublishSetting)
+            {
+                if (entry.State == EntityState.Added)
+                    autoPublishSetting.CreatedAt = DateTime.UtcNow;
+                autoPublishSetting.UpdatedAt = DateTime.UtcNow;
             }
             else if (entry.Entity is Session session)
             {

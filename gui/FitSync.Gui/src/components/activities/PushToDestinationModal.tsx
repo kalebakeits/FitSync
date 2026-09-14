@@ -18,6 +18,7 @@ import {
   usePostApiActivitiesIdPush,
   getGetApiActivitiesQueryKey,
 } from "../../api/generated/activities/activities";
+import { getSelectableDestinations } from "../../utils/destinations";
 
 interface PushToDestinationModalProps {
   open: boolean;
@@ -39,9 +40,10 @@ export default function PushToDestinationModal({
     activity.uploadStatuses?.map((u) => u.destinationServiceType) ?? [],
   );
 
-  const availableDestinations = allServices.filter(
-    (s) => s.isUploader && !alreadyPushed.has(s.serviceType ?? ""),
-  );
+  const availableDestinations = getSelectableDestinations(
+    allServices,
+    activity.source ?? "",
+  ).filter((s) => !alreadyPushed.has(s.serviceType ?? ""));
 
   const pushMutation = usePostApiActivitiesIdPush({
     mutation: {

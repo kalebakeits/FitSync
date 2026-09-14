@@ -58,18 +58,31 @@ public class ScheduledWorkoutsController(
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteScheduledWorkout(
+    public async Task<ActionResult<DeleteScheduledWorkoutResponse>> DeleteScheduledWorkout(
         Guid id,
-        CancellationToken cancellationToken
+        [FromQuery] bool force = false,
+        CancellationToken cancellationToken = default
     )
     {
         Guid userId = this.currentUserService.GetUserId();
-        this.logger.LogInformation("DeleteScheduledWorkout {Id} for user {UserId}.", id, userId);
-        await this.workoutPublishingService.DeleteScheduledWorkoutAsync(
-            userId,
+        this.logger.LogInformation(
+            "DeleteScheduledWorkout {Id} for user {UserId}. Force: {Force}.",
             id,
-            cancellationToken
+            userId,
+            force
         );
-        return this.NoContent();
+        DeleteScheduledWorkoutResponse result =
+            await this.workoutPublishingService.DeleteScheduledWorkoutAsync(
+                userId,
+                id,
+                force,
+                cancellationToken
+            );
+
+        if (!result.Found)
+            return this.NotFound();
+
+        return this.Ok(result);
     }
+
 }

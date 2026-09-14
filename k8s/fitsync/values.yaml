@@ -21,6 +21,9 @@ shared:
   pollIntervalMinutes: 5 # How often the worker wakes to check for due users
   lookbackDays: 28 # How many days back to check for activities
   deadThresholdMinutes: 5 # Minutes before considering an uploader dead
+  # Uploader service types whose live heartbeat is required before a fetcher keeps fetching
+  uploaderServiceTypes:
+    - GarminUploader
   maxPendingActivities: 50 # Max un-uploaded activities before pausing
   heartbeatIntervalMinutes: 1 # Heartbeat frequency
   maxParallelUsers: 4 # Max users processed in parallel
@@ -38,6 +41,7 @@ imagePullPolicy: Always
 
 # PostgreSQL configuration
 postgres:
+  # Overridden by POSTGRES_HOST in the deploy environment (see scripts/deploy.sh).
   host: localhost
   port: 5432
   database: FitSync
@@ -112,6 +116,7 @@ zwift:
 
   config:
     instanceId: "zwift-fetcher-k8s"
+    fetcherEnabled: true
     fetchIntervalMinutes: 60 # Fetch each user every 1 hour
     zwift:
       authUrl: "https://secure.zwift.com/auth/realms/zwift/protocol/openid-connect/token"
@@ -142,6 +147,7 @@ wahoo:
 
   config:
     instanceId: "wahoo-fetcher-k8s"
+    fetcherEnabled: true
     baseUrl: "https://api.wahooligan.com"
     lookbackDays: 28
     fetchIntervalMinutes: 360 # Fetch each user every 6 hours (webhook is primary delivery)
@@ -171,6 +177,8 @@ garmin:
 
   config:
     instanceId: "garmin-uploader-k8s"
+    uploaderEnabled: true
+    fetcherEnabled: true
     heartbeatIntervalMinutes: 1
     maxRetries: 3
     orphanThresholdMinutes: 2

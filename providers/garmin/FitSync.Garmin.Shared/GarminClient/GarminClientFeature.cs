@@ -12,6 +12,11 @@ public static class GarminClientFeature
         services.AddScoped<IGarminAuthService, GarminAuthService>();
         services.AddScoped<GarminClient>();
         services.AddScoped<IWorkoutPublisherClient, GarminClient>();
+        services.AddScoped<IGarminHttpSender, GarminHttpSender>();
+        services.AddScoped<IGarminApiService, GarminApiService>();
+        services.AddScoped<IGarminFitDownloader, GarminFitDownloader>();
+        services.AddScoped<IGarminActivityProcessor, GarminActivityProcessor>();
+        services.AddScoped<IGarminActivityClient, GarminActivityClient>();
         return services;
     }
 }

@@ -6,9 +6,13 @@ using Projects;
 string connectionString =
     "Host=localhost;Port=5432;Database=FitSync;Username=postgres;Password=postgres";
 string dataProtectionKey = "dev-encryption-key-change-in-production-12345";
-string smtpPassword = "dev-smtp-password";
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
+
+// Injected below as an environment variable, which outranks the API's own
+// appsettings.Development.json — so the real value has to come from here.
+string smtpPassword =
+    builder.Configuration["EmailConfiguration:SmtpPassword"] ?? "dev-smtp-password";
 
 // PostgreSQL Database with a fixed host port
 IResourceBuilder<ParameterResource> username = builder.AddParameter(
@@ -23,10 +27,8 @@ IResourceBuilder<ParameterResource> password = builder.AddParameter(
 );
 
 DateTime start = DateTime.Now.AddSeconds(10);
-var healthCheckCallback = () =>
-{
-    return DateTime.Now > start ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
-};
+Func<HealthCheckResult> healthCheckCallback = () =>
+    DateTime.Now > start ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy();
 builder
     .Services.AddHealthChecks()
     .AddCheck("pgsql-health", healthCheckCallback)
@@ -54,7 +56,7 @@ IResourceBuilder<RedisResource> redis = builder.AddRedis("redis");
 // Mock fetcher handles DB initialization and optionally runs the fetcher
 // Other services wait for it to ensure DB is ready
 IResourceBuilder<ProjectResource> mockFetcher = builder
-    .AddProject<FitSync_Mock_Fetcher>("mock-fetcher")
+    .AddProject<FitSync_Mock_Fetcher>("mock-service")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithEnvironment("ConnectionStrings__FitSync", connectionString)
@@ -65,7 +67,7 @@ IResourceBuilder<ProjectResource> mockFetcher = builder
     .WaitFor(kafka);
 
 builder
-    .AddProject<FitSync_Zwift>("zwift-fetcher")
+    .AddProject<FitSync_Zwift>("zwift-service")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithReference(redis)
@@ -74,7 +76,7 @@ builder
     .WaitFor(mockFetcher);
 
 builder
-    .AddProject<FitSync_Garmin>("garmin-uploader")
+    .AddProject<FitSync_Garmin>("garmin-service")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithReference(redis)
@@ -84,7 +86,7 @@ builder
     .WaitFor(mockFetcher);
 
 builder
-    .AddProject<FitSync_Wahoo>("wahoo-fetcher")
+    .AddProject<FitSync_Wahoo>("wahoo-service")
     .WithReference(fitsyncDb)
     .WithReference(kafka)
     .WithReference(redis)

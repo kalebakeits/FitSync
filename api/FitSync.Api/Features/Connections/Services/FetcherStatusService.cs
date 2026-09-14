@@ -121,7 +121,11 @@ public class FetcherStatusService(
             );
 
         List<string> mappedDests = mappings
-            .Where(m => m.SourceServiceType == fetcher.ServiceType)
+            .Where(
+                m =>
+                    m.SourceServiceType == fetcher.ServiceType
+                    && m.DestinationServiceType != fetcher.ServiceType
+            )
             .Select(m => m.DestinationServiceType)
             .ToList();
 

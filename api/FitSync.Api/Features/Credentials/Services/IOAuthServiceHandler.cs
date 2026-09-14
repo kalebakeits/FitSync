@@ -8,6 +8,7 @@ public interface IOAuthServiceHandler
     Database.Enums.ServiceType? HeartbeatServiceType { get; }
     bool IsFetcher { get; }
     bool IsUploader { get; }
+    bool SupportsWorkoutPublishing { get; }
     string AuthType { get; }
     string ConnectUrl { get; }
     string? GetDisplayName(Integration integration);

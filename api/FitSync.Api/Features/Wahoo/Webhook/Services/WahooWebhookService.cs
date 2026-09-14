@@ -3,6 +3,8 @@ namespace FitSync.Api.Features.Wahoo.Webhook.Services;
 using FitSync.Api.Features.Wahoo.Webhook.DTOs;
 using FitSync.Database;
 using FitSync.Database.Models;
+using FitSync.Shared.Features.ActivityIngest.DTOs;
+using FitSync.Shared.Features.ActivityIngest.Services;
 using FitSync.Shared.Features.Fetcher.Services;
 using FitSync.Wahoo.Shared.WahooClient.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,12 +13,16 @@ public class WahooWebhookService(
     FitSyncDbContext dbContext,
     IWahooActivityProcessor activityProcessor,
     IActivityPublisher activityPublisher,
+    IFitSessionDecoder fitSessionDecoder,
+    IScheduledWorkoutLinker scheduledWorkoutLinker,
     ILogger<WahooWebhookService> logger
 ) : IWahooWebhookService
 {
     private readonly FitSyncDbContext dbContext = dbContext;
     private readonly IWahooActivityProcessor activityProcessor = activityProcessor;
     private readonly IActivityPublisher activityPublisher = activityPublisher;
+    private readonly IFitSessionDecoder fitSessionDecoder = fitSessionDecoder;
+    private readonly IScheduledWorkoutLinker scheduledWorkoutLinker = scheduledWorkoutLinker;
     private readonly ILogger<WahooWebhookService> logger = logger;
 
     public async Task ProcessAsync(
@@ -81,6 +87,8 @@ public class WahooWebhookService(
         );
         DateTime now = DateTime.UtcNow;
 
+        FitSessionStats? stats = this.fitSessionDecoder.Decode(fitData);
+
         foreach (Integration integration in toProcess)
         {
             Activity dbActivity =
@@ -95,6 +103,11 @@ public class WahooWebhookService(
                     FileSizeBytes = fitData.LongLength,
                     ActivityDate = workout.Starts,
                     ActivityName = workout.Name,
+                    Sport = stats?.Sport,
+                    DurationSeconds = stats?.DurationSeconds,
+                    DistanceMeters = stats?.DistanceMeters,
+                    AvgHeartRate = stats?.AvgHeartRate,
+                    AvgPower = stats?.AvgPower,
                     CreatedAt = now,
                     UpdatedAt = now,
                 };
@@ -103,7 +116,10 @@ public class WahooWebhookService(
 
             List<UserDestinationConfig> destinations =
                 await this.dbContext.UserDestinationConfigs.Where(
-                    c => c.UserId == integration.UserId && c.SourceServiceType == ServiceTypes.Wahoo
+                    c =>
+                        c.UserId == integration.UserId
+                        && c.SourceServiceType == ServiceTypes.Wahoo
+                        && c.DestinationServiceType != ServiceTypes.Wahoo
                 )
                     .ToListAsync(cancellationToken);
 
@@ -119,6 +135,18 @@ public class WahooWebhookService(
             }
 
             await this.dbContext.SaveChangesAsync(cancellationToken);
+
+            Guid? scheduledWorkoutId = await this.scheduledWorkoutLinker.LinkAsync(
+                dbActivity.Id,
+                cancellationToken
+            );
+
+            this.logger.LogInformation(
+                "Activity {ActivityId} link result: {ScheduledWorkoutId}.",
+                dbActivity.Id,
+                scheduledWorkoutId
+            );
+
             await this.activityPublisher.PublishActivityFetchedAsync(dbActivity, cancellationToken);
 
             this.dbContext.ProcessedActivities.Add(

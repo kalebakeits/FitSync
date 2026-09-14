@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   Alert,
   Button,
@@ -15,6 +16,7 @@ interface ConfirmModalProps {
   severity?: "warning" | "error";
   onConfirm: () => void;
   onClose: () => void;
+  children?: ReactNode;
 }
 
 export default function ConfirmModal({
@@ -25,12 +27,14 @@ export default function ConfirmModal({
   severity = "warning",
   onConfirm,
   onClose,
+  children,
 }: ConfirmModalProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Alert severity={severity}>{message}</Alert>
+        {children}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

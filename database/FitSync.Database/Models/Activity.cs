@@ -30,7 +30,6 @@ public class Activity
     [Column("source")]
     public string Source { get; set; } = string.Empty;
 
-    // File info
     [MaxLength(500)]
     [Column("original_file_name")]
     public string? OriginalFileName { get; set; }
@@ -41,7 +40,6 @@ public class Activity
     [Column("file_size_bytes")]
     public long? FileSizeBytes { get; set; }
 
-    // Activity metadata
     [Required]
     [Column("activity_date")]
     public DateTime ActivityDate { get; set; }
@@ -53,7 +51,24 @@ public class Activity
     [Column("activity_metadata", TypeName = "jsonb")]
     public string? ActivityMetadata { get; set; }
 
-    // Soft delete
+    [Column("sport")]
+    public int? Sport { get; set; }
+
+    [Column("duration_seconds")]
+    public int? DurationSeconds { get; set; }
+
+    [Column("distance_meters")]
+    public double? DistanceMeters { get; set; }
+
+    [Column("avg_heart_rate")]
+    public int? AvgHeartRate { get; set; }
+
+    [Column("avg_power")]
+    public int? AvgPower { get; set; }
+
+    [Column("scheduled_workout_id")]
+    public Guid? ScheduledWorkoutId { get; set; }
+
     [Column("is_deleted")]
     public bool IsDeleted { get; set; } = false;
 
@@ -68,9 +83,11 @@ public class Activity
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; }
 
-    // Navigation properties
     [JsonIgnore]
     public User User { get; set; } = null!;
+
+    [JsonIgnore]
+    public ScheduledWorkout? ScheduledWorkout { get; set; }
 
     public ICollection<ActivityUploadStatus> UploadStatuses { get; set; } = [];
 }

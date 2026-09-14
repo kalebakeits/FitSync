@@ -1,5 +1,6 @@
 namespace FitSync.Api.Features.Connections.Services;
 
+using FitSync.Api.Exceptions;
 using FitSync.Api.Features.Connections.DTOs;
 using FitSync.Database;
 using FitSync.Database.Models;
@@ -36,6 +37,14 @@ public class DestinationMappingService(
         CancellationToken cancellationToken = default
     )
     {
+        // UpsertDestinationMappingsRequest validates this, but the delete below executes
+        // against the database immediately: a caller bypassing model validation would
+        // otherwise lose every mapping for this source and get nothing back.
+        if (request.DestinationServiceTypes.Contains(request.SourceServiceType))
+            throw new BadRequestException(
+                "Source and destination service types must be different."
+            );
+
         await this.context.UserDestinationConfigs.Where(
             c => c.UserId == userId && c.SourceServiceType == request.SourceServiceType
         )

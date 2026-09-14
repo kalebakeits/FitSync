@@ -4,6 +4,7 @@ using FitSync.Api.Configurations;
 using FitSync.Api.Features.Account;
 using FitSync.Api.Features.Activities;
 using FitSync.Api.Features.Auth;
+using FitSync.Api.Features.AutoPublish;
 using FitSync.Api.Features.Connections;
 using FitSync.Api.Features.Credentials;
 using FitSync.Api.Features.Fetchers;
@@ -22,6 +23,7 @@ using FitSync.Database;
 using FitSync.Shared.Features.Email;
 using FitSync.Shared.Features.Email.Services;
 using FitSync.Shared.Features.Encryption;
+using FitSync.Shared.Features.Kafka;
 using FitSync.Shared.Features.RateLimiting;
 using FitSync.Shared.Features.WorkoutBuilder;
 using FitSync.Shared.Features.WorkoutPublisher;
@@ -49,6 +51,12 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder
+    .Services.AddOptions<WorkoutPublishingOptions>()
+    .BindConfiguration("WorkoutPublishingOptions")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Configure Serilog
 builder.Host.UseSerilog(
     (context, services, configuration) =>
@@ -70,6 +78,8 @@ builder.Services.AddSingleton<IProducer<string, string>>(_ =>
     return new ProducerBuilder<string, string>(config).Build();
 });
 
+builder.Services.AddKafkaTopicInitializer();
+
 // Add DbContext
 builder.Services.AddDbContext<FitSyncDbContext>(
     options => options.UseNpgsql(builder.Configuration.GetConnectionString("FitSync"))
@@ -89,6 +99,7 @@ builder
     .AddProfileFeature()
     .AddCredentialsFeature()
     .AddConnectionsFeature()
+    .AddAutoPublishFeature()
     .AddActivitiesFeature()
     .AddWorkoutBuilderFeature()
     .AddWorkoutsFeature()
@@ -135,7 +146,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -153,5 +164,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>()
     .UseAuthorization();
 app.MapControllers();
 app.MapMcp("/mcp");
+
+await app.EnsureKafkaTopicsAsync();
 
 app.Run();

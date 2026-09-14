@@ -40,6 +40,22 @@
               "format": "int32",
               "default": 0
             }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
           }
         ],
         "responses": {
@@ -437,6 +453,73 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/auto-publish": {
+      "get": {
+        "tags": [
+          "AutoPublish"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AutoPublishSettingResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AutoPublishSettingResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AutoPublishSettingResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "AutoPublish"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoPublishSettingsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoPublishSettingsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoPublishSettingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1026,11 +1109,36 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteScheduledWorkoutResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteScheduledWorkoutResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteScheduledWorkoutResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1602,6 +1710,36 @@
             "items": {
               "$ref": "#/components/schemas/UploadStatusEntry"
             }
+          },
+          "sport": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "distanceMeters": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "avgHeartRate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "avgPower": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "scheduledWorkoutId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1653,6 +1791,46 @@
         },
         "additionalProperties": false
       },
+      "AutoPublishSettingRequestItem": {
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "sportCategory": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoPublishSettingResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "sportCategory": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoPublishSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "settings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoPublishSettingRequestItem"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "AvailableServiceResponse": {
         "type": "object",
         "properties": {
@@ -1670,6 +1848,9 @@
             "type": "boolean"
           },
           "isUploader": {
+            "type": "boolean"
+          },
+          "supportsWorkoutPublishing": {
             "type": "boolean"
           }
         },
@@ -1798,6 +1979,24 @@
           },
           "isEmailVerified": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteScheduledWorkoutResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "publications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduledWorkoutPublicationDeleteResponse"
+            }
           }
         },
         "additionalProperties": false
@@ -1957,15 +2156,29 @@
         },
         "additionalProperties": false
       },
+      "PublicationStatus": {
+        "enum": [
+          "Pending",
+          "Success",
+          "Failed"
+        ],
+        "type": "string"
+      },
       "PublishWorkoutRequest": {
         "type": "object",
         "properties": {
           "serviceType": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "scheduledDate": {
             "type": "string",
             "format": "date"
+          },
+          "scheduledWorkoutId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2012,6 +2225,42 @@
         },
         "additionalProperties": false
       },
+      "ScheduledWorkoutPublicationDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "succeeded": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScheduledWorkoutPublicationResponse": {
+        "type": "object",
+        "properties": {
+          "serviceType": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PublicationStatus"
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ScheduledWorkoutResponse": {
         "type": "object",
         "properties": {
@@ -2030,9 +2279,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "serviceType": {
-            "type": "string"
-          },
           "scheduledDate": {
             "type": "string",
             "format": "date"
@@ -2040,6 +2286,22 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "plannedDurationSeconds": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "linkedActivityId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "publications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduledWorkoutPublicationResponse"
+            }
           }
         },
         "additionalProperties": false
@@ -2130,6 +2392,10 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           },
           "tags": {
             "type": "array",
@@ -2250,6 +2516,10 @@
           "name": {
             "type": "string"
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
           "tags": {
             "type": "array",
             "items": {
@@ -2289,6 +2559,9 @@
     },
     {
       "name": "Auth"
+    },
+    {
+      "name": "AutoPublish"
     },
     {
       "name": "Connections"

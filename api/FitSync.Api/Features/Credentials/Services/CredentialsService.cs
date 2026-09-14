@@ -149,7 +149,8 @@ public class CredentialsService(
                     "credentials",
                     null,
                     handler.IsFetcher,
-                    handler.IsUploader
+                    handler.IsUploader,
+                    handler.SupportsWorkoutPublishing
                 )
             );
         }
@@ -166,7 +167,8 @@ public class CredentialsService(
                     oauth.AuthType,
                     oauth.ConnectUrl,
                     oauth.IsFetcher,
-                    oauth.IsUploader
+                    oauth.IsUploader,
+                    oauth.SupportsWorkoutPublishing
                 )
             );
         }
@@ -187,7 +189,8 @@ public class CredentialsService(
                     "credentials",
                     null,
                     handler.IsFetcher,
-                    handler.IsUploader
+                    handler.IsUploader,
+                    handler.SupportsWorkoutPublishing
                 )
             );
         }
@@ -200,7 +203,8 @@ public class CredentialsService(
                     oauth.AuthType,
                     oauth.ConnectUrl,
                     oauth.IsFetcher,
-                    oauth.IsUploader
+                    oauth.IsUploader,
+                    oauth.SupportsWorkoutPublishing
                 )
             );
         }

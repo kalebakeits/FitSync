@@ -44,4 +44,9 @@ public interface IGarminApiClient
         string accessToken,
         CancellationToken ct
     );
+    Task DeleteWorkoutScheduleAsync(
+        long workoutScheduleId,
+        string accessToken,
+        CancellationToken ct
+    );
 }

@@ -13,10 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import type { WorkoutResponse } from "../../api/generated/fitSyncApi.schemas";
-import { useGetApiConnections } from "../../api/generated/connections/connections";
 import { usePostApiWorkoutsPublishWorkoutId } from "../../api/generated/workout-publishing/workout-publishing";
-
-const PUBLISHING_SUPPORTED = new Set(["Wahoo", "Garmin"]);
+import { usePublishableDestinations } from "../../hooks/usePublishableDestinations";
 
 function toLocalDateString(date: Date): string {
   return date.toLocaleDateString("en-CA");
@@ -38,12 +36,7 @@ export default function PublishWorkoutModal({
     toLocalDateString(new Date()),
   );
 
-  const { data: connections = [] } = useGetApiConnections();
-
-  const publishableDestinations = connections.filter(
-    (c) =>
-      c.connected && c.enabled && PUBLISHING_SUPPORTED.has(c.serviceType ?? ""),
-  );
+  const publishableDestinations = usePublishableDestinations();
 
   const publishMutation = usePostApiWorkoutsPublishWorkoutId({
     mutation: {

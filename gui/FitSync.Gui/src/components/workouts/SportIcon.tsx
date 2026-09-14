@@ -1,33 +1,37 @@
-import {
-  DirectionsBike,
-  DirectionsRun,
-  Pool,
-  Rowing,
-  Hiking,
-  FitnessCenter,
-  SportsGymnastics,
-} from "@mui/icons-material";
+import { SvgIcon } from "@mui/material";
 import type { SvgIconProps } from "@mui/material";
+import {
+  IconBike,
+  IconRun,
+  IconStretching,
+  IconSwimming,
+} from "@tabler/icons-react";
+import { sportCategory } from "../../utils/sportCategory";
+import type { SportCategory } from "../../utils/sportCategory";
 
-// FIT Sport enum values
-const CYCLING = [2, 21]; // Cycling, EBiking
-const RUNNING = [1];
-const SWIMMING = [5, 85]; // Swimming, PoolApnea
-const ROWING = [15];
-const WALKING = [11, 17]; // Walking, Hiking
-const TRANSITION = [3, 18]; // Transition, Multisport
+const SPORT_ICONS: Record<SportCategory, typeof IconSwimming> = {
+  swim: IconSwimming,
+  bike: IconBike,
+  run: IconRun,
+  other: IconStretching,
+};
 
 interface SportIconProps extends SvgIconProps {
-  sport?: number;
+  sport?: number | null;
+  size?: number;
 }
 
-export default function SportIcon({ sport, ...props }: SportIconProps) {
-  if (sport === undefined) return <FitnessCenter {...props} />;
-  if (CYCLING.includes(sport)) return <DirectionsBike {...props} />;
-  if (RUNNING.includes(sport)) return <DirectionsRun {...props} />;
-  if (SWIMMING.includes(sport)) return <Pool {...props} />;
-  if (ROWING.includes(sport)) return <Rowing {...props} />;
-  if (WALKING.includes(sport)) return <Hiking {...props} />;
-  if (TRANSITION.includes(sport)) return <SportsGymnastics {...props} />;
-  return <FitnessCenter {...props} />;
+export default function SportIcon({
+  sport,
+  size = 20,
+  sx,
+  ...props
+}: SportIconProps) {
+  const Icon = SPORT_ICONS[sportCategory(sport)];
+
+  return (
+    <SvgIcon sx={{ fontSize: size, ...sx }} {...props}>
+      <Icon size="100%" />
+    </SvgIcon>
+  );
 }
