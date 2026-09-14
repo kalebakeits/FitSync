@@ -1,6 +1,5 @@
 namespace FitSync.Shared.Configuration;
 
-using FitSync.Database.Enums;
 using FitSync.Shared.Features.Fetcher;
 
 /// <summary>
@@ -13,12 +12,6 @@ public class FetcherOptions
     /// false the fetcher is never registered, so no worker loop is mounted.
     /// </summary>
     public bool Enabled { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the uploader service types whose live heartbeat is required before fetching
-    /// continues. Left unset it gates on the Garmin uploader alone.
-    /// </summary>
-    public List<ServiceType>? UploaderServiceTypes { get; set; }
 
     /// <summary>
     /// Gets or sets the polling interval for the <see cref="FetcherWorker"/> in minutes.
@@ -34,16 +27,6 @@ public class FetcherOptions
     /// Gets or sets he number of days in the past to look back when polling user activities.
     /// </summary>
     public required int LookbackDays { get; set; }
-
-    /// <summary>
-    /// Gets or sets the threshold in minutes used to determine if an uploader has died.
-    /// </summary>
-    public required int DeadThresholdMinutes { get; set; }
-
-    /// <summary>
-    /// Gets or sets the maximum allowed un-uploaded activities before fetching is paused.
-    /// </summary>
-    public required int MaxPendingActivities { get; set; }
 
     /// <summary>
     /// Gets or sets the instance ID.

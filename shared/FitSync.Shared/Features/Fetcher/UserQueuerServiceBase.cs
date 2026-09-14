@@ -11,14 +11,12 @@ using Microsoft.Extensions.Options;
 
 public class UserQueuerService(
     GlobalVariables globalVariables,
-    IDestinationGate destinationGate,
     ILogger<UserQueuerService> logger,
     FitSyncDbContext dbContext,
     IOptions<FetcherOptions> options
 ) : IUserQueuerService
 {
     private readonly GlobalVariables globalVariables = globalVariables;
-    private readonly IDestinationGate destinationGate = destinationGate;
     private readonly ILogger<UserQueuerService> logger = logger;
     private readonly FitSyncDbContext dbContext = dbContext;
     private readonly IOptions<FetcherOptions> options = options;
@@ -41,21 +39,7 @@ public class UserQueuerService(
         if (candidates.Count == 0)
             return [];
 
-        List<Guid> eligible = await this.destinationGate.FilterEligibleAsync(
-            this.globalVariables.ServiceName,
-            candidates
-        );
-
-        if (eligible.Count == 0)
-        {
-            this.logger.LogInformation(
-                "No eligible {Source} users after destination gate check.",
-                this.globalVariables.ServiceName
-            );
-            return [];
-        }
-
-        return await this.ClaimUsersAsync(eligible);
+        return await this.ClaimUsersAsync(candidates);
     }
 
     public async Task<bool> ReleaseUsersAsync(User[] users)

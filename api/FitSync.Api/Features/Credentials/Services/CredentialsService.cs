@@ -112,6 +112,31 @@ public class CredentialsService(
         this.context.Integrations.Remove(integration);
         await this.context.SaveChangesAsync(cancellationToken);
 
+        int sourceMappings = await this.context.UserDestinationConfigs.Where(
+            c => c.UserId == userId && c.SourceServiceType == serviceType
+        )
+            .ExecuteDeleteAsync(cancellationToken);
+
+        int destinationMappings = await this.context.UserDestinationConfigs.Where(
+            c => c.UserId == userId && c.DestinationServiceType == serviceType
+        )
+            .ExecuteDeleteAsync(cancellationToken);
+
+        int autoPublishSettings = await this.context.AutoPublishSettings.Where(
+            s => s.UserId == userId && s.ServiceType == serviceType
+        )
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (sourceMappings + destinationMappings + autoPublishSettings > 0)
+            this.logger.LogInformation(
+                "Removed {SourceMappings} source mapping(s), {DestinationMappings} destination mapping(s) and {AutoPublishSettings} auto-publish setting(s) for {ServiceType}, user {UserId}.",
+                sourceMappings,
+                destinationMappings,
+                autoPublishSettings,
+                serviceType,
+                userId
+            );
+
         IServiceCredentialHandler? handler = this.handlerFactory.Get(serviceType);
         if (handler != null)
             await handler.OnCredentialDeletedAsync(integration, cancellationToken);

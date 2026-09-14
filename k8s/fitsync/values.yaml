@@ -20,11 +20,6 @@ shared:
   # Base fetcher configuration (shared by all fetchers)
   pollIntervalMinutes: 5 # How often the worker wakes to check for due users
   lookbackDays: 28 # How many days back to check for activities
-  deadThresholdMinutes: 5 # Minutes before considering an uploader dead
-  # Uploader service types whose live heartbeat is required before a fetcher keeps fetching
-  uploaderServiceTypes:
-    - GarminUploader
-  maxPendingActivities: 50 # Max un-uploaded activities before pausing
   heartbeatIntervalMinutes: 1 # Heartbeat frequency
   maxParallelUsers: 4 # Max users processed in parallel
   maxParallelActivities: 10 # Max activities per user in parallel

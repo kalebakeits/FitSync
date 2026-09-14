@@ -24,21 +24,8 @@ public class FetcherWorker(IServiceProvider serviceProvider, ILogger<FetcherWork
                 using IServiceScope scope = this.serviceProvider.CreateScope();
                 IUserQueuerService userQueuerService =
                     scope.ServiceProvider.GetRequiredService<IUserQueuerService>();
-                IBackpressureMonitor backpressureMonitor =
-                    scope.ServiceProvider.GetRequiredService<IBackpressureMonitor>();
                 IFetchOrchestrator fetchOrchestrator =
                     scope.ServiceProvider.GetRequiredService<IFetchOrchestrator>();
-
-                bool shouldFetch = await backpressureMonitor.ShouldFetchAsync(stoppingToken);
-                if (!shouldFetch)
-                {
-                    this.logger.LogWarning(
-                        "Backpressure detected - skipping fetch cycle. Waiting {Minutes} minutes...",
-                        sleepTimeMinutes
-                    );
-                    await Task.Delay(TimeSpan.FromMinutes(sleepTimeMinutes), stoppingToken);
-                    continue;
-                }
 
                 while (true)
                 {

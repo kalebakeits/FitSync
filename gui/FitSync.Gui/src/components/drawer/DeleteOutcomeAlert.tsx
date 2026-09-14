@@ -11,9 +11,6 @@ export default function DeleteOutcomeAlert({
   return (
     <Alert severity={notice.severity} sx={{ mb: 1.5 }}>
       <Typography variant="body2">{notice.headline}</Typography>
-      <Typography variant="body2" sx={{ mt: 1 }}>
-        {notice.listLabel}
-      </Typography>
       <Box component="ul" sx={{ m: 0, pl: 3 }}>
         {notice.failedServiceTypes.map((serviceType) => (
           <li key={serviceType}>
@@ -21,11 +18,6 @@ export default function DeleteOutcomeAlert({
           </li>
         ))}
       </Box>
-      {notice.guidance && (
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          {notice.guidance}
-        </Typography>
-      )}
     </Alert>
   );
 }

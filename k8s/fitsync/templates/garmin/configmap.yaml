@@ -27,6 +27,5 @@ data:
       },
       "GarminFetcherOptions": {
         "Enabled": {{ .Values.garmin.config.fetcherEnabled | toJson }},
-        "UploaderServiceTypes": {{ .Values.shared.uploaderServiceTypes | toJson }}
       }
     }

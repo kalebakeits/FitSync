@@ -15,10 +15,7 @@ import { useDeleteApiScheduledWorkoutsId } from "../../api/generated/scheduled-w
 import ConfirmModal from "../ConfirmModal";
 import DeleteOutcomeAlert from "./DeleteOutcomeAlert";
 import PublishDatePicker from "./PublishDatePicker";
-import {
-  describeDeleteOutcome,
-  forceDeleteWarning,
-} from "../../utils/deleteOutcome";
+import { describeDeleteOutcome } from "../../utils/deleteOutcome";
 import type { DeleteOutcomeNotice } from "../../utils/deleteOutcome";
 import type { CalendarEventData } from "../../types/calendar";
 
@@ -154,17 +151,10 @@ export default function WorkoutDrawerFooter({
               }
               label={
                 <Typography variant="body2">
-                  Remove from my calendar anyway
+                  Remove from my calendar only
                 </Typography>
               }
             />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block" }}
-            >
-              {forceDeleteWarning(publishedServiceTypes)}
-            </Typography>
           </Box>
         )}
       </ConfirmModal>

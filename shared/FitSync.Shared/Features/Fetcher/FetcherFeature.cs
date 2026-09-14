@@ -35,10 +35,8 @@ public static class FetcherFeature
             .AddScoped<IUserQueuerService, UserQueuerService>()
             .AddScoped<IFetcherService, FetcherService>()
             .AddScoped<IFetcherClient, TFetcherClient>()
-            .AddScoped<IDestinationGate, DestinationGate>()
             .AddScoped<IActivityPublisher, ActivityPublisher>()
             .AddScoped<IActivityPersistenceService, ActivityPersistenceService>()
-            .AddScoped<IBackpressureMonitor, BackpressureMonitor>()
             .AddScoped<IFetchOrchestrator, FetchOrchestrator>()
             .AddHostedService<FetcherWorker>();
     }

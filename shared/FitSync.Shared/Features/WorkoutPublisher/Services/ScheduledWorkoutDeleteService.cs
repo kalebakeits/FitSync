@@ -53,17 +53,23 @@ public class ScheduledWorkoutDeleteService(
             .ToListAsync(cancellationToken);
 
         List<PublicationDeleteOutcome> outcomes = [];
-        List<Guid> succeededPublicationIds = [];
+        List<Guid> removablePublicationIds = [];
 
         foreach (ScheduledWorkoutPublication publication in publications)
         {
+            if (publication.ServiceMetadata is null)
+            {
+                this.logger.LogInformation(
+                    "Scheduled workout {ScheduledWorkoutId} was never pushed to {ServiceType}, so there is nothing to remove there.",
+                    scheduledWorkoutId,
+                    publication.ServiceType
+                );
+                removablePublicationIds.Add(publication.Id);
+                continue;
+            }
+
             try
             {
-                if (publication.ServiceMetadata is null)
-                    throw new InvalidOperationException(
-                        $"No service metadata recorded for {publication.ServiceType}."
-                    );
-
                 await this.workoutPushService.DeleteAsync(
                     userId,
                     publication.ServiceType,
@@ -72,7 +78,7 @@ public class ScheduledWorkoutDeleteService(
                 );
 
                 outcomes.Add(new PublicationDeleteOutcome(publication.ServiceType, true, null));
-                succeededPublicationIds.Add(publication.Id);
+                removablePublicationIds.Add(publication.Id);
             }
             catch (Exception ex)
             {
@@ -92,7 +98,7 @@ public class ScheduledWorkoutDeleteService(
         bool deleteParent = force || outcomes.All(o => o.Succeeded);
         List<Guid> removedPublicationIds = force
             ? publications.Select(p => p.Id).ToList()
-            : succeededPublicationIds;
+            : removablePublicationIds;
 
         await using IDbContextTransaction transaction =
             await this.dbContext.Database.BeginTransactionAsync(cancellationToken);
